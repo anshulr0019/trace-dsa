@@ -977,6 +977,8 @@ export function starterCode(p: Problem, language: string) {
   const fields = Object.keys(p.input).join(", ");
   if (language === "python")
     return `# Input fields: ${fields}\n# ${p.goal}\ndef solve(data):\n    # Write your solution here.\n    return None\n`;
+  if (language === "java")
+    return `import java.util.*;\n\n// Input fields: ${fields}\n// ${p.goal}\npublic class Solution extends Trace {\n    public Object solve(Map<String, Object> data) {\n        // Add trace("nums", nums, "i", i) to inspect intermediate state.\n        return null;\n    }\n}\n`;
   if (language === "cpp")
     return `#include "trace.hpp"\n// Input fields: ${fields}\n// ${p.goal}\njson solve(json data) {\n    // Write your solution here.\n    return nullptr;\n}\n`;
   return `// Input fields: ${fields}\n// ${p.goal}\nfunction solve(data) {\n    // Write your solution here.\n    return null;\n}\n`;

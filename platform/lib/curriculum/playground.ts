@@ -2,7 +2,8 @@ import type {Problem} from "./catalog";
 import {cppSolutions} from "./cpp-solutions";
 import {javascriptSolutions} from "./javascript-solutions";
 import formattedSources from "./formatted-sources.json";
-export type Language="python"|"cpp"|"javascript";
+import {javaSolutions} from "./java-solutions";
+export type Language="python"|"cpp"|"java"|"javascript";
 const cpp:Record<string,string>={
 ...cppSolutions,
 "maximum-average-subarray":`#include "trace.hpp"
@@ -87,8 +88,9 @@ const js:Record<string,string>={
 };
 export const rawSources={cpp,javascript:js};
 const formatted=formattedSources as Record<"cpp"|"javascript",Record<string,string>>;
-export function hasReference(id:string,language:Language){return language==="python"||!!(language==="cpp"?cpp:js)[id];}
+export function hasReference(id:string,language:Language){return language==="java"?!!javaSolutions[id]:language==="python"||!!(language==="cpp"?cpp:js)[id];}
 export function playgroundSource(p:Problem,language:Language){
+ if(language==="java")return javaSolutions[p.id]??legacyStarter(p,language);
  if(language!=="python"&&formatted[language][p.id])return formatted[language][p.id];
  if(language==="cpp")return cpp[p.id]??legacyStarter(p,language);
  return js[p.id]??legacyStarter(p,language);
@@ -98,6 +100,17 @@ export function restoreDraft(p:Problem,language:Language,draft:unknown,fallback:
  return language!=="python"&&draft===legacyStarter(p,language)?fallback:draft;
 }
 export function legacyStarter(p:Problem,language:Language){
+ if(language==="java")return `import java.util.*;
+
+// ${p.title}
+// Input keys: ${Object.keys(p.input).join(", ")}
+public class Solution extends Trace {
+    public Object solve(Map<String, Object> data) {
+        trace("data", data);
+        // Return your answer. Add trace("nums", nums, "i", i) to capture state.
+        return null;
+    }
+}`;
  if(language==="cpp")return `#include "trace.hpp"
 // ${p.title}
 // Input keys: ${Object.keys(p.input).join(", ")}

@@ -7,6 +7,7 @@ import {syntaxHighlighting, HighlightStyle, bracketMatching} from "@codemirror/l
 import {tags} from "@lezer/highlight";
 import {python} from "@codemirror/lang-python";
 import {cpp} from "@codemirror/lang-cpp";
+import {java} from "@codemirror/lang-java";
 import {javascript} from "@codemirror/lang-javascript";
 const markLine=StateEffect.define<number>();
 const codeColors=HighlightStyle.define([
@@ -25,7 +26,7 @@ export function Editor({value,onChange,language,line,onRun,readOnly=false}:{valu
  const change=useRef(onChange),run=useRef(onRun);change.current=onChange;run.current=onRun;
  useEffect(()=>{
   if(!host.current)return;
-  const view=new EditorView({parent:host.current,state:EditorState.create({doc:value,extensions:[EditorState.readOnly.of(readOnly),EditorView.editable.of(!readOnly),lineNumbers(),history(),highlightActiveLine(),bracketMatching(),executionLine,syntaxHighlighting(codeColors),language==="python"?python():language==="cpp"?cpp():javascript(),keymap.of([{key:"Mod-Enter",run:()=>{run.current();return true;}},indentWithTab,...defaultKeymap,...historyKeymap]),EditorView.updateListener.of(v=>{if(v.docChanged)change.current(v.state.doc.toString());}),EditorView.theme({"&":{height:"100%",fontSize:"12px",backgroundColor:"#111819",color:"#d6e3dc"},".cm-scroller":{fontFamily:"var(--font-mono, monospace)",overflow:"auto"},".cm-gutters":{backgroundColor:"#111819",color:"#657b70",border:"none"},".cm-content":{padding:"16px 0",caretColor:"#a3e8bf"},".cm-line":{padding:"0 14px"},".cm-activeLine":{backgroundColor:"#ffffff05"},".execution-line":{backgroundColor:"#9cddae18",boxShadow:"inset 2px 0 #a3e8bf"},".cm-selectionBackground":{backgroundColor:"#456e55 !important"}}, {dark:true}),EditorView.contentAttributes.of({"aria-label":"Solution code editor"})]})});
+  const view=new EditorView({parent:host.current,state:EditorState.create({doc:value,extensions:[EditorState.readOnly.of(readOnly),EditorView.editable.of(!readOnly),lineNumbers(),history(),highlightActiveLine(),bracketMatching(),executionLine,syntaxHighlighting(codeColors),language==="python"?python():language==="cpp"?cpp():language==="java"?java():javascript(),keymap.of([{key:"Mod-Enter",run:()=>{run.current();return true;}},indentWithTab,...defaultKeymap,...historyKeymap]),EditorView.updateListener.of(v=>{if(v.docChanged)change.current(v.state.doc.toString());}),EditorView.theme({"&":{height:"100%",fontSize:"12px",backgroundColor:"#111819",color:"#d6e3dc"},".cm-scroller":{fontFamily:"var(--font-mono, monospace)",overflow:"auto"},".cm-gutters":{backgroundColor:"#111819",color:"#657b70",border:"none"},".cm-content":{padding:"16px 0",caretColor:"#a3e8bf"},".cm-line":{padding:"0 14px"},".cm-activeLine":{backgroundColor:"#ffffff05"},".execution-line":{backgroundColor:"#9cddae18",boxShadow:"inset 2px 0 #a3e8bf"},".cm-selectionBackground":{backgroundColor:"#456e55 !important"}}, {dark:true}),EditorView.contentAttributes.of({"aria-label":"Solution code editor"})]})});
   editor.current=view;return()=>{view.destroy();editor.current=null;};
  // Language changes recreate the parser; document changes are dispatched below.
  // eslint-disable-next-line react-hooks/exhaustive-deps

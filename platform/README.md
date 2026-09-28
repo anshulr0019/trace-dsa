@@ -1,19 +1,19 @@
 # Trace — DSA Learning Studio
 
-A visual DSA learning platform with six foundational lessons and a 100-problem, four-tier curriculum. All 100 curriculum problems have editable Python, C++17 and JavaScript references, custom JSON inputs, actual execution results, and state visualizations.
+A visual DSA learning platform with six foundational lessons and a 100-problem, four-tier curriculum. All 100 curriculum problems have editable Python, C++17, Java 8 and JavaScript references, custom JSON inputs, actual execution results, and state visualizations.
 
 ## Run locally
 
 Requires Node 22.13+ for the application (Node 24+ recommended for the native TypeScript test runner).
 
-The curriculum code runner currently supports this macOS machine: Homebrew Python 3.14 at `/opt/homebrew/bin/python3`, Apple Command Line Tools for C++17, and the Node executable running the dev server. It uses macOS Seatbelt and refuses execution on unsupported hosts. Java and other language runtimes are not provided.
+The curriculum code runner currently supports this macOS machine: Homebrew Python 3.14 at `/opt/homebrew/bin/python3`, Apple Command Line Tools for C++17, and the Node executable running the dev server. It uses macOS Seatbelt and refuses execution on unsupported hosts. Java always runs in a disposable browser worker, including during local development.
 
 ```sh
 npm install
 npm run dev
 ```
 
-Open `http://localhost:5173/?view=curriculum`. The bundled Sites runtime uses React 19, TypeScript, Vinext, Vite, and a Cloudflare Worker build. Python, C++17 and JavaScript run in disposable browser workers when no server runner is connected, including on the published site. Python uses the pinned Pyodide CPython/WebAssembly runtime. C++ uses the MIT-licensed `@live-codes/clang-wasm` toolchain with assets served by the site. The six foundational browser-worker lessons remain independent of it.
+Open `http://localhost:5173/?view=curriculum`. The bundled Sites runtime uses React 19, TypeScript, Vinext, Vite, and a Cloudflare Worker build. Python, C++17, Java 8 and JavaScript run in disposable browser workers when no server runner is connected, including on the published site. Python uses the pinned Pyodide CPython/WebAssembly runtime. C++ uses the MIT-licensed `@live-codes/clang-wasm` toolchain with assets served by the site. The six foundational browser-worker lessons remain independent of it.
 
 `npm run dev` and `npm run build` prepare browser workers and runtime assets in `public/browser-runtime/`. These generated assets are included in the built site. Re-run `node scripts/prepare-browser-runtime.mjs` after editing the browser worker or C++ trace header during a running development session. Browser C++ loads about 28 MB of compiler assets on first use and supports the project's C++17 references and trace checkpoints. This WebAssembly toolchain does not support general C++ exception handling; reference `runtime_error` checks are adapted to report errors in the browser. Browser C++ has a 120-second initialization deadline and a 30-second compile/run deadline; Python and JavaScript keep their 60-second initialization and six-second execution deadlines. Cancellation terminates the worker. Each run starts with fresh program state. Automatic traces are bounded to 1,200 frames and 30,000 observed steps. This worker keeps computation off the UI thread; it is not a network-isolation security boundary.
 
@@ -37,7 +37,7 @@ npm run build
 ## Implemented
 
 - 100 unique problems in the requested 25 patterns and Concept / Direct / Disguised / Edge-case trap sequence. Two Sum II and Standard Binary Search link their existing foundational lessons.
-- 300 complete reference solutions: Python, C++17 and JavaScript. CodeMirror provides syntax colors, indentation, undo/redo and Cmd/Ctrl+Enter execution.
+- 400 complete reference solutions: Python, C++17, Java 8 and JavaScript. CodeMirror provides syntax colors, indentation, undo/redo and Cmd/Ctrl+Enter execution.
 - Arrays and strings, interval plots, linked pointers, tree edges, tries, graph edges and union-find parents, grids, stacks, heaps, backtracking state, DP tables and 32-bit rows.
 - Actual Python line tracing; C++ `TRACE` and JavaScript `trace` checkpoints capture the variables supplied by the edited program. Animations never substitute reference execution for user code.
 - Play, pause, speed, step backward/forward, timeline seeking, changed-value highlights and source line highlighting.
@@ -79,3 +79,26 @@ The visual view uses conventional pointer names (`left`, `right`, `mid`, `i`, `j
 - `docs/ROADMAP.md`: remaining platform work.
 
 Local progress stays in this browser. Hosted account history and optional AI reviews require the connections described in the practice guide; neither is simulated. Replay links contain the shared source and input in their URL fragment; private deployment access still applies.
+
+## Java
+
+Java uses CheerpJ 4.3 from its official CDN and the bundled OpenJDK 8 compiler.
+This has no execution API fee for this personal project; CheerpJ business use
+requires a suitable licence. See `runtime/vendor/java/NOTICE.md` for attribution,
+source links, terms, and instructions to rebuild `trace-runtime.jar`.
+
+Write `public class Solution extends Trace` with
+`public Object solve(Map<String, Object> data)`. Input helpers include
+`ints(data, "nums")`, `num(data, "k")`, `str(data, "s")`, and
+`matrix(data, "grid")`. Return primitives, arrays, collections, or maps.
+Use `trace("nums", nums, "i", i)` to capture intermediate state. Java uses explicit
+checkpoints rather than automatic local-variable inspection. Source line numbers
+are attached to checkpoint calls before compilation, preserving editor alignment.
+
+A first run downloads the compiler (about 18 MB) and JVM assets. Loading and
+compilation/execution each have a 120-second deadline. Cancel terminates the worker.
+Java code and input execute on the user's device; no execution service receives them.
+
+Regenerate formatted examples with `node scripts/format-java-references.mjs`.
+Check all 500 learning examples with a local JDK using
+`TRACE_JAVA=/path/to/java node --import tsx scripts/test-java.mjs`.

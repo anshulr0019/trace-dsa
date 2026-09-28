@@ -97,9 +97,9 @@ export function PracticeLab({
           attempts?: Attempt[];
         };
         setCapabilities({
-          execution: !!v.execution || language !== "cpp",
+          execution: true,
           browser: !v.execution,
-          ai: !!v.execution && !!v.ai,
+          ai: language !== "java" && !!v.execution && !!v.ai,
           checked: true,
           progress: v.execution ? v.progress ?? "device" : "device",
           signedIn: v.signedIn !== false,
@@ -109,7 +109,7 @@ export function PracticeLab({
       .catch(() => {
         if (!c.signal.aborted)
           setCapabilities({
-            execution: language !== "cpp",
+            execution: true,
             browser: true,
             ai: false,
             checked: true,
@@ -444,8 +444,8 @@ function PracticeSession({
     if (action === "review" || action === "optimize")
       setDraft((d) => ({ ...d, assisted: true }));
     try {
-      const browserValue = capabilities.browser ? await (action === "trace" ? executeInBrowser({language,code:draft.code,input:selected.input,problemId:p.id,automatic:true},controller.current.signal) : browserPractice({action,problemId:p.id,language,code:draft.code,caseId:selected.id,answer:parsed,explanation:draft.explanation},controller.current.signal)) : null;
-      const response = capabilities.browser ? null : await fetch(
+      const browserValue = (capabilities.browser || language === "java") ? await (action === "trace" ? executeInBrowser({language,code:draft.code,input:selected.input,problemId:p.id,automatic:true},controller.current.signal) : browserPractice({action,problemId:p.id,language,code:draft.code,caseId:selected.id,answer:parsed,explanation:draft.explanation},controller.current.signal)) : null;
+      const response = (capabilities.browser || language === "java") ? null : await fetch(
         action === "trace" ? "/api/local-runtime" : "/api/practice",
         {
           method: "POST",
@@ -474,7 +474,7 @@ function PracticeSession({
           ),
         },
       );
-      const value = capabilities.browser ? browserValue : await response!.json();
+      const value = (capabilities.browser || language === "java") ? browserValue : await response!.json();
       if (id !== sequence.current) return;
       if (response && !response.ok)
         throw Error(
@@ -571,6 +571,7 @@ function PracticeSession({
             onChange={(e) => onLanguage(e.target.value as Language)}
           >
             <option value="python">Python 3</option>
+            <option value="java">Java 8</option>
             <option value="javascript">JavaScript</option>
             <option value="cpp">C++17</option>
           </select>
@@ -846,8 +847,8 @@ function PracticeSession({
         !capabilities.execution &&
         level !== "guided" && (
           <p className="practice-unavailable">
-            C++ needs a connected compiler. Choose Python or JavaScript to run
-            your solution and check all eight cases in this browser.
+            The runtime is unavailable. Reload this page to run your solution
+            and check all eight cases in this browser.
           </p>
         )}
       {trace && (

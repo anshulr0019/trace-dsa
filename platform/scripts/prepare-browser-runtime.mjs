@@ -22,3 +22,10 @@ await build({
   bundle: true, platform: "browser", format: "iife", target: "es2022", minify: true,
   loader: { ".py": "text" },
 });
+
+await cp(new URL("../runtime/vendor/java/", import.meta.url), new URL("java/", target), {recursive:true});
+await build({
+  entryPoints: [fileURLToPath(new URL("../lib/curriculum/java-runtime.worker.ts", import.meta.url))],
+  outfile: fileURLToPath(new URL("java-runner.js", target)),
+  bundle: true, platform: "browser", format: "iife", target: "es2022", minify: true,
+});
