@@ -30,6 +30,7 @@
     "@lezer/common": "^1.5.2",
     "@lezer/cpp": "^1.1.6",
     "@lezer/highlight": "^1.2.3",
+    "@live-codes/clang-wasm": "0.3.0",
     "@shadcn/react": "^0.3.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",

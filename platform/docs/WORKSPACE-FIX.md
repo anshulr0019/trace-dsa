@@ -8,14 +8,14 @@ of view.
 ## Implementation
 
 - The shared runtime client uses a connected server when available. Otherwise,
-  Python and JavaScript execute the actual edited source in a disposable worker.
+  Python, C++ and JavaScript execute the actual edited source in a disposable worker.
 - Pyodide and its standard library are served with the site's assets. The worker
   is bundled independently so Vite's development client cannot inject references
   to `window` into the worker.
 - Loading, execution timeouts, cancellation, syntax/runtime errors, source lines,
   stdout, trace limits and fresh state per run are supported.
-- C++ retains its saved editor content and explains the compiler requirement;
-  Play, Run, example checks and practice checks share language-aware availability.
+- C++ uses an on-device WebAssembly compiler on the published site. Play, Run,
+  example checks and practice checks share language-aware availability.
 - Practice uses the shared grading engine on the device when the server is absent.
   These checks do not masquerade as server-verified account grades.
 

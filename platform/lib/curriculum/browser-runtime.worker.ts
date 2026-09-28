@@ -1,5 +1,8 @@
 import * as Babel from "@babel/standalone";
+import { createCompiler } from "@live-codes/clang-wasm";
+import { createToolchain } from "@live-codes/clang-wasm/toolchain";
 import type { NodePath, types as BabelTypes } from "@babel/core";
+import { instrumentCpp } from "./instrument-cpp";
 import pythonRunner from "../../runtime/python_runner.py?raw";
 import pythonSupport from "../../runtime/trace_support.py?raw";
 import type { Submission } from "./runtime-client";
@@ -19,6 +22,42 @@ async function python(payload: Submission): Promise<PlaybackRun> {
   self.postMessage({ type: "ready" });
   try { return JSON.parse(py.runPython(pythonRunner + "\nencoded_run", { globals })); }
   finally { globals.destroy(); }
+}
+
+async function cpp(payload: Submission): Promise<PlaybackRun> {
+  const baseUrl = new URL("/browser-runtime/clang/", self.location.origin);
+  const [jsonResponse, traceResponse] = await Promise.all([
+    fetch("/browser-runtime/json.hpp"), fetch("/browser-runtime/trace.hpp"),
+  ]);
+  if (!jsonResponse.ok || !traceResponse.ok) throw Error("C++ support files could not be downloaded.");
+  const [jsonHeader, traceHeader] = await Promise.all([jsonResponse.text(), traceResponse.text()]);
+  const toolchain = await createToolchain({ baseUrl });
+  let compiler: Awaited<ReturnType<typeof createCompiler>> | undefined;
+  try {
+    toolchain.addFile("json.hpp", jsonHeader);
+    toolchain.addFile("trace.hpp", traceHeader);
+    compiler = await createCompiler("cpp", {
+      baseUrl, std: "gnu++17", fileName: "solution.cpp",
+      compileArgs: ["-I.", "-DTRACE_BROWSER", "-DJSON_NOEXCEPTION", "-O0"],
+    });
+    self.postMessage({ type: "ready", timeoutMs: 30000 });
+    // This WASM toolchain has no C++ exception support. The supplied examples
+    // use runtime_error only for invalid input; preserve those messages.
+    const source = (payload.automatic ? instrumentCpp(payload.code) : payload.code)
+      .replace(/\bthrow\s+runtime_error\s*\(/g, "trace_fail(");
+    const main = `\nint main(){json input;cin>>input;ostringstream captured;auto* original=cout.rdbuf(captured.rdbuf());json result=solve(input);cout.rdbuf(original);cout<<json({{"result",result},{"frames",trace_frames},{"stdout",captured.str().substr(0,16000)},{"error",nullptr},{"truncated",trace_truncated}}).dump();}`;
+    const output = await compiler.run(source + main, JSON.stringify(payload.input));
+    if (output.errors.length || output.exitCode !== 0) {
+      const error = output.errors.join("\n") || output.stderr || `C++ program exited with code ${output.exitCode}.`;
+      return { frames: [], result: null, stdout: "", truncated: false, error,
+        errorLine: Number(error.match(/solution\.cpp:(\d+)/)?.[1] ?? 0) };
+    }
+    if (output.stdout.length > 8_000_000) throw Error("C++ output exceeded 8 MB.");
+    return JSON.parse(output.stdout) as PlaybackRun;
+  } finally {
+    compiler?.dispose();
+    toolchain.dispose();
+  }
 }
 
 function javascript(payload: Submission): PlaybackRun {
@@ -69,7 +108,7 @@ function javascript(payload: Submission): PlaybackRun {
 
 self.onmessage = async ({ data }: MessageEvent<Submission>) => {
   try {
-    const run = data.language === "python" ? await python(data) : javascript(data);
+    const run = data.language === "python" ? await python(data) : data.language === "cpp" ? await cpp(data) : javascript(data);
     self.postMessage({ type: "result", run });
   } catch (e) { self.postMessage({ type: "error", error: `Unable to load the browser runtime. Check your connection and try again. ${String(e)}` }); }
 };

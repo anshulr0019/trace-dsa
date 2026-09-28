@@ -14,6 +14,6 @@ node --import tsx scripts/format-curriculum.ts
 
 The formatter removes unused support helpers and makes each solution readable before it reaches the editor. It does not change the algorithms. Saved browser drafts remain user-owned; use **Reset code** to load a newer reference.
 
-Supported runtime languages are Python, C++17 and JavaScript. Additional languages require a real runtime adapter and reference/test coverage. No selector option claims unavailable execution. The runner is local macOS development middleware; deployment of a public execution service is separate work.
+Supported runtime languages are Python, C++17 and JavaScript. Additional languages require a real runtime adapter and reference/test coverage. No selector option claims unavailable execution. The local macOS runner uses Seatbelt and native Clang. The published site uses a separate C++ WebAssembly browser worker, so no hosted code-execution service is needed. The browser compiler assets are generated from `@live-codes/clang-wasm` during `npm run build:vercel`. Browser C++ cannot catch or throw general C++ exceptions; the supplied references' `runtime_error` checks are adapted to report their messages.
 
 Reference inputs use ASCII strings so character indexing is consistent across these three implementations. Learning inputs are deliberately small. Solutions retain normal language numeric limits; C++ uses 64-bit counts and JavaScript uses IEEE-754 numbers. Python returned answers are never silently shortened to match the bounded visualization previews.

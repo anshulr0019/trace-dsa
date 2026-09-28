@@ -10,7 +10,7 @@ export type Submission = {
   problemId: string;
   automatic?: boolean;
 };
-export const browserLanguages: Language[] = ["python", "javascript"];
+export const browserLanguages: Language[] = ["python", "cpp", "javascript"];
 
 export async function runtimeCapabilities(signal?: AbortSignal): Promise<RuntimeCapabilities> {
   try {
@@ -26,7 +26,7 @@ export async function runtimeCapabilities(signal?: AbortSignal): Promise<Runtime
 export function executeInBrowser(payload: Submission, signal?: AbortSignal): Promise<PlaybackRun> {
   signal?.throwIfAborted();
   if (!browserLanguages.includes(payload.language as Language))
-    return Promise.reject(Error("C++ needs a connected compiler. Choose Python or JavaScript to run in this browser."));
+    return Promise.reject(Error("This language cannot run in the browser."));
   const error = validateProblemInput(payload.problemId, payload.input);
   if (error) return Promise.reject(Error(error));
   if (!payload.code.trim() || payload.code.length > 60000)
@@ -43,11 +43,12 @@ export function executeInBrowser(payload: Submission, signal?: AbortSignal): Pro
     };
     const abort = () => finish(new DOMException("Run cancelled.", "AbortError"));
     signal?.addEventListener("abort", abort, { once: true });
-    timer = setTimeout(() => finish(Error("The browser runtime could not load. Check your connection and try Run again.")), 60000);
+    timer = setTimeout(() => finish(Error("The browser runtime could not load. Check your connection and try Run again.")), payload.language === "cpp" ? 120000 : 60000);
     worker.onmessage = ({ data }) => {
       if (data.type === "ready") {
         clearTimeout(timer);
-        timer = setTimeout(() => finish(Error("Execution timed out (6 seconds). Try a smaller input or check your loop condition.")), 6000);
+        const timeoutMs = Number(data.timeoutMs) || 6000;
+        timer = setTimeout(() => finish(Error(`Execution timed out (${timeoutMs / 1000} seconds). Try a smaller input or check your loop condition.`)), timeoutMs);
       } else if (data.type === "result") finish(undefined, data.run);
       else if (data.type === "error") finish(Error(data.error));
     };
