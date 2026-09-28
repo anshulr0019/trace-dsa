@@ -1,7 +1,5 @@
-/* Reference lock: retain Trace's dark canvas, neutral type and mint actions.
-   Refero typography/craft: compact tool hierarchy, consistent spacing, bounded
-   content regions. Both work areas share a baseline; only their contents scroll. */
-.problem-studio { --workbench-height: clamp(480px, calc(100dvh - 430px), 760px); }
+/* Keep the visualization, explanation and controls in one stable column. */
+.problem-studio { --workbench-height: clamp(640px, calc(100dvh - 300px), 760px); }
 .problem-navigation { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:12px; }
 .problem-navigation .text-action { font-size:12px; }
 .runtime-status { font-size:11px; letter-spacing:.015em; color:#a5c7b2; }
@@ -18,36 +16,45 @@
 .problem-studio .example-shelf { border:0; background:none; padding:0; margin:0; }
 .problem-studio .shelf-heading { display:none; }
 .problem-studio .example-tiles { grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; }
-.problem-studio .example-tiles>button { min-height:72px; padding:10px 12px; gap:7px; background:#131c18; }
+.problem-studio .example-tiles>button { min-height:64px; padding:9px 12px; gap:5px; background:#131c18; }
 .problem-studio .example-tiles>button[aria-pressed=true] { background:#22362a; box-shadow:inset 0 2px #b5e9c4; }
 .problem-studio .example-tiles strong { font-size:11px; line-height:1.4; }
 .problem-studio .example-tiles .mini-preview { display:none; }
 .problem-studio .example-number { font-size:9px; letter-spacing:.04em; }
 .problem-studio .example-run-hint { font-size:11px; line-height:1.5; margin:10px 0; color:#98b1a2; }
 .problem-studio .curriculum-workbench { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:stretch; }
-.problem-studio .trace-visual-panel,.problem-studio .trace-code-panel { height:var(--workbench-height); display:flex; flex-direction:column; background:#111916; border-radius:8px; }
+.problem-studio .trace-visual-panel,.problem-studio .trace-code-panel { min-height:var(--workbench-height); height:auto; display:flex; flex-direction:column; background:#111916; border-radius:8px; }
 .problem-studio .trace-visual-panel>header,.problem-studio .trace-code-panel>header { flex:none; min-height:46px; height:46px; padding:10px 16px; font-size:11px; background:#17201c; }
 .problem-studio .trace-code-panel>header select { padding:5px 9px; font-size:11px; }
-.trace-visual-body { display:flex; flex-direction:column; min-height:0; flex:1; overflow:auto; overscroll-behavior:contain; }
+.trace-visual-body { display:flex; flex-direction:column; min-height:240px; flex:1; overflow:hidden; }
 .trace-visual-body .visual-binding { padding:9px 16px; gap:8px; flex:none; }
 .trace-visual-body .visual-binding select { padding:5px 8px; font-size:11px; }
-.trace-visual-body>.live-scene { flex:1; height:auto; min-height:155px; max-height:none; padding:16px; overflow:auto; }
+.trace-visual-body>.live-scene { flex:1; height:auto; min-height:185px; max-height:none; padding:16px; overflow:auto; overscroll-behavior:contain; }
 .trace-visual-body .scene-caption { margin-bottom:16px; font-size:10px; }
 .trace-visual-body .state-collection { margin:14px 0; }
-.trace-visual-body>.step-story { height:132px; min-height:132px; max-height:132px; flex:none; padding:12px 16px; font-size:12px; background:#17251c; }
-.trace-visual-body>.step-story-empty { height:auto; min-height:76px; max-height:none; color:#acc3b4; }
-.trace-visual-body>.scalar-state { height:auto; min-height:0; max-height:80px; flex:none; padding:10px 16px; }
-.trace-visual-body>.scalar-state:empty { display:none; }
-.problem-studio .curriculum-playback { flex:none; padding:12px 16px 16px; min-height:78px; }
+.problem-studio .step-story { height:auto; min-height:150px; max-height:none; flex:none; padding:15px 18px; overflow:visible; font-size:12px; line-height:1.45; background:#17251c; border-top:1px solid #34513b; }
+.problem-studio .step-story-empty { min-height:100px; color:#acc3b4; }
+.problem-studio .step-story-label { display:block; margin:0 0 5px; color:#86ae92; font-size:10px; font-weight:600; letter-spacing:.08em; }
+.problem-studio .step-story strong { display:block; color:#e1f0e5; font-size:16px; font-weight:600; line-height:1.3; }
+.problem-studio .step-story-summary { margin:6px 0 8px; color:#c9e3cf; font-size:13px; line-height:1.45; }
+.problem-studio .step-story code { margin:5px 0 11px; padding:7px 10px; border:1px solid #375641; border-radius:5px; background:#102016; color:#c4e8cd; font-size:12px; line-height:1.4; }
+.problem-studio .step-story dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; margin:0; }
+.problem-studio .step-story dl>div { grid-template-columns:minmax(70px,28%) minmax(0,1fr); padding:5px 0; }
+.problem-studio .step-story dd { line-height:1.45; }
+.problem-studio .step-story dd>strong { display:inline; font:inherit; color:#d4eaca; }
+.problem-studio .step-story-unchanged { margin:6px 0 0; }
+.problem-studio .scalar-state { height:auto; min-height:0; max-height:none; flex:none; padding:9px 16px; overflow:visible; }
+.problem-studio .scalar-state:empty { display:none; }
+.problem-studio .curriculum-playback { flex:none; padding:10px 16px 14px; min-height:72px; }
 .problem-studio .curriculum-playback button { width:32px; height:32px; }
 .problem-studio .curriculum-playback button.play { width:38px; height:32px; }
 .curriculum-editor { height:440px; min-height:0; }
-.problem-studio .trace-code-panel>.curriculum-editor { height:0; flex:1; min-height:150px; overflow:hidden; }
+.problem-studio .trace-code-panel>.curriculum-editor { height:0; flex:1; min-height:230px; overflow:hidden; }
 .problem-studio .editor-actions { min-height:46px; padding:7px 12px; flex:none; border-top:0; border-bottom:1px solid var(--cu-border); }
 .problem-studio .editor-actions .text-action { font-size:11px; }
 .problem-studio .console-tabs { flex:none; gap:20px; }
 .problem-studio .console-tabs button { padding:11px 0; font-size:11px; }
-.problem-studio .input-panel,.problem-studio .output-panel,.problem-studio .runtime-guide { height:172px; min-height:172px; padding:12px 16px; overflow:auto; flex:none; font-size:12px; }
+.problem-studio .input-panel,.problem-studio .output-panel,.problem-studio .runtime-guide { height:150px; min-height:150px; padding:12px 16px; overflow:auto; flex:none; font-size:12px; }
 .problem-studio .input-panel textarea { height:92px; min-height:60px; resize:none; font-size:12px; line-height:1.5; }
 .problem-studio .input-panel>label { margin-bottom:7px; }
 .problem-studio .input-panel .text-action { font-size:11px; padding:4px 0; }
@@ -57,6 +64,10 @@
 .problem-studio .studio-learning>summary { padding:14px 16px; font-size:13px; }
 .problem-studio .studio-learning>.learning-note { height:auto; padding:16px; }
 .problem-studio .studio-learning .learning-note p { font-size:13px; }
+.problem-studio .practice-entry { margin:12px 0; padding:16px 20px; min-height:0; gap:18px; }
+.problem-studio .practice-entry h3 { font-size:18px; margin:0 0 3px; }
+.problem-studio .practice-entry p { font-size:12px; margin:0; }
+.problem-studio .practice-entry button { min-height:40px; padding:9px 14px; white-space:nowrap; }
 .problem-studio .problem-footer { font-size:12px; }
 .problem-studio button:focus-visible,.problem-studio select:focus-visible { outline:2px solid var(--cu-accent); outline-offset:3px; }
 @media (max-width:1250px) {
@@ -65,10 +76,13 @@
   .problem-studio .example-tiles>button { min-height:62px; }
 }
 @media (max-width:1000px) {
-  .problem-studio .curriculum-workbench { grid-template-columns:minmax(0,1fr); }
-  .problem-studio .trace-visual-panel,.problem-studio .trace-code-panel { height:560px; }
-  .problem-studio .trace-visual-panel { order:0; }
-  .problem-studio .trace-code-panel { order:1; }
+ .problem-studio .curriculum-workbench { grid-template-columns:minmax(0,1fr); }
+ .problem-studio .trace-visual-panel,.problem-studio .trace-code-panel { min-height:0; height:auto; }
+ .trace-visual-body { min-height:0; flex:none; }
+ .trace-visual-body>.live-scene { min-height:280px; max-height:440px; }
+ .problem-studio .trace-code-panel>.curriculum-editor { height:380px; flex:none; }
+ .problem-studio .trace-visual-panel { order:0; }
+ .problem-studio .trace-code-panel { order:1; }
 }
 @media (max-width:650px) {
   .problem-navigation { gap:8px; }
@@ -78,7 +92,10 @@
   .problem-studio .example-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .studio-controls { gap:10px; }
   .studio-controls .studio-run-toolbar { flex-wrap:wrap; }
-  .problem-studio .trace-visual-panel,.problem-studio .trace-code-panel { height:540px; }
-  .problem-studio .visual-binding label { flex-wrap:wrap; }
+ .trace-visual-body>.live-scene { min-height:240px; max-height:400px; }
+ .problem-studio .step-story dl { grid-template-columns:minmax(0,1fr); }
+ .problem-studio .trace-code-panel>.curriculum-editor { height:320px; }
+ .problem-studio .practice-entry { align-items:flex-start; }
+ .problem-studio .visual-binding label { flex-wrap:wrap; }
   .problem-studio .problem-footer { font-size:11px; gap:12px; }
 }
