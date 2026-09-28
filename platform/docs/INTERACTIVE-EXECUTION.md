@@ -1,0 +1,13 @@
+# Interactive execution
+
+The workbench now has five authored cases per problem (500 total), immediately synchronized input previews, editable custom input, My code / Guided solution modes, batch example checks, and before/after variable explanations. Reference code is read-only in Guided solution; switching modes preserves the student's draft. Arbitrary custom input is labeled executed, not verified.
+
+My code requests automatic source instrumentation for JavaScript and C++. Python uses native line tracing. Instrumentation observes statements in the native runtime; it does not replace execution with the reference solution. Explicit checkpoints remain supported. Syntax errors do not produce invented algorithm steps. Runtime failures and process timeouts retain available snapshots via a temporary JSONL journal removed with the run directory.
+
+Supported automatic observations include ordinary functions, initialized local scalars and JSON-compatible collections, branches, loops, and helper calls. C++ lambda snapshots deliberately exclude implicit outer variables to avoid introducing captures. Pointer and custom C++ types are labeled as requiring serializable checkpoints; arbitrary pointer graphs and every C++ language construct are not promised. JavaScript cyclic/unsupported values are labeled. Python custom objects retain type labels. Runs and snapshot sizes remain bounded; snapshots can stop before execution finishes.
+
+Visualization binding lets users choose a recorded collection, its presentation, and an integer marker independently of naming conventions. Automatic diagrams retain existing lesson adapters. Primitive value movement uses value/occurrence keys, so equal-valued entries are visually indistinguishable; this is not object-identity tracking. Rewinding replays captured state rather than re-executing side effects. Graph highlights mark outgoing edges from the current recorded vertex, not proof that every highlighted edge was traversed.
+
+Motion: shared-layout pointer labels, spring movement of array values, graph edge entrances/exits and current-node edge emphasis, changed matrix-cell pulses, queue movement, and actual recorded call stacks. Reduced-motion preferences disable decorative movement. Explanations report observed changes; they do not invent a semantic explanation for arbitrary student code.
+
+Design reference: preserve the existing Trace studio and its graphite/green surfaces, mint actions, monospace values, labeled controls, and responsive panes. The approved proposal moves example selection next to the canvas and moves long explanations into an expandable section underneath. No Figma or hosted-site migration is involved.

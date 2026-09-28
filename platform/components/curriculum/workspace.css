@@ -1,0 +1,84 @@
+/* Reference lock: retain Trace's dark canvas, neutral type and mint actions.
+   Refero typography/craft: compact tool hierarchy, consistent spacing, bounded
+   content regions. Both work areas share a baseline; only their contents scroll. */
+.problem-studio { --workbench-height: clamp(480px, calc(100dvh - 430px), 760px); }
+.problem-navigation { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:12px; }
+.problem-navigation .text-action { font-size:12px; }
+.runtime-status { font-size:11px; letter-spacing:.015em; color:#a5c7b2; }
+.problem-studio .curriculum-heading { margin:0 0 16px; gap:20px; align-items:center; }
+.problem-studio .curriculum-heading h1 { font-size:clamp(23px,2vw,30px); margin:7px 0; line-height:1.2; }
+.problem-studio .curriculum-heading p { font-size:13px; line-height:1.5; margin:0; max-width:80ch; color:#a7b8ae; }
+.problem-studio .eyebrow { font-size:10px; letter-spacing:.08em; }
+.studio-controls { display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:14px; border-bottom:1px solid var(--cu-border); padding-bottom:12px; }
+.studio-controls .learning-mode-switch { margin:0; }
+.studio-controls .learning-mode-switch button { min-height:36px; padding:8px 12px; font-size:12px; }
+.studio-controls .studio-run-toolbar { margin:0; gap:10px; }
+.studio-controls .studio-run-toolbar button { min-height:34px; padding:7px 10px; font-size:11px; }
+.studio-controls .studio-run-toolbar>span { display:none; }
+.problem-studio .example-shelf { border:0; background:none; padding:0; margin:0; }
+.problem-studio .shelf-heading { display:none; }
+.problem-studio .example-tiles { grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; }
+.problem-studio .example-tiles>button { min-height:72px; padding:10px 12px; gap:7px; background:#131c18; }
+.problem-studio .example-tiles>button[aria-pressed=true] { background:#22362a; box-shadow:inset 0 2px #b5e9c4; }
+.problem-studio .example-tiles strong { font-size:11px; line-height:1.4; }
+.problem-studio .example-tiles .mini-preview { display:none; }
+.problem-studio .example-number { font-size:9px; letter-spacing:.04em; }
+.problem-studio .example-run-hint { font-size:11px; line-height:1.5; margin:10px 0; color:#98b1a2; }
+.problem-studio .curriculum-workbench { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:stretch; }
+.problem-studio .trace-visual-panel,.problem-studio .trace-code-panel { height:var(--workbench-height); display:flex; flex-direction:column; background:#111916; border-radius:8px; }
+.problem-studio .trace-visual-panel>header,.problem-studio .trace-code-panel>header { flex:none; min-height:46px; height:46px; padding:10px 16px; font-size:11px; background:#17201c; }
+.problem-studio .trace-code-panel>header select { padding:5px 9px; font-size:11px; }
+.trace-visual-body { display:flex; flex-direction:column; min-height:0; flex:1; overflow:auto; overscroll-behavior:contain; }
+.trace-visual-body .visual-binding { padding:9px 16px; gap:8px; flex:none; }
+.trace-visual-body .visual-binding select { padding:5px 8px; font-size:11px; }
+.trace-visual-body>.live-scene { flex:1; height:auto; min-height:155px; max-height:none; padding:16px; overflow:auto; }
+.trace-visual-body .scene-caption { margin-bottom:16px; font-size:10px; }
+.trace-visual-body .state-collection { margin:14px 0; }
+.trace-visual-body>.step-story { height:132px; min-height:132px; max-height:132px; flex:none; padding:12px 16px; font-size:12px; background:#17251c; }
+.trace-visual-body>.step-story-empty { height:auto; min-height:76px; max-height:none; color:#acc3b4; }
+.trace-visual-body>.scalar-state { height:auto; min-height:0; max-height:80px; flex:none; padding:10px 16px; }
+.trace-visual-body>.scalar-state:empty { display:none; }
+.problem-studio .curriculum-playback { flex:none; padding:12px 16px 16px; min-height:78px; }
+.problem-studio .curriculum-playback button { width:32px; height:32px; }
+.problem-studio .curriculum-playback button.play { width:38px; height:32px; }
+.curriculum-editor { height:440px; min-height:0; }
+.problem-studio .trace-code-panel>.curriculum-editor { height:0; flex:1; min-height:150px; overflow:hidden; }
+.problem-studio .editor-actions { min-height:46px; padding:7px 12px; flex:none; border-top:0; border-bottom:1px solid var(--cu-border); }
+.problem-studio .editor-actions .text-action { font-size:11px; }
+.problem-studio .console-tabs { flex:none; gap:20px; }
+.problem-studio .console-tabs button { padding:11px 0; font-size:11px; }
+.problem-studio .input-panel,.problem-studio .output-panel,.problem-studio .runtime-guide { height:172px; min-height:172px; padding:12px 16px; overflow:auto; flex:none; font-size:12px; }
+.problem-studio .input-panel textarea { height:92px; min-height:60px; resize:none; font-size:12px; line-height:1.5; }
+.problem-studio .input-panel>label { margin-bottom:7px; }
+.problem-studio .input-panel .text-action { font-size:11px; padding:4px 0; }
+.problem-studio .trace-notice { flex:none; font-size:11px; padding:9px 16px; }
+.problem-studio .runtime-error { max-height:110px; overflow:auto; flex:none; }
+.problem-studio .studio-learning { margin:16px 0; background:#121b17; }
+.problem-studio .studio-learning>summary { padding:14px 16px; font-size:13px; }
+.problem-studio .studio-learning>.learning-note { height:auto; padding:16px; }
+.problem-studio .studio-learning .learning-note p { font-size:13px; }
+.problem-studio .problem-footer { font-size:12px; }
+.problem-studio button:focus-visible,.problem-studio select:focus-visible { outline:2px solid var(--cu-accent); outline-offset:3px; }
+@media (max-width:1250px) {
+  .studio-controls { align-items:flex-start; }
+  .problem-studio .example-tiles { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .problem-studio .example-tiles>button { min-height:62px; }
+}
+@media (max-width:1000px) {
+  .problem-studio .curriculum-workbench { grid-template-columns:minmax(0,1fr); }
+  .problem-studio .trace-visual-panel,.problem-studio .trace-code-panel { height:560px; }
+  .problem-studio .trace-visual-panel { order:0; }
+  .problem-studio .trace-code-panel { order:1; }
+}
+@media (max-width:650px) {
+  .problem-navigation { gap:8px; }
+  .runtime-status { font-size:10px; }
+  .problem-studio .curriculum-heading { align-items:flex-start; gap:12px; }
+  .problem-studio .curriculum-heading p { font-size:13px; }
+  .problem-studio .example-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .studio-controls { gap:10px; }
+  .studio-controls .studio-run-toolbar { flex-wrap:wrap; }
+  .problem-studio .trace-visual-panel,.problem-studio .trace-code-panel { height:540px; }
+  .problem-studio .visual-binding label { flex-wrap:wrap; }
+  .problem-studio .problem-footer { font-size:11px; gap:12px; }
+}

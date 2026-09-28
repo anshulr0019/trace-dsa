@@ -1,0 +1,1659 @@
+{
+  "maximum-average-subarray:0": 5.5,
+  "maximum-average-subarray:1": -4.666666666666667,
+  "maximum-average-subarray:2": 9,
+  "longest-unique-substring:0": 4,
+  "longest-unique-substring:1": 6,
+  "longest-unique-substring:2": 6,
+  "character-replacement:0": 4,
+  "character-replacement:1": 5,
+  "character-replacement:2": 2,
+  "minimum-window:0": "aec",
+  "minimum-window:1": "aaa",
+  "minimum-window:2": "abdca",
+  "two-sum-sorted:0": [
+    2,
+    4
+  ],
+  "two-sum-sorted:1": [
+    3,
+    5
+  ],
+  "two-sum-sorted:2": [
+    1,
+    5
+  ],
+  "three-sum:0": [
+    [
+      -5,
+      1,
+      4
+    ],
+    [
+      -1,
+      0,
+      1
+    ]
+  ],
+  "three-sum:1": [
+    [
+      -3,
+      0,
+      3
+    ]
+  ],
+  "three-sum:2": [],
+  "container-water:0": 21,
+  "container-water:1": 36,
+  "container-water:2": 9,
+  "trapping-rain:0": 8,
+  "trapping-rain:1": 4,
+  "trapping-rain:2": 0,
+  "middle-list:0": [
+    2,
+    7,
+    3
+  ],
+  "middle-list:1": [
+    8,
+    10,
+    12,
+    14
+  ],
+  "middle-list:2": [
+    7
+  ],
+  "linked-cycle:0": true,
+  "linked-cycle:1": false,
+  "linked-cycle:2": true,
+  "duplicate-number:0": 4,
+  "duplicate-number:1": 2,
+  "duplicate-number:2": 3,
+  "cycle-entrance:0": 2,
+  "cycle-entrance:1": -1,
+  "cycle-entrance:2": 0,
+  "next-greater:0": [
+    8,
+    -1,
+    6
+  ],
+  "next-greater:1": [
+    -1,
+    -1
+  ],
+  "next-greater:2": [
+    4,
+    9
+  ],
+  "daily-temperatures:0": [
+    1,
+    2,
+    1,
+    2,
+    1,
+    0
+  ],
+  "daily-temperatures:1": [
+    2,
+    1,
+    0,
+    0
+  ],
+  "daily-temperatures:2": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "car-fleet:0": 2,
+  "car-fleet:1": 3,
+  "car-fleet:2": 1,
+  "largest-rectangle:0": 8,
+  "largest-rectangle:1": 12,
+  "largest-rectangle:2": 10,
+  "valid-parentheses:0": true,
+  "valid-parentheses:1": false,
+  "valid-parentheses:2": false,
+  "reverse-polish:0": 15,
+  "reverse-polish:1": 2,
+  "reverse-polish:2": -2,
+  "min-stack:0": [
+    null,
+    null,
+    null,
+    null,
+    2,
+    2
+  ],
+  "min-stack:1": [
+    null,
+    null,
+    null,
+    8
+  ],
+  "min-stack:2": [
+    null,
+    null,
+    null,
+    -9,
+    null,
+    0,
+    -7
+  ],
+  "calculator-ii:0": 10,
+  "calculator-ii:1": 6,
+  "calculator-ii:2": 15,
+  "merge-intervals:0": [
+    [
+      2,
+      7
+    ],
+    [
+      9,
+      11
+    ]
+  ],
+  "merge-intervals:1": [
+    [
+      1,
+      9
+    ]
+  ],
+  "merge-intervals:2": [
+    [
+      1,
+      4
+    ],
+    [
+      6,
+      7
+    ]
+  ],
+  "insert-interval:0": [
+    [
+      1,
+      2
+    ],
+    [
+      3,
+      7
+    ],
+    [
+      10,
+      12
+    ]
+  ],
+  "insert-interval:1": [
+    [
+      1,
+      12
+    ]
+  ],
+  "insert-interval:2": [
+    [
+      1,
+      3
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      7,
+      9
+    ]
+  ],
+  "meeting-rooms:0": 2,
+  "meeting-rooms:1": 1,
+  "meeting-rooms:2": 4,
+  "burst-balloons-arrows:0": 2,
+  "burst-balloons-arrows:1": 2,
+  "burst-balloons-arrows:2": 1,
+  "reverse-list:0": [
+    1,
+    9,
+    3,
+    8
+  ],
+  "reverse-list:1": [
+    6,
+    2,
+    6,
+    6
+  ],
+  "reverse-list:2": [
+    4,
+    11
+  ],
+  "reorder-list:0": [
+    8,
+    4,
+    3,
+    6,
+    9,
+    1
+  ],
+  "reorder-list:1": [
+    9,
+    6,
+    2,
+    4,
+    7
+  ],
+  "reorder-list:2": [
+    7,
+    9,
+    8
+  ],
+  "copy-random-list:0": [
+    [
+      4,
+      2
+    ],
+    [
+      8,
+      0
+    ],
+    [
+      2,
+      1
+    ]
+  ],
+  "copy-random-list:1": [
+    [
+      9,
+      1
+    ],
+    [
+      9,
+      0
+    ]
+  ],
+  "copy-random-list:2": [
+    [
+      6,
+      null
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      7,
+      0
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "reverse-k-group:0": [
+    9,
+    3,
+    8,
+    4,
+    6,
+    1,
+    2
+  ],
+  "reverse-k-group:1": [
+    4,
+    7,
+    2,
+    9
+  ],
+  "reverse-k-group:2": [
+    8,
+    7,
+    10,
+    9,
+    11
+  ],
+  "binary-search-standard:0": 3,
+  "binary-search-standard:1": -1,
+  "binary-search-standard:2": 0,
+  "search-matrix:0": true,
+  "search-matrix:1": false,
+  "search-matrix:2": true,
+  "koko-bananas:0": 5,
+  "koko-bananas:1": 19,
+  "koko-bananas:2": 1,
+  "median-sorted-arrays:0": 5,
+  "median-sorted-arrays:1": 3.5,
+  "median-sorted-arrays:2": 6,
+  "minimum-rotated:0": 2,
+  "minimum-rotated:1": -6,
+  "minimum-rotated:2": -7,
+  "search-rotated:0": 3,
+  "search-rotated:1": -1,
+  "search-rotated:2": 0,
+  "search-rotated-duplicates:0": true,
+  "search-rotated-duplicates:1": false,
+  "search-rotated-duplicates:2": true,
+  "mountain-array:0": 1,
+  "mountain-array:1": 3,
+  "mountain-array:2": -1,
+  "level-order:0": [
+    [
+      8
+    ],
+    [
+      3,
+      10
+    ],
+    [
+      1,
+      6,
+      14
+    ]
+  ],
+  "level-order:1": [
+    [
+      5
+    ],
+    [
+      7
+    ],
+    [
+      9
+    ]
+  ],
+  "level-order:2": [
+    [
+      9
+    ],
+    [
+      4,
+      12
+    ],
+    [
+      6
+    ]
+  ],
+  "right-side-view:0": [
+    8,
+    10,
+    14
+  ],
+  "right-side-view:1": [
+    5,
+    7,
+    9
+  ],
+  "right-side-view:2": [
+    9,
+    12,
+    6
+  ],
+  "next-right-pointers:0": [
+    [
+      8,
+      null
+    ],
+    [
+      3,
+      10
+    ],
+    [
+      10,
+      null
+    ],
+    [
+      1,
+      6
+    ],
+    [
+      6,
+      9
+    ],
+    [
+      9,
+      14
+    ],
+    [
+      14,
+      null
+    ]
+  ],
+  "next-right-pointers:1": [
+    [
+      5,
+      null
+    ],
+    [
+      7,
+      9
+    ],
+    [
+      9,
+      null
+    ]
+  ],
+  "next-right-pointers:2": [
+    [
+      11,
+      null
+    ],
+    [
+      4,
+      16
+    ],
+    [
+      16,
+      null
+    ],
+    [
+      2,
+      6
+    ],
+    [
+      6,
+      13
+    ],
+    [
+      13,
+      18
+    ],
+    [
+      18,
+      null
+    ]
+  ],
+  "word-ladder:0": 4,
+  "word-ladder:1": 4,
+  "word-ladder:2": 5,
+  "maximum-depth:0": 3,
+  "maximum-depth:1": 4,
+  "maximum-depth:2": 3,
+  "lowest-common-ancestor:0": 3,
+  "lowest-common-ancestor:1": 2,
+  "lowest-common-ancestor:2": 9,
+  "tree-diameter:0": 4,
+  "tree-diameter:1": 3,
+  "tree-diameter:2": 3,
+  "maximum-path-sum:0": 35,
+  "maximum-path-sum:1": -1,
+  "maximum-path-sum:2": 20,
+  "implement-trie:0": [
+    null,
+    false,
+    true,
+    null,
+    true
+  ],
+  "implement-trie:1": [
+    null,
+    null,
+    false,
+    true
+  ],
+  "implement-trie:2": [
+    null,
+    null,
+    false,
+    true
+  ],
+  "word-dictionary:0": [
+    null,
+    true,
+    false
+  ],
+  "word-dictionary:1": [
+    null,
+    null,
+    true,
+    false
+  ],
+  "word-dictionary:2": [
+    null,
+    null,
+    true,
+    false
+  ],
+  "replace-words:0": "a cat a",
+  "replace-words:1": "do run do",
+  "replace-words:2": "sun moon star",
+  "word-search-ii:0": [
+    "art",
+    "car",
+    "cart"
+  ],
+  "word-search-ii:1": [
+    "ab",
+    "aba"
+  ],
+  "word-search-ii:2": [],
+  "missing-number:0": 3,
+  "missing-number:1": 6,
+  "missing-number:2": 0,
+  "disappeared-numbers:0": [
+    1,
+    5
+  ],
+  "disappeared-numbers:1": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "disappeared-numbers:2": [],
+  "set-mismatch:0": [
+    5,
+    4
+  ],
+  "set-mismatch:1": [
+    2,
+    1
+  ],
+  "set-mismatch:2": [
+    4,
+    5
+  ],
+  "first-missing-positive:0": 3,
+  "first-missing-positive:1": 1,
+  "first-missing-positive:2": 7,
+  "number-islands:0": 3,
+  "number-islands:1": 5,
+  "number-islands:2": 1,
+  "max-island-area:0": 3,
+  "max-island-area:1": 1,
+  "max-island-area:2": 5,
+  "rotting-oranges:0": 2,
+  "rotting-oranges:1": -1,
+  "rotting-oranges:2": 3,
+  "pacific-atlantic:0": [
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "pacific-atlantic:1": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "pacific-atlantic:2": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      1,
+      0
+    ]
+  ],
+  "course-schedule:0": true,
+  "course-schedule:1": false,
+  "course-schedule:2": true,
+  "course-order:0": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "course-order:1": [],
+  "course-order:2": [
+    0,
+    1,
+    3,
+    4,
+    2,
+    5
+  ],
+  "build-matrix:0": [
+    [
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      2,
+      0
+    ],
+    [
+      3,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      4,
+      0,
+      0
+    ]
+  ],
+  "build-matrix:1": [],
+  "build-matrix:2": [
+    [
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      3,
+      0
+    ],
+    [
+      0,
+      4,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      2
+    ]
+  ],
+  "alien-dictionary:0": "azbc",
+  "alien-dictionary:1": "",
+  "alien-dictionary:2": "bdac",
+  "connected-components:0": 3,
+  "connected-components:1": 4,
+  "connected-components:2": 1,
+  "redundant-connection:0": [
+    1,
+    4
+  ],
+  "redundant-connection:1": [
+    4,
+    2
+  ],
+  "redundant-connection:2": [
+    4,
+    1
+  ],
+  "accounts-merge:0": [
+    [
+      "Ada",
+      "a@x",
+      "b@x",
+      "d@x"
+    ],
+    [
+      "Ada",
+      "c@x"
+    ]
+  ],
+  "accounts-merge:1": [
+    [
+      "Sam",
+      "a@x"
+    ],
+    [
+      "Sam",
+      "b@x"
+    ]
+  ],
+  "accounts-merge:2": [
+    [
+      "Lee",
+      "a@x",
+      "b@x",
+      "c@x",
+      "d@x"
+    ]
+  ],
+  "islands-ii:0": [
+    1,
+    2,
+    1,
+    2
+  ],
+  "islands-ii:1": [
+    1,
+    1,
+    2,
+    2,
+    1
+  ],
+  "islands-ii:2": [
+    1,
+    2,
+    2,
+    1
+  ],
+  "network-delay:0": 4,
+  "network-delay:1": -1,
+  "network-delay:2": 7,
+  "maximum-probability:0": 0.48,
+  "maximum-probability:1": 0,
+  "maximum-probability:2": 0.81,
+  "cheapest-flights:0": 120,
+  "cheapest-flights:1": 200,
+  "cheapest-flights:2": -1,
+  "swim-water:0": 8,
+  "swim-water:1": 3,
+  "swim-water:2": 4,
+  "kth-largest:0": 7,
+  "kth-largest:1": 5,
+  "kth-largest:2": -8,
+  "top-k-frequent:0": [
+    4,
+    7
+  ],
+  "top-k-frequent:1": [
+    8,
+    5
+  ],
+  "top-k-frequent:2": [
+    -1
+  ],
+  "task-scheduler:0": 10,
+  "task-scheduler:1": 5,
+  "task-scheduler:2": 5,
+  "median-stream:0": [
+    8,
+    5,
+    7,
+    5.5,
+    7
+  ],
+  "median-stream:1": [
+    -5,
+    -7,
+    -5,
+    -2.5
+  ],
+  "median-stream:2": [
+    4,
+    4,
+    4,
+    4,
+    4,
+    4
+  ],
+  "subsets:0": [
+    [],
+    [
+      3
+    ],
+    [
+      3,
+      7
+    ],
+    [
+      3,
+      7,
+      9
+    ],
+    [
+      3,
+      9
+    ],
+    [
+      7
+    ],
+    [
+      7,
+      9
+    ],
+    [
+      9
+    ]
+  ],
+  "subsets:1": [
+    [],
+    [
+      -2
+    ],
+    [
+      -2,
+      0
+    ],
+    [
+      -2,
+      0,
+      4
+    ],
+    [
+      -2,
+      4
+    ],
+    [
+      0
+    ],
+    [
+      0,
+      4
+    ],
+    [
+      4
+    ]
+  ],
+  "subsets:2": [
+    [],
+    [
+      5
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      5,
+      6,
+      8
+    ],
+    [
+      5,
+      6,
+      8,
+      10
+    ],
+    [
+      5,
+      6,
+      10
+    ],
+    [
+      5,
+      8
+    ],
+    [
+      5,
+      8,
+      10
+    ],
+    [
+      5,
+      10
+    ],
+    [
+      6
+    ],
+    [
+      6,
+      8
+    ],
+    [
+      6,
+      8,
+      10
+    ],
+    [
+      6,
+      10
+    ],
+    [
+      8
+    ],
+    [
+      8,
+      10
+    ],
+    [
+      10
+    ]
+  ],
+  "combination-sum:0": [
+    [
+      3,
+      3,
+      3,
+      3
+    ],
+    [
+      4,
+      4,
+      4
+    ],
+    [
+      4,
+      8
+    ]
+  ],
+  "combination-sum:1": [],
+  "combination-sum:2": [
+    [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    [
+      5,
+      5
+    ]
+  ],
+  "phone-letters:0": [
+    "gm",
+    "gn",
+    "go",
+    "hm",
+    "hn",
+    "ho",
+    "im",
+    "in",
+    "io"
+  ],
+  "phone-letters:1": [
+    "pt",
+    "pu",
+    "pv",
+    "qt",
+    "qu",
+    "qv",
+    "rt",
+    "ru",
+    "rv",
+    "st",
+    "su",
+    "sv"
+  ],
+  "phone-letters:2": [
+    "awa",
+    "awb",
+    "awc",
+    "axa",
+    "axb",
+    "axc",
+    "aya",
+    "ayb",
+    "ayc",
+    "aza",
+    "azb",
+    "azc",
+    "bwa",
+    "bwb",
+    "bwc",
+    "bxa",
+    "bxb",
+    "bxc",
+    "bya",
+    "byb",
+    "byc",
+    "bza",
+    "bzb",
+    "bzc",
+    "cwa",
+    "cwb",
+    "cwc",
+    "cxa",
+    "cxb",
+    "cxc",
+    "cya",
+    "cyb",
+    "cyc",
+    "cza",
+    "czb",
+    "czc"
+  ],
+  "n-queens:0": [
+    [
+      "Q....",
+      "..Q..",
+      "....Q",
+      ".Q...",
+      "...Q."
+    ],
+    [
+      "Q....",
+      "...Q.",
+      ".Q...",
+      "....Q",
+      "..Q.."
+    ],
+    [
+      ".Q...",
+      "...Q.",
+      "Q....",
+      "..Q..",
+      "....Q"
+    ],
+    [
+      ".Q...",
+      "....Q",
+      "..Q..",
+      "Q....",
+      "...Q."
+    ],
+    [
+      "..Q..",
+      "Q....",
+      "...Q.",
+      ".Q...",
+      "....Q"
+    ],
+    [
+      "..Q..",
+      "....Q",
+      ".Q...",
+      "...Q.",
+      "Q...."
+    ],
+    [
+      "...Q.",
+      "Q....",
+      "..Q..",
+      "....Q",
+      ".Q..."
+    ],
+    [
+      "...Q.",
+      ".Q...",
+      "....Q",
+      "..Q..",
+      "Q...."
+    ],
+    [
+      "....Q",
+      ".Q...",
+      "...Q.",
+      "Q....",
+      "..Q.."
+    ],
+    [
+      "....Q",
+      "..Q..",
+      "Q....",
+      "...Q.",
+      ".Q..."
+    ]
+  ],
+  "n-queens:1": [
+    [
+      ".Q....",
+      "...Q..",
+      ".....Q",
+      "Q.....",
+      "..Q...",
+      "....Q."
+    ],
+    [
+      "..Q...",
+      ".....Q",
+      ".Q....",
+      "....Q.",
+      "Q.....",
+      "...Q.."
+    ],
+    [
+      "...Q..",
+      "Q.....",
+      "....Q.",
+      ".Q....",
+      ".....Q",
+      "..Q..."
+    ],
+    [
+      "....Q.",
+      "..Q...",
+      "Q.....",
+      ".....Q",
+      "...Q..",
+      ".Q...."
+    ]
+  ],
+  "n-queens:2": [
+    [
+      "Q......",
+      "..Q....",
+      "....Q..",
+      "......Q",
+      ".Q.....",
+      "...Q...",
+      ".....Q."
+    ],
+    [
+      "Q......",
+      "...Q...",
+      "......Q",
+      "..Q....",
+      ".....Q.",
+      ".Q.....",
+      "....Q.."
+    ],
+    [
+      "Q......",
+      "....Q..",
+      ".Q.....",
+      ".....Q.",
+      "..Q....",
+      "......Q",
+      "...Q..."
+    ],
+    [
+      "Q......",
+      ".....Q.",
+      "...Q...",
+      ".Q.....",
+      "......Q",
+      "....Q..",
+      "..Q...."
+    ],
+    [
+      ".Q.....",
+      "...Q...",
+      "Q......",
+      "......Q",
+      "....Q..",
+      "..Q....",
+      ".....Q."
+    ],
+    [
+      ".Q.....",
+      "...Q...",
+      ".....Q.",
+      "Q......",
+      "..Q....",
+      "....Q..",
+      "......Q"
+    ],
+    [
+      ".Q.....",
+      "....Q..",
+      "Q......",
+      "...Q...",
+      "......Q",
+      "..Q....",
+      ".....Q."
+    ],
+    [
+      ".Q.....",
+      "....Q..",
+      "..Q....",
+      "Q......",
+      "......Q",
+      "...Q...",
+      ".....Q."
+    ],
+    [
+      ".Q.....",
+      "....Q..",
+      "......Q",
+      "...Q...",
+      "Q......",
+      "..Q....",
+      ".....Q."
+    ],
+    [
+      ".Q.....",
+      ".....Q.",
+      "..Q....",
+      "......Q",
+      "...Q...",
+      "Q......",
+      "....Q.."
+    ],
+    [
+      ".Q.....",
+      "......Q",
+      "....Q..",
+      "..Q....",
+      "Q......",
+      ".....Q.",
+      "...Q..."
+    ],
+    [
+      "..Q....",
+      "Q......",
+      ".....Q.",
+      ".Q.....",
+      "....Q..",
+      "......Q",
+      "...Q..."
+    ],
+    [
+      "..Q....",
+      "Q......",
+      ".....Q.",
+      "...Q...",
+      ".Q.....",
+      "......Q",
+      "....Q.."
+    ],
+    [
+      "..Q....",
+      "....Q..",
+      "......Q",
+      ".Q.....",
+      "...Q...",
+      ".....Q.",
+      "Q......"
+    ],
+    [
+      "..Q....",
+      ".....Q.",
+      ".Q.....",
+      "....Q..",
+      "Q......",
+      "...Q...",
+      "......Q"
+    ],
+    [
+      "..Q....",
+      "......Q",
+      ".Q.....",
+      "...Q...",
+      ".....Q.",
+      "Q......",
+      "....Q.."
+    ],
+    [
+      "..Q....",
+      "......Q",
+      "...Q...",
+      "Q......",
+      "....Q..",
+      ".Q.....",
+      ".....Q."
+    ],
+    [
+      "...Q...",
+      "Q......",
+      "..Q....",
+      ".....Q.",
+      ".Q.....",
+      "......Q",
+      "....Q.."
+    ],
+    [
+      "...Q...",
+      "Q......",
+      "....Q..",
+      ".Q.....",
+      ".....Q.",
+      "..Q....",
+      "......Q"
+    ],
+    [
+      "...Q...",
+      ".Q.....",
+      "......Q",
+      "....Q..",
+      "..Q....",
+      "Q......",
+      ".....Q."
+    ],
+    [
+      "...Q...",
+      ".....Q.",
+      "Q......",
+      "..Q....",
+      "....Q..",
+      "......Q",
+      ".Q....."
+    ],
+    [
+      "...Q...",
+      "......Q",
+      "..Q....",
+      ".....Q.",
+      ".Q.....",
+      "....Q..",
+      "Q......"
+    ],
+    [
+      "...Q...",
+      "......Q",
+      "....Q..",
+      ".Q.....",
+      ".....Q.",
+      "Q......",
+      "..Q...."
+    ],
+    [
+      "....Q..",
+      "Q......",
+      "...Q...",
+      "......Q",
+      "..Q....",
+      ".....Q.",
+      ".Q....."
+    ],
+    [
+      "....Q..",
+      "Q......",
+      ".....Q.",
+      "...Q...",
+      ".Q.....",
+      "......Q",
+      "..Q...."
+    ],
+    [
+      "....Q..",
+      ".Q.....",
+      ".....Q.",
+      "..Q....",
+      "......Q",
+      "...Q...",
+      "Q......"
+    ],
+    [
+      "....Q..",
+      "..Q....",
+      "Q......",
+      ".....Q.",
+      "...Q...",
+      ".Q.....",
+      "......Q"
+    ],
+    [
+      "....Q..",
+      "......Q",
+      ".Q.....",
+      "...Q...",
+      ".....Q.",
+      "Q......",
+      "..Q...."
+    ],
+    [
+      "....Q..",
+      "......Q",
+      ".Q.....",
+      ".....Q.",
+      "..Q....",
+      "Q......",
+      "...Q..."
+    ],
+    [
+      ".....Q.",
+      "Q......",
+      "..Q....",
+      "....Q..",
+      "......Q",
+      ".Q.....",
+      "...Q..."
+    ],
+    [
+      ".....Q.",
+      ".Q.....",
+      "....Q..",
+      "Q......",
+      "...Q...",
+      "......Q",
+      "..Q...."
+    ],
+    [
+      ".....Q.",
+      "..Q....",
+      "Q......",
+      "...Q...",
+      "......Q",
+      "....Q..",
+      ".Q....."
+    ],
+    [
+      ".....Q.",
+      "..Q....",
+      "....Q..",
+      "......Q",
+      "Q......",
+      "...Q...",
+      ".Q....."
+    ],
+    [
+      ".....Q.",
+      "..Q....",
+      "......Q",
+      "...Q...",
+      "Q......",
+      "....Q..",
+      ".Q....."
+    ],
+    [
+      ".....Q.",
+      "...Q...",
+      ".Q.....",
+      "......Q",
+      "....Q..",
+      "..Q....",
+      "Q......"
+    ],
+    [
+      ".....Q.",
+      "...Q...",
+      "......Q",
+      "Q......",
+      "..Q....",
+      "....Q..",
+      ".Q....."
+    ],
+    [
+      "......Q",
+      ".Q.....",
+      "...Q...",
+      ".....Q.",
+      "Q......",
+      "..Q....",
+      "....Q.."
+    ],
+    [
+      "......Q",
+      "..Q....",
+      ".....Q.",
+      ".Q.....",
+      "....Q..",
+      "Q......",
+      "...Q..."
+    ],
+    [
+      "......Q",
+      "...Q...",
+      "Q......",
+      "....Q..",
+      ".Q.....",
+      ".....Q.",
+      "..Q...."
+    ],
+    [
+      "......Q",
+      "....Q..",
+      "..Q....",
+      "Q......",
+      ".....Q.",
+      "...Q...",
+      ".Q....."
+    ]
+  ],
+  "climbing-stairs:0": 34,
+  "climbing-stairs:1": 144,
+  "climbing-stairs:2": 1597,
+  "house-robber:0": 24,
+  "house-robber:1": 15,
+  "house-robber:2": 18,
+  "palindromic-substrings:0": 12,
+  "palindromic-substrings:1": 7,
+  "palindromic-substrings:2": 9,
+  "decode-ways:0": 3,
+  "decode-ways:1": 0,
+  "decode-ways:2": 2,
+  "unique-paths:0": 35,
+  "unique-paths:1": 9,
+  "unique-paths:2": 252,
+  "longest-common-subsequence:0": 3,
+  "longest-common-subsequence:1": 5,
+  "longest-common-subsequence:2": 3,
+  "edit-distance:0": 1,
+  "edit-distance:1": 1,
+  "edit-distance:2": 3,
+  "burst-balloons-dp:0": 33,
+  "burst-balloons-dp:1": 60,
+  "burst-balloons-dp:2": 28,
+  "coin-change:0": 3,
+  "coin-change:1": -1,
+  "coin-change:2": 2,
+  "target-sum:0": 2,
+  "target-sum:1": 4,
+  "target-sum:2": 6,
+  "stock-cooldown:0": 6,
+  "stock-cooldown:1": 0,
+  "stock-cooldown:2": 10,
+  "regex-matching:0": true,
+  "regex-matching:1": false,
+  "regex-matching:2": true,
+  "jump-game:0": true,
+  "jump-game:1": false,
+  "jump-game:2": true,
+  "jump-game-ii:0": 2,
+  "jump-game-ii:1": -1,
+  "jump-game-ii:2": 2,
+  "gas-station:0": 2,
+  "gas-station:1": -1,
+  "gas-station:2": 3,
+  "candy:0": 11,
+  "candy:1": 9,
+  "candy:2": 21,
+  "single-number:0": 4,
+  "single-number:1": -5,
+  "single-number:2": 6,
+  "counting-bits:0": [
+    0,
+    1,
+    1,
+    2,
+    1,
+    2,
+    2,
+    3,
+    1,
+    2,
+    2,
+    3,
+    2,
+    3
+  ],
+  "counting-bits:1": [
+    0,
+    1,
+    1,
+    2,
+    1,
+    2,
+    2,
+    3,
+    1,
+    2,
+    2,
+    3,
+    2,
+    3,
+    3,
+    4,
+    1,
+    2,
+    2,
+    3
+  ],
+  "counting-bits:2": [
+    0,
+    1,
+    1,
+    2,
+    1,
+    2,
+    2,
+    3,
+    1,
+    2,
+    2,
+    3,
+    2,
+    3,
+    3,
+    4,
+    1,
+    2,
+    2,
+    3,
+    2,
+    3,
+    3,
+    4,
+    2,
+    3,
+    3,
+    4,
+    3,
+    4,
+    4,
+    5
+  ],
+  "reverse-bits:0": 2952790016,
+  "reverse-bits:1": 3221225473,
+  "reverse-bits:2": 510274632,
+  "sum-two-integers:0": -8,
+  "sum-two-integers:1": -2147483648,
+  "sum-two-integers:2": -21,
+  "strstr:0": 4,
+  "strstr:1": 4,
+  "strstr:2": -1,
+  "repeated-dna:0": [
+    "TGCATGCATG"
+  ],
+  "repeated-dna:1": [
+    "CCCCCCCCCC"
+  ],
+  "repeated-dna:2": [
+    "ACGTACGTAC",
+    "CGTACGTACG",
+    "GTACGTACGT",
+    "TACGTACGTA"
+  ],
+  "happy-prefix:0": "abcab",
+  "happy-prefix:1": "aaaaa",
+  "happy-prefix:2": "",
+  "shortest-palindrome:0": "dcabbacd",
+  "shortest-palindrome:1": "zyxracecarxyz",
+  "shortest-palindrome:2": "bacbabcab"
+}
