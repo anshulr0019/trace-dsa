@@ -1,0 +1,13 @@
+"use client";
+import {useEffect,useState} from 'react';
+import {createPortal} from 'react-dom';
+import {Play,Pause,SkipBack,SkipForward,RotateCcw} from 'lucide-react';
+import {useSidebar} from '@/components/ui/sidebar';
+import {Slider} from '@/components/ui/slider';
+export function RoadmapDock({count,step,playing,speed,disabled,onToggle,onSeek,onSpeed}:{count:number;step:number;playing:boolean;speed:number;disabled:boolean;onToggle:()=>void;onSeek:(step:number)=>void;onSpeed:(speed:number)=>void}){
+ const {open,isMobile}=useSidebar(),[mounted,setMounted]=useState(false);
+ useEffect(()=>setMounted(true),[]);
+ useEffect(()=>{const key=(event:KeyboardEvent)=>{const target=event.target as HTMLElement;if(event.altKey||event.metaKey||event.ctrlKey||event.shiftKey||target.closest('input,textarea,select,button,[contenteditable=true],[role=slider],[role=tab]'))return;if(disabled)return;if(event.code==='Space'){event.preventDefault();onToggle();}else if(count&&['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();onSeek(Math.max(0,Math.min(count-1,step+(event.key==='ArrowLeft'?-1:1))));}};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);},[count,step,disabled,onToggle,onSeek]);
+ if(!mounted)return null;
+ return createPortal(<div className="floating-playback roadmap-dock" role="region" aria-label="Playback controls" style={{left:isMobile?16:open?270:32,right:isMobile?16:32}}><div className="dock-transport"><button className="icon-button" aria-label="First frame" disabled={disabled||!step} onClick={()=>onSeek(0)}><RotateCcw size={16}/></button><button className="icon-button" aria-label="Previous frame" disabled={disabled||!step} onClick={()=>onSeek(step-1)}><SkipBack size={17}/></button><button className="dock-play" aria-label={playing?'Pause trace':'Play trace'} disabled={disabled} onClick={onToggle}>{playing?<Pause size={18}/>:<Play size={18}/>}<span>{playing?'Pause':'Play'}</span></button><button className="icon-button" aria-label="Next frame" disabled={disabled||!count||step>=count-1} onClick={()=>onSeek(step+1)}><SkipForward size={17}/></button></div><div className="dock-timeline"><div><span>EXECUTION</span><span>{count?step+1:0} / {count}</span></div><Slider aria-label="Trace position" min={0} max={Math.max(1,count-1)} value={[step]} step={1} disabled={disabled||count<2} onValueChange={([n])=>onSeek(n)}/></div><select className="dock-speed" aria-label="Playback speed" value={speed} onChange={e=>onSpeed(Number(e.target.value))}>{[.5,1,1.5,2,4].map(n=><option key={n} value={n}>{n}× speed</option>)}</select></div>,document.body);
+}

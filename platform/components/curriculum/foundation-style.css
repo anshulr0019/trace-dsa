@@ -1,0 +1,46 @@
+/* Reference: foundation MotionStage, Workbench, insight cards and floating dock. */
+.roadmap-foundation { --cu-accent:#c6f39d; --mint:#c6f39d; }
+.roadmap-foundation .trace-visual-panel,.roadmap-foundation .trace-code-panel { border-radius:16px; border:1px solid #ffffff16; background:#131c21; min-height:0; overflow:hidden; }
+.roadmap-foundation .trace-visual-panel { height:100%; }
+.roadmap-foundation .trace-visual-panel>header,.roadmap-foundation .trace-code-panel>header { height:52px; background:#172125; border-bottom:1px solid #ffffff10; font-size:12px; padding:14px 20px; }
+.roadmap-foundation .trace-visual-body { overflow:visible; }
+.roadmap-foundation .trace-visual-body>.live-scene { padding:0; min-height:320px; max-height:none; overflow:visible; }
+.roadmap-foundation .scene-caption { padding:18px 20px 0; margin:0; color:#93a4aa; }
+.roadmap-foundation .visual-binding { border-bottom:1px solid #ffffff0b; padding:12px 20px; }
+.roadmap-foundation .roadmap-array { min-width:0; padding-top:8px; }
+.roadmap-foundation .motion-scroll { max-width:100%; }
+.roadmap-foundation .motion-tile { padding:0; }
+.roadmap-foundation .motion-tile>span { max-width:48px; font-size:17px; overflow:hidden; }
+.roadmap-foundation .roadmap-cell-cue { position:absolute; top:94px; font:11px var(--font-mono); white-space:nowrap; }
+.roadmap-foundation .roadmap-marked { border-color:#a2cba1; }
+.roadmap-foundation .step-story { min-height:145px; padding:22px 24px; background:#19261f; border-top:1px solid #b9f58b16; font-size:13px; }
+.roadmap-foundation .step-story-summary { font-size:15px; line-height:1.75; color:#aebeb4; }
+.roadmap-foundation .step-story strong { font-size:15px; color:#c8dfba; }
+.roadmap-foundation .step-story code { white-space:pre-wrap; overflow-wrap:anywhere; }
+.roadmap-foundation .step-story dl { font-size:12px; }
+.roadmap-foundation .trace-code-panel>.curriculum-editor { height:360px; flex:none; }
+.roadmap-foundation .scalar-state { background:#131c21; border-top:1px solid #ffffff0c; padding:16px; gap:8px; }
+.roadmap-foundation .scalar-state>div { background:#1d282d; border:1px solid #ffffff09; border-radius:5px; padding:7px 10px; display:flex; gap:10px; }
+.roadmap-foundation .scalar-state strong { font-size:12px; }
+.roadmap-foundation .editor-actions { background:#172125; }
+.roadmap-foundation .run-code { background:#c6f39d; color:#203015; border-radius:7px; }
+.roadmap-foundation .roadmap-insights { margin:20px 0; }
+.roadmap-foundation .insight-card p { font-size:15px; line-height:1.8; }
+.roadmap-foundation .insight-card { padding:22px; }
+.roadmap-foundation .complexity-card { padding:22px; font-size:14px; line-height:1.8; }
+.roadmap-foundation .complexity-card p { margin:18px 0; color:#bfcec3; }
+.roadmap-foundation .complexity-card small { font-size:11px; color:#8c9e94; }
+.roadmap-foundation .trace-matrix,.roadmap-foundation .network-scroll,.roadmap-foundation .interval-plot,.roadmap-foundation .bit-row,.roadmap-foundation .map-state { overflow:auto; max-width:100%; padding:20px; }
+.roadmap-foundation .trace-matrix>div>span { border-radius:8px; background:linear-gradient(145deg,#263238,#1a252b); border-color:#415047; min-width:44px; min-height:44px; transition:background .25s,border-color .25s; }
+.roadmap-foundation .trace-matrix>div>span.current,.roadmap-foundation .trace-matrix>div>span.changed { background:#345039; border-color:#b9f58b; }
+.roadmap-foundation .network-scroll svg { max-height:500px; margin:auto; }
+.roadmap-foundation .vertical-stack { padding:24px; }
+.roadmap-foundation .vertical-stack>div { border-radius:8px; background:linear-gradient(145deg,#263238,#1a252b); border-color:#415047; }
+.roadmap-dock select { border:1px solid #ffffff17; border-radius:7px; padding:7px; color:#cadacb; }
+.roadmap-foundation .roadmap-mobile-insights { display:grid; gap:14px; }
+@media(max-width:1000px) { .roadmap-foundation .trace-visual-panel {height:auto;} .roadmap-foundation .trace-visual-body>.live-scene {min-height:300px;} }
+@media(max-width:650px) { .roadmap-foundation .step-story {padding:18px;} .roadmap-foundation .step-story dl {grid-template-columns:1fr;} .roadmap-foundation .example-tiles {grid-template-columns:repeat(2,minmax(0,1fr));} }
+.roadmap-foundation .motion-tile.eliminated-tile { opacity:.28; }
+.roadmap-foundation .complexity-card>p { display:block; }
+.roadmap-foundation .trace-code-panel>.curriculum-editor { height:300px; }
+.roadmap-foundation .trace-visual-body>.live-scene { flex:1; min-height:280px; }

@@ -1,5 +1,6 @@
 "use client";
 import {motion,AnimatePresence,useReducedMotion,MotionConfig} from "motion/react";
+import {ArrayStage} from "./array-stage";
 import type {ConceptCue} from "@/lib/curriculum/concept-cues";
 import {createContext,useContext} from 'react';
 import type {Problem} from "@/lib/curriculum/catalog";
@@ -10,19 +11,11 @@ const arr=(v:unknown):unknown[]=>Array.isArray(v)?v:[];
 const obj=(v:unknown):Record<string,unknown>=>v&&typeof v==="object"&&!Array.isArray(v)?v as Record<string,unknown>:{};
 const simple=(v:unknown)=>v===null||["number","string","boolean"].includes(typeof v);
 const pointerNames=["left","right","mid","i","j","slow","fast","current","previous","following","start","end"];
-function Cells({name,values,state,previous,cue}:{name:string;values:unknown[];state:Record<string,unknown>;previous?:unknown[];cue?:ConceptCue}){
- const reduced=useReducedMotion();
+function Cells({name,values,state,previous,cue,range,found}:{name:string;values:unknown[];state:Record<string,unknown>;previous?:unknown[];cue?:ConceptCue;range?:[number,number];found?:number[]}){
  const duration=useContext(SceneTiming);
- const left=state.left,right=state.right;
- const bounded=Number.isInteger(left)&&Number.isInteger(right)&&Number(left)>=0&&Number(right)<values.length&&Number(left)<=Number(right);
- const occurrences=new Map<string,number>();
- return <div className="state-collection"><label>{name}<span>{values.length} items</span></label><div className="trace-cells">{values.slice(0,100).map((value,index)=>{
-  const identity=display(value), occurrence=occurrences.get(identity)??0;occurrences.set(identity,occurrence+1);
-  const pointers=pointerNames.filter(key=>state[key]===index);
-  const changed=previous!==undefined&&display(previous[index])!==display(value);
-  return <motion.div layout={!reduced} transition={{duration:reduced?0:duration,ease:[.22,1,.36,1]}} key={`${identity}:${occurrence}`} animate={{opacity:bounded&&(index<Number(left)||index>Number(right))?.45:1}} className={`trace-cell ${cue?.marks[index]?"concept-marked":""} ${cue?.marks[index]=== "leaves"?"concept-leaves":""} ${cue?.marks[index]=== "enters"?"concept-enters":""} ${pointers.length?"pointed":""} ${changed?"changed":""} ${bounded&&index>=Number(left)&&index<=Number(right)?'in-active-range':''}`}><small>{index}</small>{cue?.marks[index]&&<span className="concept-cell-label">{cue.marks[index]}</span>}<motion.strong key={display(value)} initial={reduced?false:{opacity:.4,y:5}} animate={{opacity:1,y:0}}>{display(value)}</motion.strong><span className="marker-lane">{pointers.map(pointer=><motion.em layoutId={`${name}-pointer-${pointer}`} key={pointer} transition={{duration:reduced?0:duration}}>{pointer}</motion.em>)}</span></motion.div>;
- })}</div>{bounded&&<div className="active-range-label">Recorded range: left {String(left)} → right {String(right)}</div>}{values.length>100&&<small>Showing first 100 items.</small>}</div>;
+ return <ArrayStage name={name} values={values} state={state} previous={previous} cue={cue} duration={duration} range={range} found={found}/>;
 }
+
 function Matrix({name,values,state,previous}:{name:string;values:unknown[][];state:Record<string,unknown>;previous:unknown[][]}){
  const row=state.row??state.r??state.i, col=state.col??state.c??state.j;
  const visited=arr(state.visited).map(display);
@@ -90,17 +83,25 @@ function SceneContent({problem,frame,previous,input,language="python",binding,cu
  const state=frame?.vars??{}, old=previous?.vars??{};
  const collections=Object.entries(state).filter(([k,v])=>k!=="data"&&Array.isArray(v));
  const structures=["linked","tree","graph","trie"].includes(problem.scene);
- const mainKeys=["nums","s","haystack","needle","height","heights","temperatures","grid","matrix","board","dp","intervals","points","ratings","gas","prices","piles","tokens"];
+ const mainKeys=["nums1","nums2","nums","s","haystack","needle","height","heights","temperatures","grid","matrix","board","dp","intervals","points","ratings","gas","prices","piles","tokens"];
  const source={...input,...state};
  const chosen=Object.entries(source).filter(([k,v])=>mainKeys.includes(k)&&(Array.isArray(v)||typeof v==="string"));
  const names=new Set(chosen.map(([k])=>k));
- const secondary=collections.filter(([k])=>!names.has(k)&&!["nodes","left_child","right_child","links","graph","queue"].includes(k));
+ const secondary=collections.filter(([k])=>!names.has(k)&&!["nodes","left_child","right_child","links","graph","queue","tree"].includes(k));
  const render=(name:string,value:unknown)=>{
   const raw=typeof value==="string"?Array.from(value):arr(value);
   const values=name==="board"&&raw.every(v=>typeof v==="string")?raw.map(v=>Array.from(v as string)):raw;
-  return values.length&&values.every(Array.isArray)?<Matrix key={name} name={name} values={values as unknown[][]} state={state} previous={arr(old[name]) as unknown[][]}/>:<Cells cue={name==="nums"?cue:undefined} key={name} name={name} values={values} state={state} previous={old[name]===undefined?undefined:arr(old[name])}/>;
+  const primary=['nums','s','height'].includes(name);
+  let range:[number,number]|undefined;
+  if((primary&&[1,2,9].includes(problem.group))||(name==='nums'&&problem.id==='binary-search-standard')){
+   let left=state.left,right=state.right;
+   if(problem.id==='maximum-average-subarray'&&Number.isInteger(left)&&Number.isInteger(input.k))right=Number(left)+Number(input.k)-1;
+   if(Number.isInteger(left)&&Number.isInteger(right)&&Number(left)>=0&&Number(right)<values.length&&Number(left)<=Number(right))range=[Number(left),Number(right)];
+  }
+  const found=frame?.event==='complete'&&name==='nums'?(problem.id==='binary-search-standard'&&Number.isInteger(state.answer)&&Number(state.answer)>=0?[Number(state.answer)]:problem.id==='two-sum-sorted'&&Array.isArray(state.answer)?state.answer.map(n=>Number(n)-1):[]):[];
+  return values.length&&values.every(Array.isArray)?<Matrix key={name} name={name} values={values as unknown[][]} state={state} previous={arr(old[name]) as unknown[][]}/>:<Cells range={range} found={found} cue={name==="nums"?cue:undefined} key={name} name={name} values={values} state={state} previous={old[name]===undefined?undefined:arr(old[name])}/>;
  };
- return <div className="live-scene">
+ return <div className="live-scene motion-stage">
   <div className="scene-caption"><span className="live-dot"/> {problem.scene.toUpperCase()} STATE <span>{frame?.event==="input"?"Input passed to solve":frame?.event==="complete"?"Execution complete":frame?.event==="error"?"Execution stopped":frame?`${frame.function} · ${frame.event==="line"?"before":"after"} line ${frame.line}`:"Input preview"}</span></div>
   {structures&&<Structure p={problem} state={state} input={input}/>}
   {problem.scene==="heap"&&["heap","lower","upper"].filter(k=>Array.isArray(state[k])).map(k=><Heap key={k} name={k+(k==="lower"&&language==="python"?" (negated max-heap values)":"")} values={arr(state[k])} state={state}/>)}
@@ -111,6 +112,7 @@ function SceneContent({problem,frame,previous,input,language="python",binding,cu
   {chosen.map(([name,value])=>render(name,value))}
   {secondary.map(([name,value])=>render(name,value))}
   {Object.entries(state).filter(([k,v])=>k!=="data"&&!simple(v)&&!Array.isArray(v)).map(([name,value])=><div className="state-collection" key={name}><label>{name}</label><div className="map-state">{Object.entries(obj(value)).slice(0,40).map(([k,v])=><span key={k}><b>{k}</b>{display(v)}</span>)}</div></div>)}
+  <div className="motion-legend"><span><i className="mint-key"/>Current / active</span><span><i className="amber-key"/>Scanning</span><span><i className="blue-key"/>Changed / inspected</span></div>
   {frame&&frame.stack?.length>1&&<div className="call-stack"><label>Call stack</label><AnimatePresence initial={false}>{frame.stack.map((call,i)=><motion.span layout={!reduced} initial={reduced?false:{opacity:0,x:12}} animate={{opacity:1,x:0}} exit={{opacity:0,x:reduced?0:-12}} key={`${call.name}:${i}`}>{call.name} : {call.line}</motion.span>)}</AnimatePresence></div>}
  </div>;
 }
