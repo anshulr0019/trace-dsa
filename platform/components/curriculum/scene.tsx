@@ -1,5 +1,6 @@
 "use client";
 import {motion,AnimatePresence,useReducedMotion,MotionConfig} from "motion/react";
+import type {ConceptCue} from "@/lib/curriculum/concept-cues";
 import {createContext,useContext} from 'react';
 import type {Problem} from "@/lib/curriculum/catalog";
 const SceneTiming=createContext(.3);
@@ -9,7 +10,7 @@ const arr=(v:unknown):unknown[]=>Array.isArray(v)?v:[];
 const obj=(v:unknown):Record<string,unknown>=>v&&typeof v==="object"&&!Array.isArray(v)?v as Record<string,unknown>:{};
 const simple=(v:unknown)=>v===null||["number","string","boolean"].includes(typeof v);
 const pointerNames=["left","right","mid","i","j","slow","fast","current","previous","following","start","end"];
-function Cells({name,values,state,previous}:{name:string;values:unknown[];state:Record<string,unknown>;previous?:unknown[]}){
+function Cells({name,values,state,previous,cue}:{name:string;values:unknown[];state:Record<string,unknown>;previous?:unknown[];cue?:ConceptCue}){
  const reduced=useReducedMotion();
  const duration=useContext(SceneTiming);
  const left=state.left,right=state.right;
@@ -19,7 +20,7 @@ function Cells({name,values,state,previous}:{name:string;values:unknown[];state:
   const identity=display(value), occurrence=occurrences.get(identity)??0;occurrences.set(identity,occurrence+1);
   const pointers=pointerNames.filter(key=>state[key]===index);
   const changed=previous!==undefined&&display(previous[index])!==display(value);
-  return <motion.div layout={!reduced} transition={{duration:reduced?0:duration,ease:[.22,1,.36,1]}} key={`${identity}:${occurrence}`} animate={{opacity:bounded&&(index<Number(left)||index>Number(right))?.45:1}} className={`trace-cell ${pointers.length?"pointed":""} ${changed?"changed":""} ${bounded&&index>=Number(left)&&index<=Number(right)?'in-active-range':''}`}><small>{index}</small><motion.strong key={display(value)} initial={reduced?false:{opacity:.4,y:5}} animate={{opacity:1,y:0}}>{display(value)}</motion.strong><span className="marker-lane">{pointers.map(pointer=><motion.em layoutId={`${name}-pointer-${pointer}`} key={pointer} transition={{duration:reduced?0:duration}}>{pointer}</motion.em>)}</span></motion.div>;
+  return <motion.div layout={!reduced} transition={{duration:reduced?0:duration,ease:[.22,1,.36,1]}} key={`${identity}:${occurrence}`} animate={{opacity:bounded&&(index<Number(left)||index>Number(right))?.45:1}} className={`trace-cell ${cue?.marks[index]?"concept-marked":""} ${cue?.marks[index]=== "leaves"?"concept-leaves":""} ${cue?.marks[index]=== "enters"?"concept-enters":""} ${pointers.length?"pointed":""} ${changed?"changed":""} ${bounded&&index>=Number(left)&&index<=Number(right)?'in-active-range':''}`}><small>{index}</small>{cue?.marks[index]&&<span className="concept-cell-label">{cue.marks[index]}</span>}<motion.strong key={display(value)} initial={reduced?false:{opacity:.4,y:5}} animate={{opacity:1,y:0}}>{display(value)}</motion.strong><span className="marker-lane">{pointers.map(pointer=><motion.em layoutId={`${name}-pointer-${pointer}`} key={pointer} transition={{duration:reduced?0:duration}}>{pointer}</motion.em>)}</span></motion.div>;
  })}</div>{bounded&&<div className="active-range-label">Recorded range: left {String(left)} → right {String(right)}</div>}{values.length>100&&<small>Showing first 100 items.</small>}</div>;
 }
 function Matrix({name,values,state,previous}:{name:string;values:unknown[][];state:Record<string,unknown>;previous:unknown[][]}){
@@ -71,12 +72,12 @@ function Heap({name,values,state}:{name:string;values:unknown[];state:Record<str
  const nodes=values.slice(0,31).map((v,i)=>{const level=Math.floor(Math.log2(i+1)),first=2**level-1;return {id:String(i),label:display(v),x:700*(i-first+.5)/2**level,y:45+level*75};});
  return <div className="state-collection"><label>{name}<span>heap order · array indices shown</span></label><Network nodes={nodes} edges={nodes.slice(1).map((n,i)=>({from:String(Math.floor(i/2)),to:n.id}))} state={state}/></div>;
 }
-type SceneProps={problem:Problem;frame?:ExecutionFrame;previous?:ExecutionFrame;input:Record<string,unknown>;language?:string;speed?:number;binding?:{name:string;kind:string;marker:string}};
+type SceneProps={cue?:ConceptCue;problem:Problem;frame?:ExecutionFrame;previous?:ExecutionFrame;input:Record<string,unknown>;language?:string;speed?:number;binding?:{name:string;kind:string;marker:string}};
 export function Scene(props:SceneProps){
  const reduced=useReducedMotion(),duration=reduced?0:Math.min(.42,.55/(props.speed??1));
  return <SceneTiming.Provider value={duration}><MotionConfig reducedMotion="user" transition={{duration,ease:[.22,1,.36,1]}}><SceneContent {...props}/></MotionConfig></SceneTiming.Provider>;
 }
-function SceneContent({problem,frame,previous,input,language="python",binding}:SceneProps){
+function SceneContent({problem,frame,previous,input,language="python",binding,cue}:SceneProps){
  const reduced=useReducedMotion();
  if(binding){
   const value=frame?.vars[binding.name]??input[binding.name];
@@ -97,7 +98,7 @@ function SceneContent({problem,frame,previous,input,language="python",binding}:S
  const render=(name:string,value:unknown)=>{
   const raw=typeof value==="string"?Array.from(value):arr(value);
   const values=name==="board"&&raw.every(v=>typeof v==="string")?raw.map(v=>Array.from(v as string)):raw;
-  return values.length&&values.every(Array.isArray)?<Matrix key={name} name={name} values={values as unknown[][]} state={state} previous={arr(old[name]) as unknown[][]}/>:<Cells key={name} name={name} values={values} state={state} previous={old[name]===undefined?undefined:arr(old[name])}/>;
+  return values.length&&values.every(Array.isArray)?<Matrix key={name} name={name} values={values as unknown[][]} state={state} previous={arr(old[name]) as unknown[][]}/>:<Cells cue={name==="nums"?cue:undefined} key={name} name={name} values={values} state={state} previous={old[name]===undefined?undefined:arr(old[name])}/>;
  };
  return <div className="live-scene">
   <div className="scene-caption"><span className="live-dot"/> {problem.scene.toUpperCase()} STATE <span>{frame?.event==="input"?"Input passed to solve":frame?.event==="complete"?"Execution complete":frame?.event==="error"?"Execution stopped":frame?`${frame.function} · ${frame.event==="line"?"before":"after"} line ${frame.line}`:"Input preview"}</span></div>

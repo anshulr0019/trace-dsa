@@ -1,4 +1,5 @@
 "use client";
+import type {ConceptCue} from "@/lib/curriculum/concept-cues";
 import {display,type ExecutionFrame} from './scene';
 import type {Example} from '@/lib/curriculum/learning-types';
 
@@ -26,11 +27,11 @@ function explainLine(line:string,vars:Record<string,unknown>){
  if(/^\w+\s*(?:\[[^\]]+\])?\s*(?:=|\+=|-=|\*=|\/=)/.test(source))return 'Next, calculate this expression and update the value on the left.';
  return 'The highlighted line runs next. Step forward to see its effect.';
 }
-export function ExecutionInspector({frame,previous,code}:{frame?:ExecutionFrame;previous?:ExecutionFrame;code:string}){
+export function ExecutionInspector({frame,previous,code,cue}:{cue?:ConceptCue;frame?:ExecutionFrame;previous?:ExecutionFrame;code:string}){
  if(!frame)return <section className="step-story step-story-empty" aria-label="Current step explanation"><strong>Follow the code, step by step</strong><p>Run the solution to see each decision and the variables it changes.</p></section>;
  const changes=Object.entries(frame.vars).filter(([k,v])=>k!=='data'&&k!=='input'&&display(v)!==display(previous?.vars[k])).slice(0,8);
  const source=frame.line>0?code.split('\n')[frame.line-1]??'':'';
  const title=frame.event==='input'?'Starting values':frame.event==='error'?'Execution stopped':frame.event==='complete'?'Execution finished':frame.event==='line'?`Next: line ${frame.line}`:`Checkpoint after line ${frame.line}`;
  const summary=frame.event==='input'?'These values were passed into solve(data).':frame.event==='error'?'The run stopped here. Check Output & errors for the cause.':frame.event==='complete'?'The function has returned its answer.':frame.event==='line'?explainLine(source,frame.vars):'The program recorded this state after the highlighted line.';
- return <section className="step-story" aria-label="Current step explanation" tabIndex={0}><div className="step-transition" key={JSON.stringify(frame)}><span className="step-story-label">CURRENT STEP</span><strong>{title}</strong><p className="step-story-summary">{summary}</p>{source&&<code>{source}</code>}{changes.length?<><span className="step-story-label">{previous?'CHANGED SINCE LAST STEP':'INITIAL VALUES'}</span><dl>{changes.map(([name,value])=><div key={name}><dt>{name}</dt><dd><span>{previous&&name in previous.vars?display(previous.vars[name]):'not yet recorded'}</span><b> → </b><strong>{display(value)}</strong></dd></div>)}</dl></>:<p className="step-story-unchanged">No recorded values changed at this step.</p>}</div></section>;
+ return <section className="step-story" aria-label="Current step explanation" tabIndex={0}><div className="step-transition" key={JSON.stringify(frame)}><span className="step-story-label">CURRENT STEP</span><strong>{title}</strong><p className="step-story-summary">{cue?.text??summary}</p>{cue?.equation&&<div className="concept-equation">{cue.equation}</div>}{source&&<code>{source}</code>}{changes.length?<><span className="step-story-label">{previous?'CHANGED SINCE LAST STEP':'INITIAL VALUES'}</span><dl>{changes.map(([name,value])=><div key={name}><dt>{name}</dt><dd><span>{previous&&name in previous.vars?display(previous.vars[name]):'not yet recorded'}</span><b> → </b><strong>{display(value)}</strong></dd></div>)}</dl></>:<p className="step-story-unchanged">No recorded values changed at this step.</p>}</div></section>;
 }
