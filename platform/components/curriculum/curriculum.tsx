@@ -121,9 +121,9 @@ function ProblemStudio({problem:p,onBack,onProblem,onExisting}:{problem:Problem;
   <div className="problem-footer"><span>{problems.findIndex(x=>x.id===p.id)+1} of 100 · Your progress is saved locally</span><button disabled={p.id===problems.at(-1)?.id} onClick={()=>onProblem(problems[problems.findIndex(x=>x.id===p.id)+1].id)}>Next problem <ArrowRight size={14}/></button></div>
  </section>;
 }
-export function Curriculum({onExisting}:{onExisting:(id:string)=>void}){
+export function Curriculum({onExisting,navigationRequest=0}:{onExisting:(id:string)=>void;navigationRequest?:number}){
  const [selected,setSelected]=useState<string|null>(null),[query,setQuery]=useState(""),[tier,setTier]=useState(0),[stage,setStage]=useState("all"),[completed,setCompleted]=useState<string[]>([]);
- useEffect(()=>{const sync=()=>{const id=new URLSearchParams(location.search).get("problem");setSelected(id&&problemById[id]?id:null);};sync();window.addEventListener("popstate",sync);return()=>window.removeEventListener("popstate",sync);},[]);
+ useEffect(()=>{const sync=()=>{const id=new URLSearchParams(location.search).get("problem");setSelected(id&&problemById[id]?id:null);};sync();window.addEventListener("popstate",sync);return()=>window.removeEventListener("popstate",sync);},[navigationRequest]);
  useEffect(()=>{try{setCompleted(JSON.parse(localStorage.getItem("trace:curriculum:complete")??"[]"));}catch{}},[selected]);
  function select(id:string|null){setSelected(id);window.history.pushState(null,"",id?`?view=curriculum&problem=${id}`:"?view=curriculum");window.scrollTo({top:0,behavior:"instant"});}
  if(selected)return <ProblemStudio key={selected} problem={problemById[selected]} onBack={()=>select(null)} onProblem={select} onExisting={onExisting}/>;

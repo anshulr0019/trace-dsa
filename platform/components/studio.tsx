@@ -234,6 +234,7 @@ function Navigation({
 export default function Studio() {
   const [lesson, setLesson] = useState(initial);
   const [view, setView] = useState("home");
+  const [roadmapNavigation, setRoadmapNavigation] = useState(0);
   const [tab, setTab] = useState("learn");
   const [nums, setNums] = useState(initial.input);
   const [parameter, setParameter] = useState(initial.target);
@@ -630,6 +631,10 @@ export default function Studio() {
         setView={(v) => {
           setPlaying(false);
           setView(v);
+          if (v === "curriculum") {
+            setRoadmapNavigation(n => n + 1);
+            window.scrollTo({top: 0, behavior: "instant"});
+          }
           window.history.replaceState(null, "", v === "studio" ? `?lesson=${lesson.id}` : `?view=${v}`);
         }}
         saved={saved}
@@ -664,7 +669,7 @@ export default function Studio() {
           </div>
         </header>
         <main id="main-content" className={`workspace ${view === "studio" && tab === "learn" ? "has-playback" : ""}`}>
-          {view === "curriculum" ? <Curriculum onExisting={(id)=>changeLesson(lessons.find(l=>l.id===id)!)}/> : view === "home" ? <><button className="curriculum-launch" onClick={()=>{setView("curriculum");window.history.replaceState(null,"","?view=curriculum");}}><span>Explore your complete 100-problem roadmap<small>25 patterns · Editable Python, C++ & JavaScript · Live execution</small></span><ArrowRight size={18}/></button><Overview onLesson={changeLesson} onLibrary={() => setView("library")} lastLesson={saved.lastLesson} completed={saved.mastered.length}/></> : view === "studio" ? (
+          {view === "curriculum" ? <Curriculum navigationRequest={roadmapNavigation} onExisting={(id)=>changeLesson(lessons.find(l=>l.id===id)!)}/> : view === "home" ? <><button className="curriculum-launch" onClick={()=>{setView("curriculum");window.history.replaceState(null,"","?view=curriculum");}}><span>Explore your complete 100-problem roadmap<small>25 patterns · Editable Python, C++ & JavaScript · Live execution</small></span><ArrowRight size={18}/></button><Overview onLesson={changeLesson} onLibrary={() => setView("library")} lastLesson={saved.lastLesson} completed={saved.mastered.length}/></> : view === "studio" ? (
             <>
               <div className="lesson-heading">
                 <div>
