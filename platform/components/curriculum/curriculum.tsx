@@ -27,6 +27,9 @@ const formatInput=(data:Record<string,unknown>)=>"{\n"+Object.entries(data).map(
 const sourceFor=(p:Problem,l:Language)=>l==="python"?pythonPrelude+pythonSources[p.id]:playgroundSource(p,l);
 const languages:{id:Language;label:string;file:string}[]=[{id:"python",label:"Python 3",file:"solution.py"},{id:"cpp",label:"C++17",file:"solution.cpp"},{id:"java",label:"Java 8",file:"Solution.java"},{id:"javascript",label:"JavaScript",file:"solution.js"}];
 function ProblemStudio({problem:p,onBack,onProblem,onExisting}:{problem:Problem;onBack:()=>void;onProblem:(id:string)=>void;onExisting:(id:string)=>void}){
+ const [focusRequest,setFocusRequest]=useState(0),[focused,setFocused]=useState(false);
+ function focusPlayback(){setFocused(true);setFocusRequest(n=>n+1);}
+ useEffect(()=>{if(!focusRequest)return;const id=requestAnimationFrame(()=>document.getElementById('visual-workbench')?.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));return()=>cancelAnimationFrame(id);},[focusRequest]);
  const [language,setLanguage]=useState<Language>("python"),[code,setCode]=useState(sourceFor(p,"python")),[input,setInput]=useState(formatInput(p.input));
  const [result,setResult]=useState<Run|null>(null),[speed,setSpeed]=useState(1),[running,setRunning]=useState(false),[error,setError]=useState("");
  const {step,setStep,playing,setPlaying}=useFramePlayback(result?.frames.length??0,speed);
@@ -58,6 +61,7 @@ function ProblemStudio({problem:p,onBack,onProblem,onExisting}:{problem:Problem;
   const executingInput=exampleInput??input;
   try{data=JSON.parse(executingInput);if(!data||Array.isArray(data)||typeof data!=="object")throw Error("Input must be a JSON object.");}catch(e){setError(e instanceof Error?e.message:String(e));setPanel("input");return;}
   const inputError=validateProblemInput(p.id,data);if(inputError){setError(inputError);setPanel("input");return;}
+  if(autoplay)focusPlayback();
   const id=++request.current;inFlight.current=true;controller.current=new AbortController();setRunning(true);setPlaying(false);setError("");setResult(null);setStep(0);
   try{
    const value=await executeSubmission({language,code:activeCode,input:data,problemId:p.id,automatic:mode==="mine"},runtime,controller.current.signal);if(id!==request.current)return;
@@ -65,7 +69,7 @@ function ProblemStudio({problem:p,onBack,onProblem,onExisting}:{problem:Problem;
   }catch(e){if(id===request.current)setError(e instanceof Error?e.message:String(e));}
   finally{if(id===request.current){inFlight.current=false;setRunning(false);}}
  }
- function togglePlayback(){if(playing){setPlaying(false);return;}if(needsExecution(result,stale)){void run(true);return;}if(step===(result?.frames.length??0)-1)setStep(0);setPlaying(true);}
+ function togglePlayback(){if(playing){setPlaying(false);return;}if(needsExecution(result,stale)){void run(true);return;}focusPlayback();if(step===(result?.frames.length??0)-1)setStep(0);setPlaying(true);}
  function changeLanguage(next:Language){try{localStorage.setItem("trace:language",next);}catch{}drafts.current[language]=code;setLanguage(next);setCode(restoreDraft(p,next,drafts.current[next],sourceFor(p,next)));setPlaying(false);setResult(null);setBatch([]);const url=new URL(location.href);url.searchParams.set("language",next);window.history.replaceState(null,"",url.pathname+url.search);}
  function mark(){let list:string[]=[];try{list=JSON.parse(localStorage.getItem("trace:curriculum:complete")??"[]");}catch{}list=complete?list.filter(id=>id!==p.id):[...new Set([...list,p.id])];try{localStorage.setItem("trace:curriculum:complete",JSON.stringify(list));}catch{}setComplete(!complete);}
  async function runExamples(){
@@ -87,7 +91,7 @@ function ProblemStudio({problem:p,onBack,onProblem,onExisting}:{problem:Problem;
 
   <ExampleShelf examples={examples} selected={selectedExample} onSelect={chooseExample} disabled={running} batch={batch}/>
   <p className="example-run-hint">{selectedExample>=0?`Example ${selectedExample+1}: ${examples[selectedExample].label}`:'Custom input'} · Edit the input or run the solution to inspect each step.</p>
-  <div id="visual-workbench"><Workbench onSwitch={()=>setPlaying(false)} visual={
+  <div id="visual-workbench" className={focused?"playback-focused":""}>{focused&&<div className="focus-toolbar"><span>Playback view</span><button onClick={()=>setFocused(false)}>Full layout</button></div>}<Workbench focusRequest={focusRequest} onSwitch={()=>setPlaying(false)} visual={
    <section className="trace-visual-panel" aria-label="Visual execution"><header><span>01 / VISUAL EXECUTION</span><span>{result?`${result.frames.length} captured states`:"Input preview"}</span></header><div className="trace-visual-body">
     {stale&&<div className="trace-notice">Code or input changed. Press Play to run and visualize the current version.</div>}
     {running&&<div className="trace-notice" role="status">{language==="cpp"?"Loading C++ compiler & compiling… First run downloads about 28 MB.":language==="java"?"Loading Java & compiling… First use downloads the compiler and JVM; this can take a minute.":runtime?.server?"Preparing playback…":language==="python"?"Loading Python & running… First run may take a moment.":"Running JavaScript…"}</div>}
@@ -96,7 +100,7 @@ function ProblemStudio({problem:p,onBack,onProblem,onExisting}:{problem:Problem;
     <div className="visual-binding"><label>Visualize variable<select aria-label="Visualize variable" value={visualVariable} onChange={e=>setVisualVariable(e.target.value)}><option value="">Automatic</option>{Object.entries(frame?.vars??preview).filter(([,v])=>Array.isArray(v)||typeof v==='string').map(([k])=><option key={k}>{k}</option>)}</select></label>{visualVariable&&<><label>As<select aria-label="Visualization type" value={visualKind} onChange={e=>setVisualKind(e.target.value)}>{['array','string','grid','stack','heap','tree','linked'].map(k=><option key={k}>{k}</option>)}</select></label><label>Marker<select aria-label="Marker variable" value={markerVariable} onChange={e=>setMarkerVariable(e.target.value)}><option value="">None</option>{Object.entries(frame?.vars??{}).filter(([,v])=>Number.isInteger(v)).map(([k])=><option key={k}>{k}</option>)}</select></label></>}</div>
     <Scene cue={!visualVariable?conceptCue(p.id,frame,prev,result?runInput:preview,snapshot.code.split("\n")[(frame?.line??0)-1]??""):undefined} problem={p} speed={speed} input={result?runInput:preview} language={result?snapshot.language:language} frame={frame} previous={prev} binding={visualVariable?{name:visualVariable,kind:visualKind,marker:markerVariable}:undefined}/>
     </div>
-    <ExecutionInspector cue={conceptCue(p.id,frame,prev,result?runInput:preview,snapshot.code.split("\n")[(frame?.line??0)-1]??"")} frame={frame} previous={prev} code={snapshot.code}/>
+    <ExecutionInspector compact={focused} cue={conceptCue(p.id,frame,prev,result?runInput:preview,snapshot.code.split("\n")[(frame?.line??0)-1]??"")} frame={frame} previous={prev} code={snapshot.code}/>
 
    </section>
    } code={<section className="trace-code-panel"><header><span><Code2 size={15}/> {languages.find(l=>l.id===language)?.file}</span><select aria-label="Programming language" value={language} disabled={running} onChange={e=>changeLanguage(e.target.value as Language)}>{languages.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select></header>
