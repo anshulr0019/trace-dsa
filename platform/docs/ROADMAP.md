@@ -1,36 +1,31 @@
 # Product roadmap
 
-## Delivered foundation
+## Implemented
 
-Six interactive lessons and a tested, deterministic trace/replay architecture. Learning flow: explore → compare → predict/explain/transfer. Build and validate these mechanisms before broadening the runtime or services.
+- Six foundational lessons and a shared responsive workbench for the 100-problem roadmap.
+- Complete references in Python, C++17, Java 8 and JavaScript; editable input, bounded browser execution, recorded states and playback.
+- Practice cases, authored hints, browser correctness feedback, saved attempts and reference solution comparisons.
+- Teacher lesson links with custom input and instructions, current-code replay links, and presentation mode.
+- Prediction pauses based on recorded state, beginner pace, local notes, bookmarks, revision lists and concept learning paths.
+- Notebook JSON export/import with validation and confirmed restoration.
+- Product introduction, quick tour, showcase examples, demo script and pitch material.
 
-## Next: durable learner accounts and assessment
+## Implemented, awaiting external setup
 
-- Identity provider, session security, user-owned progress and attempts in Postgres (Neon or one chosen primary backend).
-- Versioned lesson/question schema and server-side grading. Client-local quiz answers are not suitable for rankings.
-- Independent implementation exercises, spaced retrieval, misconception tracking, instructor assignment links.
-- Instrument learning events with a deliberate consent and retention policy.
+Supabase email sign-in, explicit cross-device notebook backup/restore, class invitations, assignments, due dates, submissions and teacher views of explanations and code. See [setup](TEACHER-SETUP.md). These features require a configured database and authentication service; the application shows this requirement when they are unavailable.
 
-## Full language execution
+## Owner acceptance testing
 
-- Select a hardened execution provider; provision secrets and dedicated isolated workers.
-- Implement a real CPython tracing adapter, object identity, stack frames, exceptions, and library-call policy.
-- Bound trace bytes, chunk transfer, checkpoints/deltas, run cancellation, and queue/backpressure behavior.
-- Keep the current browser interpreter visibly labeled until replaced. Never silently treat it as CPython.
+The project owner will test this product release. Compilation, dependency installation checks and a production build establish buildability; they do not verify classroom workflows or learning outcomes.
 
-## AI hints
+## Future work after a classroom pilot
 
-- Add a server-side provider adapter and secret configuration.
-- Ground prompts in a verified run ID, code version, trace cursor, misconception, and authored hint progression.
-- Evaluate factual accuracy and spoiler rate; keep authored hints as fallback.
+- Automatic notebook synchronization with conflict handling and account data deletion/export.
+- Teacher moderation of enrollment, class archiving and structured written feedback.
+- Additional authored brute-force/optimized comparisons. Count operations explicitly; distinguish trace storage from auxiliary algorithm memory.
+- Authoritative grading on isolated execution infrastructure before exams, rankings or competitions.
+- Optional AI hints grounded in the learner's actual code, current input and recorded state.
+- Private collaborative rooms with access controls and a shared playback model.
+- Consent and retention policies appropriate to participating schools or organizations.
 
-## Collaboration and competition
-
-- Validate shared replays first. Add private rooms, authorization, presence, conflict-resolved text editing and a single authoritative replay control model.
-- Choose realtime transport after validating the interaction; do not broadcast every frame through the database.
-- Add authoritative judging, abuse protections and operation-count definitions before competitive scoring.
-- College membership verification and opt-in leaderboards only after identity and credible assessment are established.
-
-## Curriculum expansion
-
-Recursion and stack frames → linked structures → trees and BFS/DFS → memoization/DP. Introduce runtime support and representations together. Add production case studies that explain real tradeoffs rather than language-only toggles.
+A commercial Java deployment also needs an appropriate CheerpJ licence. A recorded demo should follow the owner's acceptance testing and describe the configured features accurately.

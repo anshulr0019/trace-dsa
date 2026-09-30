@@ -1,0 +1,310 @@
+/* Matches the foundation workbench: dark surfaces, mint actions, clear reading order. */
+.product-page {
+  max-width: 1120px;
+  margin: auto;
+  padding: 28px 0 100px;
+  color: #dcebe1;
+}
+.product-page h1,
+.product-intro h1 {
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  margin: 12px 0 16px;
+  text-wrap: balance;
+}
+.product-page > p,
+.product-intro > p {
+  font-size: 17px;
+  color: #aabfb2;
+  max-width: 65ch;
+  line-height: 1.8;
+}
+.product-card {
+  margin: 20px 0;
+  padding: 24px;
+  border: 1px solid #ffffff18;
+  border-radius: 14px;
+  background: #131e20;
+  color: #d5e4da;
+}
+.product-card h2 {
+  font-size: 22px;
+  margin: 0 0 12px;
+  line-height: 1.35;
+}
+.product-card p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #adc2b4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.product-card label {
+  display: block;
+  font-size: 13px;
+  color: #b7cbbf;
+  margin: 14px 0;
+}
+.product-card input,
+.product-card textarea,
+.product-card select,
+.lesson-actions input {
+  display: block;
+  width: 100%;
+  margin-top: 7px;
+  border: 1px solid #ffffff24;
+  border-radius: 7px;
+  background: #0e181b;
+  padding: 10px 12px;
+  color: #e2eee7;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.product-card textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.product-card .mono {
+  font: 13px/1.7 monospace;
+}
+.product-card button,
+.product-actions button,
+.product-tour button,
+.lesson-actions button,
+.product-prediction button,
+.file-button {
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid #63816e;
+  border-radius: 7px;
+  background: #233a2c;
+  color: #d4eeca;
+  font-size: 13px;
+  cursor: pointer;
+}
+.product-card button[aria-pressed="true"],
+.product-prediction button[aria-pressed="true"] {
+  background: #c6f39d;
+  color: #203015;
+}
+.product-card button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.product-card summary {
+  font-size: 15px;
+  cursor: pointer;
+  min-height: 32px;
+  align-content: center;
+}
+.product-actions,
+.lesson-actions,
+.learning-preferences {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 14px 0;
+}
+.product-actions label {
+  flex: 1;
+  min-width: 180px;
+}
+.product-actions a,
+.feedback-link {
+  color: #c6f39d;
+  font-size: 13px;
+}
+.product-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.notebook-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 0;
+  border-top: 1px solid #ffffff12;
+}
+.notebook-list h3 {
+  font-size: 17px;
+  margin: 6px 0;
+}
+.notebook-list small,
+.product-card small {
+  font-size: 12px;
+  color: #93aa9b;
+}
+.notebook-list article p {
+  margin: 6px 0;
+  max-width: 65ch;
+}
+.notebook-list button {
+  flex-shrink: 0;
+}
+.notebook-list article > div {
+  min-width: 0;
+  flex: 1;
+}
+.submitted-code {
+  max-height: 360px;
+  overflow: auto;
+  white-space: pre;
+  font: 12px/1.8 monospace;
+  padding: 16px;
+  background: #091216;
+}
+.lesson-actions > span {
+  font-size: 12px;
+  color: #abc0b0;
+  flex-basis: 100%;
+}
+.lesson-actions input {
+  font-size: 11px;
+  max-width: 300px;
+}
+.learning-preferences {
+  font-size: 13px;
+  color: #b0c6b8;
+}
+.learning-preferences label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.learning-preferences input {
+  accent-color: #c6f39d;
+}
+.learning-preferences > span {
+  font-size: 12px;
+}
+.product-prediction {
+  background: #243d2c;
+  border-top: 1px solid #c6f39d33;
+  padding: 18px;
+}
+.product-prediction h3 {
+  font-size: 17px;
+  margin: 10px 0;
+}
+.product-prediction p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.product-intro {
+  max-width: 1000px;
+  margin: 10px auto 34px;
+}
+.showcase-links {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin: 24px 0;
+  color: #bcdca6;
+  font-size: 14px;
+}
+.product-tour {
+  margin: 20px 0;
+}
+.product-tour > div {
+  max-width: 600px;
+  background: #182a20;
+  padding: 20px;
+  border: 1px solid #59744c;
+  border-radius: 10px;
+  margin-top: 12px;
+}
+.product-tour p {
+  line-height: 1.8;
+  color: #b3c9bb;
+}
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 18px 0;
+}
+.comparison-grid > section {
+  min-width: 0;
+  border: 1px solid #ffffff18;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 14px;
+}
+.comparison-grid h3 {
+  font-size: 16px;
+}
+.comparison-grid > section > strong {
+  color: #c6f39d;
+  font: 13px monospace;
+}
+.comparison-grid .live-scene {
+  padding: 0;
+}
+.comparison-grid .scene-caption {
+  display: none;
+}
+.state-growth {
+  display: flex;
+  align-items: end;
+  height: 130px;
+  gap: 3px;
+  background: #102018;
+  padding: 10px;
+  margin: 16px 0;
+}
+.state-growth span {
+  flex: 1;
+  background: #b3e390;
+  min-height: 3px;
+  border-radius: 3px 3px 0 0;
+}
+.trace-presenting [data-slot="sidebar-container"],
+.trace-presenting [data-slot="sidebar-gap"],
+.trace-presenting .topbar {
+  display: none !important;
+}
+.trace-presenting .roadmap-dock {
+  left: 20px !important;
+  right: 20px !important;
+}
+.trace-presenting .problem-studio {
+  max-width: 1600px;
+  margin: auto;
+}
+.trace-presenting .motion-tile {
+  font-size: 24px;
+}
+.trace-presenting .step-story-summary {
+  font-size: 17px !important;
+}
+.trace-presenting .curriculum-editor {
+  font-size: 16px;
+}
+:is(.product-card, .lesson-actions, .product-tour, .product-prediction)
+  button:focus-visible {
+  outline: 2px solid #c6f39d;
+  outline-offset: 4px;
+}
+@media (max-width: 750px) {
+  .product-form-grid,
+  .comparison-grid {
+    grid-template-columns: 1fr;
+  }
+  .product-card {
+    padding: 18px;
+  }
+  .notebook-list article {
+    align-items: flex-start;
+  }
+  .product-page {
+    padding-top: 10px;
+  }
+  .product-actions {
+    gap: 8px;
+  }
+}

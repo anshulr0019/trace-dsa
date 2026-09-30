@@ -23,6 +23,16 @@ Browser practice checks use the same eight-case grading rules and store attempts
 
 Every curriculum problem now includes Predict, Solve, and Challenge modes, with 300 practice inputs, eight-case correctness ratings, saved drafts and attempts, and verified solution comparisons with explicit adoption and undo. Playback has smooth, speed-aware transitions and reduced-motion support. See [Practice and feedback](docs/PRACTICE-AND-FEEDBACK.md) for behavior, verification, optional AI configuration, and hosted prerequisites.
 
+## Teacher and learner workspaces
+
+- **Lessons & classes:** create links with custom inputs, teaching instructions, a language, optional edited code and a recorded step. Recipients explicitly run the example. Presentation mode expands the workbench and hides navigation; Escape exits it.
+- **Student notebook:** bookmarks, revision lists, personal explanations, concept learning paths, local backups and confirmed restore.
+- **Learning tools:** slower beginner playback, questions derived from the next actual recorded state, progressive authored hints, and counted reference comparisons for two pointers, binary search and fixed windows. A trace-size chart reports serialized snapshot values, not auxiliary memory or runtime.
+- **Configured cloud features:** email sign-in, manual cross-device notebook backup/restore, class invitations, assignments, due dates and teacher views of student explanations and submitted code. Browser scores are explicitly learner-reported.
+- **Demo:** a guided introduction, showcase lessons, feedback issue links and [demo/presentation material](docs/DEMO-AND-PITCH.md).
+
+Cloud features need the [Supabase setup](docs/TEACHER-SETUP.md). They are visibly unavailable without configuration. The schema is in `supabase/schema.sql`; public configuration names are in `.env.example`. The owner is handling acceptance testing for this release; compilation is not a substitute for that testing.
+
 ## Validate
 
 ```sh
@@ -78,7 +88,7 @@ The visual view uses conventional pointer names (`left`, `right`, `mid`, `i`, `j
 - `docs/BUILD.md`: scope and reference decisions.
 - `docs/ROADMAP.md`: remaining platform work.
 
-Local progress stays in this browser. Hosted account history and optional AI reviews require the connections described in the practice guide; neither is simulated. Replay links contain the shared source and input in their URL fragment; private deployment access still applies.
+Progress stays in this browser unless the learner explicitly exports or saves a notebook to a configured account. Class submissions are sent to the configured database for the teacher to review. Optional AI reviews require the connection described in the practice guide. Replay links contain the shared source and input in their URL fragment; private deployment access still applies.
 
 ## Java
 

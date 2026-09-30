@@ -81,10 +81,19 @@ import { Workbench } from "./experience/workbench";
 import { PlaybackDock } from "./experience/playback-dock";
 import { CodePanel } from "./experience/code-panel";
 import { Overview } from "./experience/overview";
+import { AccountProvider } from "./product/account";
+import { TeacherWorkspace } from "./product/teacher";
+import { Notebook } from "./product/notebook";
+import { GuidedTour } from "./product/learning-tools";
+import "./product/product.css";
 import { Curriculum } from "./curriculum/curriculum";
 import { LessonPreview } from "./experience/lesson-preview";
 import { ComparisonLab } from "./experience/comparison-lab";
-import { PredictionCard, predictionAt, type Prediction } from "./experience/prediction";
+import {
+  PredictionCard,
+  predictionAt,
+  type Prediction,
+} from "./experience/prediction";
 import { Switch } from "@/components/ui/switch";
 import { MotionStage, describeFrame } from "./experience/motion-stage";
 import { usePlayback } from "./experience/use-playback";
@@ -150,6 +159,8 @@ function Navigation({
               { id: "library", label: "Guided foundations", Icon: BookOpen },
               { id: "curriculum", label: "100-problem roadmap", Icon: Code2 },
               { id: "progress", label: "My progress", Icon: Gauge },
+              { id: "teacher", label: "Lessons & classes", Icon: BookOpen },
+              { id: "notebook", label: "Student notebook", Icon: BookOpen },
             ].map(({ id, label, Icon }) => (
               <SidebarMenuItem key={id}>
                 <SidebarMenuButton
@@ -252,7 +263,8 @@ export default function Studio() {
   const [checkpoint, setCheckpoint] = useState<Prediction | null>(null);
   const answeredSteps = useRef(new Set<number>());
   const playback = usePlayback(run.frames.length, Number(speed), (cursor) => {
-    if (!predicting || custom || answeredSteps.current.has(cursor)) return false;
+    if (!predicting || custom || answeredSteps.current.has(cursor))
+      return false;
     const q = predictionAt(run.frames, cursor, lesson);
     if (!q) return false;
     setCheckpoint(q);
@@ -430,16 +442,40 @@ export default function Studio() {
         );
       } else {
         const initialSearch = window.location.search;
+        const initialHash = window.location.hash;
         const id =
           new URLSearchParams(window.location.search).get("lesson") ||
           stored.lastLesson;
         const l = lessons.find((l) => l.id === id);
-        const requestedView = new URLSearchParams(window.location.search).get("view");
-        const hasLesson = new URLSearchParams(window.location.search).has("lesson");
+        const requestedView = new URLSearchParams(window.location.search).get(
+          "view",
+        );
+        const hasLesson = new URLSearchParams(window.location.search).has(
+          "lesson",
+        );
         if (l) changeLesson(l);
         if (!hasLesson) {
-          setView(["library", "progress", "home", "curriculum"].includes(requestedView ?? "") ? requestedView! : "home");
-          window.history.replaceState(null, "", requestedView === "curriculum" ? initialSearch : requestedView ? `?view=${requestedView}` : "/");
+          setView(
+            [
+              "library",
+              "progress",
+              "home",
+              "curriculum",
+              "teacher",
+              "notebook",
+            ].includes(requestedView ?? "")
+              ? requestedView!
+              : "home",
+          );
+          window.history.replaceState(
+            null,
+            "",
+            ["curriculum", "teacher", "notebook"].includes(requestedView ?? "")
+              ? initialSearch + initialHash
+              : requestedView
+                ? `?view=${requestedView}`
+                : "/",
+          );
         }
       }
     } catch {
@@ -623,653 +659,850 @@ export default function Studio() {
   );
   const activeQuestion = lesson.questions[question];
   return (
-    <SidebarProvider style={{ "--sidebar-width": "238px" } as CSSProperties}>
-      <Navigation
-        lesson={lesson}
-        onLesson={changeLesson}
-        view={view}
-        setView={(v) => {
-          setPlaying(false);
-          setView(v);
-          if (v === "curriculum") {
-            setRoadmapNavigation(n => n + 1);
-            window.scrollTo({top: 0, behavior: "instant"});
-          }
-          window.history.replaceState(null, "", v === "studio" ? `?lesson=${lesson.id}` : `?view=${v}`);
-        }}
-        saved={saved}
-      />
-      <div className="main-shell">
-        <header className="topbar">
-          <div className="breadcrumb">
-            <SidebarTrigger className="mobile-menu navigation-toggle" />
-            <span>Workspace</span>
-            <ChevronRight size={14} />
-            <strong>
-              {view === "studio"
-                ? "Learning studio"
-                : view === "library"
-                  ? "Guided foundations"
-                  : view === "home" ? "Overview" : view === "curriculum" ? "100-problem roadmap" : "My progress"}
-            </strong>
-          </div>
-          <div className="top-actions">
-            <span className="local-status">
-              <span />
-              Local learning workspace
-            </span>
-            <button
-              className="icon-button"
-              onClick={() => setAbout(true)}
-              aria-label="About this workspace"
-            >
-              <Cpu size={18} />
-            </button>
-            <span className="avatar small">Y</span>
-          </div>
-        </header>
-        <main id="main-content" className={`workspace ${view === "studio" && tab === "learn" ? "has-playback" : ""}`}>
-          {view === "curriculum" ? <Curriculum navigationRequest={roadmapNavigation} onExisting={(id)=>changeLesson(lessons.find(l=>l.id===id)!)}/> : view === "home" ? <><button className="curriculum-launch" onClick={()=>{setView("curriculum");window.history.replaceState(null,"","?view=curriculum");}}><span>Explore your complete 100-problem roadmap<small>25 patterns · Editable Python, C++ & JavaScript · Live execution</small></span><ArrowRight size={18}/></button><Overview onLesson={changeLesson} onLibrary={() => setView("library")} lastLesson={saved.lastLesson} completed={saved.mastered.length}/></> : view === "studio" ? (
-            <>
-              <div className="lesson-heading">
-                <div>
-                  <div className="eyebrow mint">
-                    <span className="chapter-line" /> FOUNDATIONS /{" "}
-                    {lesson.category.toUpperCase()}
-                  </div>
-                  <h1>{lesson.title}</h1>
-                  <p>{lesson.description}</p>
-                  <div className="lesson-meta">
-                    <span className="difficulty">Foundational</span>
-                    <span>
-                      <BookOpen size={13} />
-                      {lesson.duration}
-                    </span>
-                    <span>
-                      <Code2 size={13} />
-                      Python subset
-                    </span>
-                  </div>
-                </div>
-                <div className="heading-actions">
-                  <button className="button secondary" onClick={share}>
-                    <Share2 size={15} />
-                    Share replay
-                  </button>
-                  <button
-                    className="button guide-button"
-                    onClick={() => {
-                      setPlaying(false);
-                      setGuide(true);
-                    }}
-                  >
-                    <Sparkles size={15} />
-                    Lesson guide
-                  </button>
-                </div>
-              </div>
-              <Tabs
-                value={tab}
-                onValueChange={(v) => {
-                  setTab(v);
-                  setPlaying(false);
-                }}
-                className="lesson-tabs"
+    <AccountProvider>
+      <SidebarProvider style={{ "--sidebar-width": "238px" } as CSSProperties}>
+        <Navigation
+          lesson={lesson}
+          onLesson={changeLesson}
+          view={view}
+          setView={(v) => {
+            setPlaying(false);
+            setView(v);
+            if (v === "curriculum") {
+              setRoadmapNavigation((n) => n + 1);
+              window.scrollTo({ top: 0, behavior: "instant" });
+            }
+            window.history.replaceState(
+              null,
+              "",
+              v === "studio" ? `?lesson=${lesson.id}` : `?view=${v}`,
+            );
+          }}
+          saved={saved}
+        />
+        <div className="main-shell">
+          <header className="topbar">
+            <div className="breadcrumb">
+              <SidebarTrigger className="mobile-menu navigation-toggle" />
+              <span>Workspace</span>
+              <ChevronRight size={14} />
+              <strong>
+                {view === "studio"
+                  ? "Learning studio"
+                  : view === "library"
+                    ? "Guided foundations"
+                    : view === "home"
+                      ? "Overview"
+                      : view === "curriculum"
+                        ? "100-problem roadmap"
+                        : view === "teacher"
+                          ? "Lessons & classes"
+                          : view === "notebook"
+                            ? "Student notebook"
+                            : "My progress"}
+              </strong>
+            </div>
+            <div className="top-actions">
+              <span className="local-status">
+                <span />
+                Local learning workspace
+              </span>
+              <button
+                className="icon-button"
+                onClick={() => setAbout(true)}
+                aria-label="About this workspace"
               >
-                <div className="tabs-row">
-                  <TabsList className="tab-list" variant="line">
-                    <TabsTrigger value="learn">
-                      <FlaskConical size={16} />
-                      Explore
-                    </TabsTrigger>
-                    <TabsTrigger value="compare">
-                      <GitCompareArrows size={16} />
-                      Compare approaches
-                    </TabsTrigger>
-                    <TabsTrigger value="practice">
-                      <Target size={16} />
-                      Test your understanding
-                      <span className="tab-count">
-                        {(saved.answered[lesson.id] || []).length}/3
-                      </span>
-                    </TabsTrigger>
-                  </TabsList>
-                  <label className="prediction-toggle"><Switch checked={predicting} disabled={custom} onCheckedChange={(v) => { setPredicting(v); setCheckpoint(null); }} aria-label="Predict the next move"/> Predict the next move</label>
-                </div>
-                <TabsContent value="learn">
-                  <Workbench onSwitch={() => setPlaying(false)} visual={
-                    <section className="visual-panel panel">
-                      <div className="panel-title">
-                        <span>
-                          <span className="panel-icon">
-                            <Layers3 size={16} />
-                          </span>
-                          Visualization
-                        </span>
-                        <span className="live-badge">
-                          {running
-                            ? "RUNNING"
-                            : completed
-                              ? "COMPLETE"
-                              : "INTERACTIVE"}
-                        </span>
-                      </div>
-                      <form
-                        className="input-toolbar"
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          applyInputs();
-                        }}
-                      >
-                        <label className="array-input">
-                          Input array
-                          <input
-                            value={raw}
-                            onChange={(e) => { setPlaying(false); setRaw(e.target.value); }}
-                            aria-label="Input array"
-                            spellCheck={false}
-                          />
-                        </label>
-                        {lesson.parameter !== "none" && (
-                          <label className="target-input">
-                            {lesson.parameter === "k"
-                              ? "Window size"
-                              : "Target"}
-                            <input
-                              type="number"
-                              value={paramRaw}
-                              onChange={(e) => { setPlaying(false); setParamRaw(e.target.value); }}
-                              aria-label={
-                                lesson.parameter === "k"
-                                  ? "Window size"
-                                  : "Target"
-                              }
-                            />
-                          </label>
-                        )}
-                        <button
-                          type="submit"
-                          className="button small-button"
-                          disabled={running}
-                        >
-                          Apply
-                        </button>
-                        <button
-                          type="button"
-                          className="icon-button shuffle"
-                          title="Try a random input"
-                          aria-label="Try a random input"
-                          onClick={randomize}
-                          disabled={running}
-                        >
-                          <RotateCcw size={16} />
-                        </button>
-                      </form>
-                      {inputError && (
-                        <div className="inline-error" role="alert">
-                          {inputError}
-                        </div>
-                      )}
-                      {checkpoint && <PredictionCard key={checkpoint.step} question={checkpoint} onContinue={() => { answeredSteps.current.add(checkpoint.step); setCheckpoint(null); setPlaying(true); }}/> }
-                      <MotionStage key={lesson.id} frame={frame} nextFrame={run.frames[playback.target] ?? frame} phase={playback.phase} lesson={lesson} custom={custom}/>
-                      <div
-                        className="step-narrative"
-                        aria-live={playing ? "off" : "polite"}
-                      >
-                        <span className="step-symbol">
-                          <ChevronRight size={16} />
-                        </span>
-                        <div className="step-transition" key={`${step}:${frame.message}`}>
-                          <strong>
-                            {step === 0
-                              ? "Ready when you are"
-                              : completed
-                                ? "You reached the result"
-                                : `Line ${frame.line}`}
-                          </strong>
-                          <p>
-                            {step === 0
-                              ? "Press play, or move one step at a time. Watch the code and state change together."
-                              : describeFrame(frame, lesson, custom)}
-                          </p>
-                        </div>
-                      </div>
-                    </section>
-                  } code={
-                    <CodePanel frame={frame} nextLine={playback.target !== step ? run.frames[playback.target]?.line : undefined} lesson={lesson} editing={editing} setEditing={setEditing} setPlaying={setPlaying} code={code} setCode={setCode} executedCode={executedCode} dirty={dirty} custom={custom} running={running} error={run.error} resetCode={resetCode} runEdits={runEdits}/>
-                  } explanation={<div className="mobile-explanation panel"><span className="eyebrow mint">THE IDEA</span><h2>Every move has a reason.</h2><p>{lesson.intuition}</p><h3>What stays true</h3><p>{lesson.invariant}</p><div className="explanation-complexity"><span>Time <b>{lesson.complexity}</b></span><span>Extra space <b>{lesson.space}</b></span></div></div>}/>
-                  <PlaybackDock playback={playback} count={run.frames.length} speed={speed} setSpeed={setSpeed} running={running} onSeek={seek}/>
-                  <div className="insight-grid">
-                    <section className="insight-card">
-                      <div className="eyebrow">
-                        <Lightbulb size={15} />
-                        THE IDEA
-                      </div>
-                      <h2>Every move has a reason.</h2>
-                      <p>{lesson.intuition}</p>
-                    </section>
-                    <section className="insight-card invariant">
-                      <div className="eyebrow mint">
-                        <CheckCircle2 size={15} />
-                        WHAT STAYS TRUE
-                      </div>
-                      <h2>The invariant</h2>
-                      <p>{lesson.invariant}</p>
-                    </section>
-                    <section className="complexity-card">
-                      <div className="complexity-row">
-                        <span>Time complexity</span>
-                        <strong>{lesson.complexity}</strong>
-                      </div>
-                      <div className="complexity-row">
-                        <span>Extra space</span>
-                        <strong>{lesson.space}</strong>
-                      </div>
-                      <p>Reference algorithm · excluding trace storage</p>
-                      <button
-                        className="text-button mint"
-                        onClick={() => setTab("compare")}
-                      >
-                        See the work saved
-                        <ArrowRight size={14} />
-                      </button>
-                    </section>
-                  </div>
-                  <div className="bottom-strip">
-                    <span>
-                      <span className="keycap">←</span>
-                      <span className="keycap">→</span>to step{" "}
-                      <span className="keycap">space</span>to play or pause
-                    </span>
+                <Cpu size={18} />
+              </button>
+              <span className="avatar small">Y</span>
+            </div>
+          </header>
+          <main
+            id="main-content"
+            className={`workspace ${view === "studio" && tab === "learn" ? "has-playback" : ""}`}
+          >
+            {view === "teacher" ? (
+              <TeacherWorkspace />
+            ) : view === "notebook" ? (
+              <Notebook />
+            ) : view === "curriculum" ? (
+              <Curriculum
+                navigationRequest={roadmapNavigation}
+                onExisting={(id) =>
+                  changeLesson(lessons.find((l) => l.id === id)!)
+                }
+              />
+            ) : view === "home" ? (
+              <>
+                <div className="product-intro">
+                  <h1>Make every step of DSA visible.</h1>
+                  <p>
+                    Explore algorithms in four languages, predict what happens
+                    next, and build lessons your students can investigate.
+                  </p>
+                  <GuidedTour />
+                  <div className="product-actions">
                     <button
-                      className="text-button"
-                      onClick={() => setTab("practice")}
+                      onClick={() => {
+                        setView("curriculum");
+                        window.history.replaceState(
+                          null,
+                          "",
+                          "?view=curriculum",
+                        );
+                      }}
                     >
-                      Ready to try it yourself?
-                      <ArrowRight size={15} />
+                      Explore the roadmap →
+                    </button>
+                    <button
+                      onClick={() => {
+                        setView("teacher");
+                        window.history.replaceState(null, "", "?view=teacher");
+                      }}
+                    >
+                      Create a lesson →
                     </button>
                   </div>
-                </TabsContent>
-                <TabsContent value="compare"><ComparisonLab key={`${lesson.id}:${nums.join(",")}:${parameter}`} lesson={lesson} nums={nums} parameter={parameter}/></TabsContent>
-                <TabsContent value="practice">
-                  <div className="practice-layout">
-                    <section className="question-card">
-                      <div className="question-top">
-                        <span className="eyebrow mint">
-                          {question === 0
-                            ? "PREDICT"
-                            : question === 1
-                              ? "EXPLAIN"
-                              : "TRANSFER"}
-                        </span>
-                        <span>
-                          Question {question + 1} of {lesson.questions.length}
-                        </span>
-                      </div>
-                      <Progress
-                        value={((question + 1) / lesson.questions.length) * 100}
-                      />
-                      <h2>{activeQuestion.prompt}</h2>
-                      <div
-                        className="answer-options"
-                        role="group"
-                        aria-label="Answer choices"
-                      >
-                        {activeQuestion.options.map((option, i) => (
-                          <button
-                            key={i}
-                            aria-pressed={choice === i}
-                            className={
-                              "answer-option " +
-                              (choice === i ? "selected " : "") +
-                              (checked && i === activeQuestion.answer
-                                ? "correct "
-                                : checked && i === choice
-                                  ? "incorrect"
-                                  : "")
-                            }
-                            onClick={() => {
-                              if (!checked) setChoice(i);
-                            }}
-                            disabled={checked}
-                          >
-                            <span className="answer-letter">
-                              {String.fromCharCode(65 + i)}
-                            </span>
-                            <span>{option}</span>
-                            {checked && i === activeQuestion.answer && (
-                              <CheckCircle2 size={18} />
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                      {checked && (
-                        <div
-                          className={
-                            "answer-feedback " +
-                            (choice === activeQuestion.answer ? "success" : "")
-                          }
-                          role="status"
-                        >
-                          <strong>
-                            {choice === activeQuestion.answer
-                              ? "That’s right."
-                              : "Let’s look at the reasoning."}
-                          </strong>
-                          <p>{activeQuestion.explanation}</p>
-                        </div>
-                      )}
-                      <div className="question-actions">
-                        <button
-                          className="text-button muted"
-                          onClick={() => {
-                            setTab("learn");
-                          }}
-                        >
-                          Back to the visualization
-                        </button>
-                        {!checked ? (
-                          <button
-                            className="button"
-                            disabled={choice === null}
-                            onClick={checkAnswer}
-                          >
-                            Check answer
-                            <ArrowRight size={15} />
-                          </button>
-                        ) : question < lesson.questions.length - 1 ? (
-                          <button
-                            className="button"
-                            onClick={() => {
-                              setQuestion((q) => q + 1);
-                              setChoice(null);
-                              setChecked(false);
-                            }}
-                          >
-                            Next question
-                            <ArrowRight size={15} />
-                          </button>
-                        ) : (
-                          <button
-                            className="button"
-                            onClick={() => {
-                              setQuestion(0);
-                              setChoice(null);
-                              setChecked(false);
-                              setNotice(
-                                "Practice restarted. Your correct answers remain saved.",
-                              );
-                            }}
-                          >
-                            Practice again
-                            <RotateCcw size={15} />
-                          </button>
-                        )}
-                      </div>
-                    </section>
-                    <aside className="practice-aside">
-                      <div className="practice-icon">
-                        <Target size={28} />
-                      </div>
-                      <h2>Make the idea yours.</h2>
-                      <p>
-                        Understanding means being able to predict, explain, and
-                        apply. Take your time.
-                      </p>
-                      <div className="practice-progress">
-                        <CheckCircle2 size={18} />
-                        <span>
-                          {(saved.answered[lesson.id] || []).length} of 3
-                          concepts checked
-                        </span>
-                      </div>
-                      {saved.mastered.includes(lesson.id) && (
-                        <div className="mastered-note">
-                          <Trophy size={20} />
-                          <strong>Lesson completed</strong>
-                          <p>
-                            Try a new input, then come back tomorrow to see what
-                            you remember.
-                          </p>
-                        </div>
-                      )}
-                      <button
-                        className="text-button mint"
-                        onClick={() => setGuide(true)}
-                      >
-                        Need a nudge?
-                        <Lightbulb size={15} />
-                      </button>
-                      <p className="practice-note">
-                        Completion reflects these knowledge checks, not a
-                        guarantee of independent mastery.
-                      </p>
-                    </aside>
+                  <div className="showcase-links">
+                    {[
+                      ["maximum-average-subarray", "Sliding window"],
+                      ["binary-search-standard", "Binary search"],
+                      ["maximum-depth", "Tree recursion"],
+                    ].map(([id, label]) => (
+                      <a key={id} href={`/?view=curriculum&problem=${id}`}>
+                        {label} ↗
+                      </a>
+                    ))}
                   </div>
-                </TabsContent>
-              </Tabs>
-            </>
-          ) : view === "library" ? (
-            <>
-              <div className="page-heading">
-                <div className="eyebrow mint">YOUR NEXT AHA MOMENT</div>
-                <h1>Small lessons. Lasting understanding.</h1>
-                <p>
-                  Six guided introductions with visual explanations and checkpoints.
-                  Then use the 100-problem roadmap to practice these ideas across more problems.
-                </p>
-              </div>
-              <div className="library-filter">
-                <ListFilter size={16} />
-                {[
-                  "All",
-                  "Arrays",
-                  "Search",
-                  "Two pointers",
-                  "Sliding window",
-                  "Sorting",
-                ].map((f) => (
-                  <button
-                    className={filter === f ? "selected" : ""}
-                    key={f}
-                    onClick={() => setFilter(f)}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
-              <div className="library-grid">
-                {lessons
-                  .filter((l) => filter === "All" || l.category === filter)
-                  .map((l, i) => (
+                </div>
+                <button
+                  className="curriculum-launch"
+                  onClick={() => {
+                    setView("curriculum");
+                    window.history.replaceState(null, "", "?view=curriculum");
+                  }}
+                >
+                  <span>
+                    Explore your complete 100-problem roadmap
+                    <small>
+                      25 patterns · Python, C++, Java & JavaScript · Live
+                      execution
+                    </small>
+                  </span>
+                  <ArrowRight size={18} />
+                </button>
+                <Overview
+                  onLesson={changeLesson}
+                  onLibrary={() => setView("library")}
+                  lastLesson={saved.lastLesson}
+                  completed={saved.mastered.length}
+                />
+              </>
+            ) : view === "studio" ? (
+              <>
+                <div className="lesson-heading">
+                  <div>
+                    <div className="eyebrow mint">
+                      <span className="chapter-line" /> FOUNDATIONS /{" "}
+                      {lesson.category.toUpperCase()}
+                    </div>
+                    <h1>{lesson.title}</h1>
+                    <p>{lesson.description}</p>
+                    <div className="lesson-meta">
+                      <span className="difficulty">Foundational</span>
+                      <span>
+                        <BookOpen size={13} />
+                        {lesson.duration}
+                      </span>
+                      <span>
+                        <Code2 size={13} />
+                        Python subset
+                      </span>
+                    </div>
+                  </div>
+                  <div className="heading-actions">
+                    <button className="button secondary" onClick={share}>
+                      <Share2 size={15} />
+                      Share replay
+                    </button>
                     <button
-                      className="library-card"
+                      className="button guide-button"
+                      onClick={() => {
+                        setPlaying(false);
+                        setGuide(true);
+                      }}
+                    >
+                      <Sparkles size={15} />
+                      Lesson guide
+                    </button>
+                  </div>
+                </div>
+                <Tabs
+                  value={tab}
+                  onValueChange={(v) => {
+                    setTab(v);
+                    setPlaying(false);
+                  }}
+                  className="lesson-tabs"
+                >
+                  <div className="tabs-row">
+                    <TabsList className="tab-list" variant="line">
+                      <TabsTrigger value="learn">
+                        <FlaskConical size={16} />
+                        Explore
+                      </TabsTrigger>
+                      <TabsTrigger value="compare">
+                        <GitCompareArrows size={16} />
+                        Compare approaches
+                      </TabsTrigger>
+                      <TabsTrigger value="practice">
+                        <Target size={16} />
+                        Test your understanding
+                        <span className="tab-count">
+                          {(saved.answered[lesson.id] || []).length}/3
+                        </span>
+                      </TabsTrigger>
+                    </TabsList>
+                    <label className="prediction-toggle">
+                      <Switch
+                        checked={predicting}
+                        disabled={custom}
+                        onCheckedChange={(v) => {
+                          setPredicting(v);
+                          setCheckpoint(null);
+                        }}
+                        aria-label="Predict the next move"
+                      />{" "}
+                      Predict the next move
+                    </label>
+                  </div>
+                  <TabsContent value="learn">
+                    <Workbench
+                      onSwitch={() => setPlaying(false)}
+                      visual={
+                        <section className="visual-panel panel">
+                          <div className="panel-title">
+                            <span>
+                              <span className="panel-icon">
+                                <Layers3 size={16} />
+                              </span>
+                              Visualization
+                            </span>
+                            <span className="live-badge">
+                              {running
+                                ? "RUNNING"
+                                : completed
+                                  ? "COMPLETE"
+                                  : "INTERACTIVE"}
+                            </span>
+                          </div>
+                          <form
+                            className="input-toolbar"
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              applyInputs();
+                            }}
+                          >
+                            <label className="array-input">
+                              Input array
+                              <input
+                                value={raw}
+                                onChange={(e) => {
+                                  setPlaying(false);
+                                  setRaw(e.target.value);
+                                }}
+                                aria-label="Input array"
+                                spellCheck={false}
+                              />
+                            </label>
+                            {lesson.parameter !== "none" && (
+                              <label className="target-input">
+                                {lesson.parameter === "k"
+                                  ? "Window size"
+                                  : "Target"}
+                                <input
+                                  type="number"
+                                  value={paramRaw}
+                                  onChange={(e) => {
+                                    setPlaying(false);
+                                    setParamRaw(e.target.value);
+                                  }}
+                                  aria-label={
+                                    lesson.parameter === "k"
+                                      ? "Window size"
+                                      : "Target"
+                                  }
+                                />
+                              </label>
+                            )}
+                            <button
+                              type="submit"
+                              className="button small-button"
+                              disabled={running}
+                            >
+                              Apply
+                            </button>
+                            <button
+                              type="button"
+                              className="icon-button shuffle"
+                              title="Try a random input"
+                              aria-label="Try a random input"
+                              onClick={randomize}
+                              disabled={running}
+                            >
+                              <RotateCcw size={16} />
+                            </button>
+                          </form>
+                          {inputError && (
+                            <div className="inline-error" role="alert">
+                              {inputError}
+                            </div>
+                          )}
+                          {checkpoint && (
+                            <PredictionCard
+                              key={checkpoint.step}
+                              question={checkpoint}
+                              onContinue={() => {
+                                answeredSteps.current.add(checkpoint.step);
+                                setCheckpoint(null);
+                                setPlaying(true);
+                              }}
+                            />
+                          )}
+                          <MotionStage
+                            key={lesson.id}
+                            frame={frame}
+                            nextFrame={run.frames[playback.target] ?? frame}
+                            phase={playback.phase}
+                            lesson={lesson}
+                            custom={custom}
+                          />
+                          <div
+                            className="step-narrative"
+                            aria-live={playing ? "off" : "polite"}
+                          >
+                            <span className="step-symbol">
+                              <ChevronRight size={16} />
+                            </span>
+                            <div
+                              className="step-transition"
+                              key={`${step}:${frame.message}`}
+                            >
+                              <strong>
+                                {step === 0
+                                  ? "Ready when you are"
+                                  : completed
+                                    ? "You reached the result"
+                                    : `Line ${frame.line}`}
+                              </strong>
+                              <p>
+                                {step === 0
+                                  ? "Press play, or move one step at a time. Watch the code and state change together."
+                                  : describeFrame(frame, lesson, custom)}
+                              </p>
+                            </div>
+                          </div>
+                        </section>
+                      }
+                      code={
+                        <CodePanel
+                          frame={frame}
+                          nextLine={
+                            playback.target !== step
+                              ? run.frames[playback.target]?.line
+                              : undefined
+                          }
+                          lesson={lesson}
+                          editing={editing}
+                          setEditing={setEditing}
+                          setPlaying={setPlaying}
+                          code={code}
+                          setCode={setCode}
+                          executedCode={executedCode}
+                          dirty={dirty}
+                          custom={custom}
+                          running={running}
+                          error={run.error}
+                          resetCode={resetCode}
+                          runEdits={runEdits}
+                        />
+                      }
+                      explanation={
+                        <div className="mobile-explanation panel">
+                          <span className="eyebrow mint">THE IDEA</span>
+                          <h2>Every move has a reason.</h2>
+                          <p>{lesson.intuition}</p>
+                          <h3>What stays true</h3>
+                          <p>{lesson.invariant}</p>
+                          <div className="explanation-complexity">
+                            <span>
+                              Time <b>{lesson.complexity}</b>
+                            </span>
+                            <span>
+                              Extra space <b>{lesson.space}</b>
+                            </span>
+                          </div>
+                        </div>
+                      }
+                    />
+                    <PlaybackDock
+                      playback={playback}
+                      count={run.frames.length}
+                      speed={speed}
+                      setSpeed={setSpeed}
+                      running={running}
+                      onSeek={seek}
+                    />
+                    <div className="insight-grid">
+                      <section className="insight-card">
+                        <div className="eyebrow">
+                          <Lightbulb size={15} />
+                          THE IDEA
+                        </div>
+                        <h2>Every move has a reason.</h2>
+                        <p>{lesson.intuition}</p>
+                      </section>
+                      <section className="insight-card invariant">
+                        <div className="eyebrow mint">
+                          <CheckCircle2 size={15} />
+                          WHAT STAYS TRUE
+                        </div>
+                        <h2>The invariant</h2>
+                        <p>{lesson.invariant}</p>
+                      </section>
+                      <section className="complexity-card">
+                        <div className="complexity-row">
+                          <span>Time complexity</span>
+                          <strong>{lesson.complexity}</strong>
+                        </div>
+                        <div className="complexity-row">
+                          <span>Extra space</span>
+                          <strong>{lesson.space}</strong>
+                        </div>
+                        <p>Reference algorithm · excluding trace storage</p>
+                        <button
+                          className="text-button mint"
+                          onClick={() => setTab("compare")}
+                        >
+                          See the work saved
+                          <ArrowRight size={14} />
+                        </button>
+                      </section>
+                    </div>
+                    <div className="bottom-strip">
+                      <span>
+                        <span className="keycap">←</span>
+                        <span className="keycap">→</span>to step{" "}
+                        <span className="keycap">space</span>to play or pause
+                      </span>
+                      <button
+                        className="text-button"
+                        onClick={() => setTab("practice")}
+                      >
+                        Ready to try it yourself?
+                        <ArrowRight size={15} />
+                      </button>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="compare">
+                    <ComparisonLab
+                      key={`${lesson.id}:${nums.join(",")}:${parameter}`}
+                      lesson={lesson}
+                      nums={nums}
+                      parameter={parameter}
+                    />
+                  </TabsContent>
+                  <TabsContent value="practice">
+                    <div className="practice-layout">
+                      <section className="question-card">
+                        <div className="question-top">
+                          <span className="eyebrow mint">
+                            {question === 0
+                              ? "PREDICT"
+                              : question === 1
+                                ? "EXPLAIN"
+                                : "TRANSFER"}
+                          </span>
+                          <span>
+                            Question {question + 1} of {lesson.questions.length}
+                          </span>
+                        </div>
+                        <Progress
+                          value={
+                            ((question + 1) / lesson.questions.length) * 100
+                          }
+                        />
+                        <h2>{activeQuestion.prompt}</h2>
+                        <div
+                          className="answer-options"
+                          role="group"
+                          aria-label="Answer choices"
+                        >
+                          {activeQuestion.options.map((option, i) => (
+                            <button
+                              key={i}
+                              aria-pressed={choice === i}
+                              className={
+                                "answer-option " +
+                                (choice === i ? "selected " : "") +
+                                (checked && i === activeQuestion.answer
+                                  ? "correct "
+                                  : checked && i === choice
+                                    ? "incorrect"
+                                    : "")
+                              }
+                              onClick={() => {
+                                if (!checked) setChoice(i);
+                              }}
+                              disabled={checked}
+                            >
+                              <span className="answer-letter">
+                                {String.fromCharCode(65 + i)}
+                              </span>
+                              <span>{option}</span>
+                              {checked && i === activeQuestion.answer && (
+                                <CheckCircle2 size={18} />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                        {checked && (
+                          <div
+                            className={
+                              "answer-feedback " +
+                              (choice === activeQuestion.answer
+                                ? "success"
+                                : "")
+                            }
+                            role="status"
+                          >
+                            <strong>
+                              {choice === activeQuestion.answer
+                                ? "That’s right."
+                                : "Let’s look at the reasoning."}
+                            </strong>
+                            <p>{activeQuestion.explanation}</p>
+                          </div>
+                        )}
+                        <div className="question-actions">
+                          <button
+                            className="text-button muted"
+                            onClick={() => {
+                              setTab("learn");
+                            }}
+                          >
+                            Back to the visualization
+                          </button>
+                          {!checked ? (
+                            <button
+                              className="button"
+                              disabled={choice === null}
+                              onClick={checkAnswer}
+                            >
+                              Check answer
+                              <ArrowRight size={15} />
+                            </button>
+                          ) : question < lesson.questions.length - 1 ? (
+                            <button
+                              className="button"
+                              onClick={() => {
+                                setQuestion((q) => q + 1);
+                                setChoice(null);
+                                setChecked(false);
+                              }}
+                            >
+                              Next question
+                              <ArrowRight size={15} />
+                            </button>
+                          ) : (
+                            <button
+                              className="button"
+                              onClick={() => {
+                                setQuestion(0);
+                                setChoice(null);
+                                setChecked(false);
+                                setNotice(
+                                  "Practice restarted. Your correct answers remain saved.",
+                                );
+                              }}
+                            >
+                              Practice again
+                              <RotateCcw size={15} />
+                            </button>
+                          )}
+                        </div>
+                      </section>
+                      <aside className="practice-aside">
+                        <div className="practice-icon">
+                          <Target size={28} />
+                        </div>
+                        <h2>Make the idea yours.</h2>
+                        <p>
+                          Understanding means being able to predict, explain,
+                          and apply. Take your time.
+                        </p>
+                        <div className="practice-progress">
+                          <CheckCircle2 size={18} />
+                          <span>
+                            {(saved.answered[lesson.id] || []).length} of 3
+                            concepts checked
+                          </span>
+                        </div>
+                        {saved.mastered.includes(lesson.id) && (
+                          <div className="mastered-note">
+                            <Trophy size={20} />
+                            <strong>Lesson completed</strong>
+                            <p>
+                              Try a new input, then come back tomorrow to see
+                              what you remember.
+                            </p>
+                          </div>
+                        )}
+                        <button
+                          className="text-button mint"
+                          onClick={() => setGuide(true)}
+                        >
+                          Need a nudge?
+                          <Lightbulb size={15} />
+                        </button>
+                        <p className="practice-note">
+                          Completion reflects these knowledge checks, not a
+                          guarantee of independent mastery.
+                        </p>
+                      </aside>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </>
+            ) : view === "library" ? (
+              <>
+                <div className="page-heading">
+                  <div className="eyebrow mint">YOUR NEXT AHA MOMENT</div>
+                  <h1>Small lessons. Lasting understanding.</h1>
+                  <p>
+                    Six guided introductions with visual explanations and
+                    checkpoints. Then use the 100-problem roadmap to practice
+                    these ideas across more problems.
+                  </p>
+                </div>
+                <div className="library-filter">
+                  <ListFilter size={16} />
+                  {[
+                    "All",
+                    "Arrays",
+                    "Search",
+                    "Two pointers",
+                    "Sliding window",
+                    "Sorting",
+                  ].map((f) => (
+                    <button
+                      className={filter === f ? "selected" : ""}
+                      key={f}
+                      onClick={() => setFilter(f)}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+                <div className="library-grid">
+                  {lessons
+                    .filter((l) => filter === "All" || l.category === filter)
+                    .map((l, i) => (
+                      <button
+                        className="library-card"
+                        key={l.id}
+                        onClick={() => changeLesson(l)}
+                      >
+                        <LessonPreview lesson={l} />
+                        <div className="library-card-content">
+                          <div className="eyebrow">
+                            {l.category}
+                            {saved.mastered.includes(l.id) && (
+                              <CheckCircle2 size={16} />
+                            )}
+                          </div>
+                          <h2>{l.title}</h2>
+                          <p>{l.description}</p>
+                          <div className="library-bottom">
+                            <span>
+                              {l.duration} · {l.complexity}
+                            </span>
+                            <ArrowUpRight size={18} />
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="page-heading">
+                  <div className="eyebrow mint">ONE IDEA AT A TIME</div>
+                  <h1>Your understanding is taking shape.</h1>
+                  <p>
+                    Progress stays on this browser. Revisit a lesson whenever
+                    you need a refresher.
+                  </p>
+                </div>
+                <div className="progress-stats">
+                  <div>
+                    <span>Lessons mastered</span>
+                    <strong>
+                      {saved.mastered.length}
+                      <small> / 6</small>
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Concepts checked</span>
+                    <strong>
+                      {Object.values(saved.answered).reduce(
+                        (s, a) => s + a.length,
+                        0,
+                      )}
+                      <small> / 18</small>
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Practice attempts</span>
+                    <strong>{saved.attempts}</strong>
+                  </div>
+                </div>
+                <section className="progress-list panel">
+                  <div className="panel-title">
+                    <span>
+                      <BookOpen size={17} />
+                      Your foundations
+                    </span>
+                    <span>
+                      {Math.round((saved.mastered.length / 6) * 100)}% complete
+                    </span>
+                  </div>
+                  {lessons.map((l, i) => (
+                    <button
+                      className="progress-lesson"
                       key={l.id}
                       onClick={() => changeLesson(l)}
                     >
-                      <LessonPreview lesson={l}/>
-                      <div className="library-card-content">
-                        <div className="eyebrow">
-                          {l.category}
-                          {saved.mastered.includes(l.id) && (
-                            <CheckCircle2 size={16} />
-                          )}
-                        </div>
-                        <h2>{l.title}</h2>
-                        <p>{l.description}</p>
-                        <div className="library-bottom">
-                          <span>
-                            {l.duration} · {l.complexity}
-                          </span>
-                          <ArrowUpRight size={18} />
-                        </div>
+                      <span className="progress-number">
+                        {saved.mastered.includes(l.id) ? (
+                          <CheckCircle2 size={20} />
+                        ) : (
+                          String(i + 1).padStart(2, "0")
+                        )}
+                      </span>
+                      <div>
+                        <h3>{l.title}</h3>
+                        <p>
+                          {l.category} · {l.duration}
+                        </p>
                       </div>
+                      <Progress
+                        value={((saved.answered[l.id] || []).length / 3) * 100}
+                      />
+                      <span>{(saved.answered[l.id] || []).length}/3</span>
+                      <ArrowRight size={17} />
                     </button>
                   ))}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="page-heading">
-                <div className="eyebrow mint">ONE IDEA AT A TIME</div>
-                <h1>Your understanding is taking shape.</h1>
-                <p>
-                  Progress stays on this browser. Revisit a lesson whenever you
-                  need a refresher.
-                </p>
-              </div>
-              <div className="progress-stats">
-                <div>
-                  <span>Lessons mastered</span>
-                  <strong>
-                    {saved.mastered.length}
-                    <small> / 6</small>
-                  </strong>
-                </div>
-                <div>
-                  <span>Concepts checked</span>
-                  <strong>
-                    {Object.values(saved.answered).reduce(
-                      (s, a) => s + a.length,
-                      0,
-                    )}
-                    <small> / 18</small>
-                  </strong>
-                </div>
-                <div>
-                  <span>Practice attempts</span>
-                  <strong>{saved.attempts}</strong>
-                </div>
-              </div>
-              <section className="progress-list panel">
-                <div className="panel-title">
-                  <span>
-                    <BookOpen size={17} />
-                    Your foundations
-                  </span>
-                  <span>
-                    {Math.round((saved.mastered.length / 6) * 100)}% complete
-                  </span>
-                </div>
-                {lessons.map((l, i) => (
-                  <button
-                    className="progress-lesson"
-                    key={l.id}
-                    onClick={() => changeLesson(l)}
-                  >
-                    <span className="progress-number">
-                      {saved.mastered.includes(l.id) ? (
-                        <CheckCircle2 size={20} />
-                      ) : (
-                        String(i + 1).padStart(2, "0")
-                      )}
-                    </span>
-                    <div>
-                      <h3>{l.title}</h3>
-                      <p>
-                        {l.category} · {l.duration}
-                      </p>
-                    </div>
-                    <Progress
-                      value={((saved.answered[l.id] || []).length / 3) * 100}
-                    />
-                    <span>{(saved.answered[l.id] || []).length}/3</span>
-                    <ArrowRight size={17} />
-                  </button>
-                ))}
-              </section>
-            </>
-          )}
-        </main>
-        <footer className="app-footer">
-          <span>
-            trace. <span>Understand the why.</span>
-          </span>
-          <button className="text-button muted" onClick={() => setAbout(true)}>
-            About this workspace
-            <ArrowUpRight size={13} />
-          </button>
-        </footer>
-      </div>
-      <Dialog open={guide} onOpenChange={setGuide}>
-        <DialogContent className="guide-dialog">
-          <DialogHeader>
-            <div className="dialog-icon">
-              <Lightbulb size={24} />
-            </div>
-            <DialogTitle>One nudge at a time.</DialogTitle>
-            <DialogDescription>
-              Authored guidance for {lesson.title.toLowerCase()}. These hints
-              explain the reference algorithm.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="guide-state">
-            <span className="eyebrow">YOUR CURRENT STEP</span>
-            <p>{frame.message}</p>
-          </div>
-          {lesson.hints.slice(0, hint + 1).map((h, i) => (
-            <div className="hint" key={i}>
-              <span>0{i + 1}</span>
-              <p>{h}</p>
-            </div>
-          ))}
-          <button
-            className="button"
-            disabled={hint >= lesson.hints.length - 1}
-            onClick={() => setHint((h) => h + 1)}
-          >
-            {hint >= lesson.hints.length - 1
-              ? "All hints revealed"
-              : "Give me another nudge"}
-            <ArrowRight size={15} />
-          </button>
-          <p className="dialog-footnote">
-            A lesson guide, with no AI service connected.
-          </p>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={about} onOpenChange={setAbout}>
-        <DialogContent className="about-dialog">
-          <DialogHeader>
-            <DialogTitle>Built for understanding.</DialogTitle>
-            <DialogDescription>
-              Trace combines six guided foundations with a 100-problem practice roadmap.
-            </DialogDescription>
-          </DialogHeader>
-          <p>
-            The six guided foundations run in your browser using a bounded educational Python subset. It supports
-            numeric lists, variables, indexing, arithmetic, comparisons,
-            if/else, for/range, while, break, len, min, max, and abs. Use spaces
-            for indentation.
-          </p>
-          <p>
-            Imports, strings, functions, recursion, classes, and external access
-            are not supported. Runs stop after 2,400 steps. No code is sent to
-            an execution server from these guided lessons. The 100-problem roadmap uses a separate full-language execution service.
-          </p>
-          <p>
-            Lesson completion and practice answers are saved on this browser.
-            Accounts, cloud sync, AI tutoring, and multiplayer are not connected
-            in this version.
-          </p>
-          <button className="button secondary" onClick={exportReplay}>
-            <Copy size={15} />
-            Export current replay
-          </button>
-        </DialogContent>
-      </Dialog>
-      {notice && (
-        <div className="toast" role="status">
-          <CheckCircle2 size={18} />
-          <span>{notice}</span>
-          <button
-            onClick={() => setNotice("")}
-            aria-label="Dismiss notification"
-          >
-            <X size={15} />
-          </button>
+                </section>
+              </>
+            )}
+          </main>
+          <footer className="app-footer">
+            <span>
+              trace. <span>Understand the why.</span>
+            </span>
+            <button
+              className="text-button muted"
+              onClick={() => setAbout(true)}
+            >
+              About this workspace
+              <ArrowUpRight size={13} />
+            </button>
+          </footer>
         </div>
-      )}
-    </SidebarProvider>
+        <Dialog open={guide} onOpenChange={setGuide}>
+          <DialogContent className="guide-dialog">
+            <DialogHeader>
+              <div className="dialog-icon">
+                <Lightbulb size={24} />
+              </div>
+              <DialogTitle>One nudge at a time.</DialogTitle>
+              <DialogDescription>
+                Authored guidance for {lesson.title.toLowerCase()}. These hints
+                explain the reference algorithm.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="guide-state">
+              <span className="eyebrow">YOUR CURRENT STEP</span>
+              <p>{frame.message}</p>
+            </div>
+            {lesson.hints.slice(0, hint + 1).map((h, i) => (
+              <div className="hint" key={i}>
+                <span>0{i + 1}</span>
+                <p>{h}</p>
+              </div>
+            ))}
+            <button
+              className="button"
+              disabled={hint >= lesson.hints.length - 1}
+              onClick={() => setHint((h) => h + 1)}
+            >
+              {hint >= lesson.hints.length - 1
+                ? "All hints revealed"
+                : "Give me another nudge"}
+              <ArrowRight size={15} />
+            </button>
+            <p className="dialog-footnote">
+              A lesson guide, with no AI service connected.
+            </p>
+          </DialogContent>
+        </Dialog>
+        <Dialog open={about} onOpenChange={setAbout}>
+          <DialogContent className="about-dialog">
+            <DialogHeader>
+              <DialogTitle>Built for understanding.</DialogTitle>
+              <DialogDescription>
+                Trace combines six guided foundations with a 100-problem
+                practice roadmap.
+              </DialogDescription>
+            </DialogHeader>
+            <p>
+              The six guided foundations run in your browser using a bounded
+              educational Python subset. It supports numeric lists, variables,
+              indexing, arithmetic, comparisons, if/else, for/range, while,
+              break, len, min, max, and abs. Use spaces for indentation.
+            </p>
+            <p>
+              Imports, strings, functions, recursion, classes, and external
+              access are not supported. Runs stop after 2,400 steps. No code is
+              sent to an execution server from these guided lessons. The
+              100-problem roadmap uses a separate full-language execution
+              service.
+            </p>
+            <p>
+              Lesson completion and practice answers are saved on this browser.
+              Accounts, cloud sync, AI tutoring, and multiplayer are not
+              connected in this version.
+            </p>
+            <button className="button secondary" onClick={exportReplay}>
+              <Copy size={15} />
+              Export current replay
+            </button>
+          </DialogContent>
+        </Dialog>
+        {notice && (
+          <div className="toast" role="status">
+            <CheckCircle2 size={18} />
+            <span>{notice}</span>
+            <button
+              onClick={() => setNotice("")}
+              aria-label="Dismiss notification"
+            >
+              <X size={15} />
+            </button>
+          </div>
+        )}
+      </SidebarProvider>
+    </AccountProvider>
   );
 }
