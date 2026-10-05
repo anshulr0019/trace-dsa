@@ -10,6 +10,7 @@ import {
   type Note,
 } from "@/lib/product/notebook";
 import { openProblem } from "@/lib/product/lessons";
+import { experiments, reviewDate } from "@/lib/lab/study";
 import { AccountPanel } from "./account";
 export function ProblemNotes({ id }: { id: string }) {
   const [note, setNote] = useState<Note>(emptyNote),
@@ -95,6 +96,62 @@ export function Notebook() {
         to revisit.
       </p>
       <AccountPanel />
+      <section className="product-card">
+        <h2>My custom problems</h2>
+        <p>
+          Saved variants preserve your own code and input with their base DSA
+          pattern.
+        </p>
+        <div className="notebook-list">
+          {experiments().map((e) => (
+            <article key={e.id}>
+              <div>
+                <h3>{e.title}</h3>
+                <small>
+                  {e.language} · {new Date(e.createdAt).toLocaleDateString()}
+                </small>
+                <p>{e.description}</p>
+              </div>
+              <button
+                onClick={() =>
+                  openProblem(
+                    e.problemId,
+                    `&language=${e.language}&study=${e.id}`,
+                  )
+                }
+              >
+                Open saved problem →
+              </button>
+            </article>
+          ))}
+          {!experiments().length && (
+            <p>
+              Open a roadmap problem and use “My study workspace” to save your
+              variant.
+            </p>
+          )}
+        </div>
+      </section>
+      <section className="product-card">
+        <h2>Revision calendar</h2>
+        <div className="notebook-list">
+          {problems
+            .filter((p) => reviewDate(p.id))
+            .sort((a, b) => reviewDate(a.id).localeCompare(reviewDate(b.id)))
+            .map((p) => (
+              <article key={p.id}>
+                <div>
+                  <h3>{p.title}</h3>
+                  <small className="revision-date">
+                    Revise on {reviewDate(p.id)}
+                  </small>
+                </div>
+                <button onClick={() => openProblem(p.id)}>Revise →</button>
+              </article>
+            ))}
+        </div>
+        <p>Schedule revision dates from a problem’s study workspace.</p>
+      </section>
       <section className="product-card">
         <div className="product-actions">
           <label>
@@ -188,8 +245,10 @@ export function Notebook() {
                 try {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  if (file.size > 4000000)
-                    throw Error("Backup must be smaller than 4 MB.");
+                  if (file.size > 6000000)
+                    throw Error(
+                      "Backup file must be smaller than 6 MB; saved notebook data is limited to 4 MB.",
+                    );
                   const v = JSON.parse(await file.text());
                   if (
                     v.version !== 1 ||

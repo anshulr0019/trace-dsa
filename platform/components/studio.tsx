@@ -82,6 +82,10 @@ import { PlaybackDock } from "./experience/playback-dock";
 import { CodePanel } from "./experience/code-panel";
 import { Overview } from "./experience/overview";
 import { AccountProvider } from "./product/account";
+import { useOwnerAccess } from "./lab/owner-access";
+import { OwnerDashboard } from "./lab/owner-dashboard";
+import { Classroom } from "./lab/classroom";
+import "./lab/lab.css";
 import { TeacherWorkspace } from "./product/teacher";
 import { Notebook } from "./product/notebook";
 import { GuidedTour } from "./product/learning-tools";
@@ -135,6 +139,7 @@ function Navigation({
   saved: Saved;
 }) {
   const { setOpenMobile } = useSidebar();
+  const ownerAccess = useOwnerAccess();
   const navigate = (v: string) => {
     setView(v);
     setOpenMobile(false);
@@ -161,18 +166,25 @@ function Navigation({
               { id: "progress", label: "My progress", Icon: Gauge },
               { id: "teacher", label: "Lessons & classes", Icon: BookOpen },
               { id: "notebook", label: "Student notebook", Icon: BookOpen },
-            ].map(({ id, label, Icon }) => (
-              <SidebarMenuItem key={id}>
-                <SidebarMenuButton
-                  isActive={view === id}
-                  onClick={() => navigate(id)}
-                >
-                  <Icon />
-                  <span>{label}</span>
-                  {view === id && <span className="nav-dot" />}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+              { id: "classroom", label: "Live classroom", Icon: FlaskConical },
+              { id: "owner", label: "Workspace checks", Icon: Gauge },
+            ]
+              .filter(
+                (item) =>
+                  item.id !== "owner" || ownerAccess.local || ownerAccess.owner,
+              )
+              .map(({ id, label, Icon }) => (
+                <SidebarMenuItem key={id}>
+                  <SidebarMenuButton
+                    isActive={view === id}
+                    onClick={() => navigate(id)}
+                  >
+                    <Icon />
+                    <span>{label}</span>
+                    {view === id && <span className="nav-dot" />}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
           </SidebarMenu>
         </div>
         <div className="side-section">
@@ -463,6 +475,8 @@ export default function Studio() {
               "curriculum",
               "teacher",
               "notebook",
+              "classroom",
+              "owner",
             ].includes(requestedView ?? "")
               ? requestedView!
               : "home",
@@ -470,7 +484,13 @@ export default function Studio() {
           window.history.replaceState(
             null,
             "",
-            ["curriculum", "teacher", "notebook"].includes(requestedView ?? "")
+            [
+              "curriculum",
+              "teacher",
+              "notebook",
+              "classroom",
+              "owner",
+            ].includes(requestedView ?? "")
               ? initialSearch + initialHash
               : requestedView
                 ? `?view=${requestedView}`
@@ -492,6 +512,7 @@ export default function Studio() {
     if (storageReady)
       try {
         localStorage.setItem("trace-progress-v1", JSON.stringify(saved));
+        window.dispatchEvent(new Event("trace:notebook"));
       } catch {
         setNotice("Progress could not be saved on this browser.");
       }
@@ -657,6 +678,23 @@ export default function Studio() {
     () => compareAlgorithms(lesson.id, nums, parameter),
     [lesson.id, nums, parameter],
   );
+  useEffect(() => {
+    const restore = () => {
+      try {
+        const value = JSON.parse(
+          localStorage.getItem("trace-progress-v1") ?? "null",
+        );
+        if (
+          value &&
+          Array.isArray(value.mastered) &&
+          typeof value.attempts === "number"
+        )
+          setSaved(value);
+      } catch {}
+    };
+    window.addEventListener("trace:restore", restore);
+    return () => window.removeEventListener("trace:restore", restore);
+  }, []);
   const activeQuestion = lesson.questions[question];
   return (
     <AccountProvider>
@@ -697,9 +735,13 @@ export default function Studio() {
                         ? "100-problem roadmap"
                         : view === "teacher"
                           ? "Lessons & classes"
-                          : view === "notebook"
-                            ? "Student notebook"
-                            : "My progress"}
+                          : view === "owner"
+                            ? "Workspace checks"
+                            : view === "classroom"
+                              ? "Live classroom"
+                              : view === "notebook"
+                                ? "Student notebook"
+                                : "My progress"}
               </strong>
             </div>
             <div className="top-actions">
@@ -721,7 +763,11 @@ export default function Studio() {
             id="main-content"
             className={`workspace ${view === "studio" && tab === "learn" ? "has-playback" : ""}`}
           >
-            {view === "teacher" ? (
+            {view === "owner" ? (
+              <OwnerDashboard />
+            ) : view === "classroom" ? (
+              <Classroom />
+            ) : view === "teacher" ? (
               <TeacherWorkspace />
             ) : view === "notebook" ? (
               <Notebook />

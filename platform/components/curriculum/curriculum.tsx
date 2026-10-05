@@ -64,6 +64,14 @@ import { useFramePlayback } from "./use-frame-playback";
 import "./curriculum.css";
 import "./workspace.css";
 import "./foundation-style.css";
+import { usePublishedLesson } from "../lab/editorial";
+import { InputBuilder } from "../lab/input-builder";
+import { VisualDebugger } from "../lab/debugger";
+import { StudyTools } from "../lab/study-tools";
+import { FindMistake } from "../lab/find-mistake";
+import { pausedAtBreakpoint, watchValue } from "@/lib/lab/debug";
+import { experiments, type Experiment } from "@/lib/lab/study";
+import "../lab/lab.css";
 type Run = {
   frames: ExecutionFrame[];
   result: unknown;
@@ -96,11 +104,16 @@ function ProblemStudio({
   onProblem: (id: string) => void;
   onExisting: (id: string) => void;
 }) {
+  const published = usePublishedLesson(p.id);
   const [shared, setShared] = useState<SharedLesson | null>(null),
     [beginner, setBeginner] = useState(false),
     [presenting, setPresenting] = useState(false),
     [predict, setPredict] = useState(false),
     [question, setQuestion] = useState<ReturnType<typeof nextPrediction>>(null);
+  const [breakpoints, setBreakpoints] = useState<number[]>([]);
+  const [watches, setWatches] = useState<string[]>([]);
+  const lastBreakpoint = useRef(-1),
+    pendingSeek = useRef<number | null>(null);
   const predicted = useRef(new Set<number>()),
     sharedLoaded = useRef(false);
   useEffect(() => {
@@ -163,6 +176,43 @@ function ProblemStudio({
     window.history.replaceState(null, "", url.pathname + url.search);
   }
   const examples = examplesFor(p);
+  function applyInput(value: Record<string, unknown>) {
+    setInput(formatInput(value));
+    setCustomMode(true);
+    setQuestion(null);
+    setPlaying(false);
+    setResult(null);
+    setStep(0);
+    setError("");
+  }
+  function restoreExperiment(value: Experiment) {
+    drafts.current[language] = code;
+    drafts.current[value.language] = value.code;
+    setMode("mine");
+    setLanguage(value.language);
+    setCode(value.code);
+    setBreakpoints([]);
+    applyInput(value.input);
+  }
+  function inspectCase(value: Record<string, unknown>, capture: Run) {
+    setInput(formatInput(value));
+    setCustomMode(true);
+    setQuestion(null);
+    setPlaying(false);
+    setResult(capture);
+    setRunInput(value);
+    setSnapshot({ code: activeCode, input: formatInput(value), language });
+    pendingSeek.current = 0;
+    setPanel("output");
+    focusPlayback();
+  }
+  function seekDebug(n: number) {
+    setQuestion(null);
+    setPlaying(false);
+    lastBreakpoint.current = -1;
+    setStep(n);
+  }
+
   const [customMode, setCustomMode] = useState(false);
   const [mode, setMode] = useState<"guided" | "mine">("mine"),
     [batch, setBatch] = useState<string[]>([]),
@@ -239,6 +289,17 @@ function ProblemStudio({
     } catch (e) {
       setError(e instanceof Error ? e.message : "Invalid lesson link.");
     }
+    const study = new URLSearchParams(location.search).get("study");
+    const experiment = experiments().find(
+      (e) => e.id === study && e.problemId === p.id,
+    );
+    if (experiment && !validateProblemInput(p.id, experiment.input)) {
+      setLanguage(experiment.language);
+      setCode(experiment.code);
+      setInput(formatInput(experiment.input));
+      setCustomMode(true);
+      drafts.current[experiment.language] = experiment.code;
+    }
     setExperience(
       new URLSearchParams(location.search).get("practice") === "1"
         ? "practice"
@@ -263,8 +324,37 @@ function ProblemStudio({
         `trace:problem:${p.id}`,
         JSON.stringify({ drafts: drafts.current, language, input }),
       );
+      window.dispatchEvent(new Event("trace:notebook"));
     } catch {}
   }, [code, input, language, p.id, ready]);
+  useEffect(() => {
+    const restore = () => {
+      try {
+        const saved = JSON.parse(
+          localStorage.getItem(`trace:problem:${p.id}`) ?? "null",
+        );
+        if (!saved) return;
+        controller.current?.abort();
+        request.current++;
+        inFlight.current = false;
+        setRunning(false);
+        setPlaying(false);
+        setResult(null);
+        drafts.current = saved.drafts ?? {};
+        const lang: Language = languages.some((l) => l.id === saved.language)
+          ? saved.language
+          : language;
+        setLanguage(lang);
+        setCode(
+          restoreDraft(p, lang, drafts.current[lang], sourceFor(p, lang)),
+        );
+        setInput(saved.input ?? formatInput(p.input));
+        setBreakpoints([]);
+      } catch {}
+    };
+    window.addEventListener("trace:restore", restore);
+    return () => window.removeEventListener("trace:restore", restore);
+  }, [p.id, language]);
   const stale =
     !!result &&
     (snapshot.code !== activeCode ||
@@ -272,6 +362,27 @@ function ProblemStudio({
       snapshot.language !== language);
   const frame = result?.frames[step],
     prev = step ? result?.frames[step - 1] : undefined;
+  useEffect(() => {
+    if (
+      playing &&
+      result &&
+      pausedAtBreakpoint(
+        result.frames,
+        step,
+        breakpoints,
+        lastBreakpoint.current,
+      )
+    ) {
+      lastBreakpoint.current = step;
+      setPlaying(false);
+    }
+  }, [playing, step, breakpoints, result, setPlaying]);
+  useEffect(() => {
+    if (result && pendingSeek.current !== null) {
+      setStep(pendingSeek.current);
+      pendingSeek.current = null;
+    }
+  }, [result, setStep]);
   useEffect(() => {
     if (!predict || !playing || predicted.current.has(step) || !result) return;
     const q = nextPrediction(frame, result.frames[step + 1]);
@@ -310,6 +421,7 @@ function ProblemStudio({
     }
     if (autoplay) focusPlayback();
     predicted.current.clear();
+    lastBreakpoint.current = -1;
     setQuestion(null);
     const id = ++request.current;
     inFlight.current = true;
@@ -364,7 +476,10 @@ function ProblemStudio({
       return;
     }
     focusPlayback();
-    if (step === (result?.frames.length ?? 0) - 1) setStep(0);
+    if (step === (result?.frames.length ?? 0) - 1) {
+      lastBreakpoint.current = -1;
+      setStep(0);
+    }
     setPlaying(true);
   }
   function changeLanguage(next: Language) {
@@ -395,6 +510,7 @@ function ProblemStudio({
       : [...new Set([...list, p.id])];
     try {
       localStorage.setItem("trace:curriculum:complete", JSON.stringify(list));
+      window.dispatchEvent(new Event("trace:notebook"));
     } catch {}
     setComplete(!complete);
   }
@@ -474,11 +590,16 @@ function ProblemStudio({
     result &&
     matchesAnswer(p, runInput, sample.expected, result.result);
   let preview = p.input;
+  let previewError = "";
   try {
     const parsed = JSON.parse(input);
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed))
       preview = parsed;
-  } catch {}
+    else previewError = "Input JSON must be an object.";
+  } catch {
+    previewError = "Correct the input JSON before saving or sharing.";
+  }
+  if (!previewError) previewError = validateProblemInput(p.id, preview) ?? "";
   return (
     <section
       className={`curriculum problem-studio roadmap-foundation has-playback ${presenting ? "presentation-studio" : ""}`}
@@ -587,6 +708,7 @@ function ProblemStudio({
         language={language}
         code={activeCode}
         input={preview}
+        inputError={previewError}
       />
       {experience === "practice" ? (
         <PracticeLab
@@ -608,6 +730,7 @@ function ProblemStudio({
             </section>
           )}
           <LessonActions
+            inputError={previewError}
             lesson={{
               version: 1,
               problemId: p.id,
@@ -654,6 +777,23 @@ function ProblemStudio({
               </span>
             )}
           </div>
+          <InputBuilder
+            problem={p}
+            input={preview}
+            inputError={previewError}
+            disabled={running}
+            onApply={applyInput}
+          />
+          <VisualDebugger
+            frames={result?.frames ?? []}
+            step={step}
+            code={activeCode}
+            breakpoints={breakpoints}
+            onBreakpoints={setBreakpoints}
+            onSeek={seekDebug}
+            watches={watches}
+            onWatches={setWatches}
+          />
           <ExampleShelf
             examples={examples}
             selected={selectedExample}
@@ -908,9 +1048,17 @@ function ProblemStudio({
                   <Editor
                     language={language}
                     value={activeCode}
+                    breakpoints={breakpoints}
+                    onBreakpoint={(n) =>
+                      setBreakpoints((v) =>
+                        v.includes(n) ? v.filter((x) => x !== n) : [...v, n],
+                      )
+                    }
                     readOnly={mode === "guided" || running}
                     onChange={(value) => {
                       setQuestion(null);
+                      setBreakpoints([]);
+                      lastBreakpoint.current = -1;
                       setCode(value);
                       setPlaying(false);
                       setBatch([]);
@@ -919,10 +1067,33 @@ function ProblemStudio({
                     onRun={() => void run(true)}
                   />
                   <div className="scalar-state">
+                    {watches.map((path) => {
+                      const value = watchValue(frame?.vars ?? {}, path),
+                        old = watchValue(prev?.vars ?? {}, path);
+                      return (
+                        <div
+                          key={`watch:${path}`}
+                          className={
+                            old.found &&
+                            display(old.value) !== display(value.value)
+                              ? "changed"
+                              : ""
+                          }
+                        >
+                          <label>Watch · {path}</label>
+                          <strong>
+                            {value.found
+                              ? display(value.value).slice(0, 2000)
+                              : "Unavailable"}
+                          </strong>
+                        </div>
+                      );
+                    })}
                     {Object.entries(frame?.vars ?? {})
                       .filter(
                         ([k, v]) =>
                           k !== "data" &&
+                          !watches.includes(k) &&
                           (v === null ||
                             ["number", "boolean", "string"].includes(typeof v)),
                       )
@@ -1147,6 +1318,32 @@ function ProblemStudio({
           />
           {result && <TraceStats frames={result.frames} />}
           <LearningHints key={p.id} id={p.id} />
+          <FindMistake
+            problem={p}
+            language={language}
+            code={activeCode}
+            runtime={runtime}
+            disabled={running}
+            onInspect={inspectCase}
+          />
+          <StudyTools
+            problem={p}
+            language={language}
+            code={activeCode}
+            input={preview}
+            inputError={previewError}
+            onRestore={restoreExperiment}
+          />
+          {published && (
+            <section className="product-card">
+              <h2>{published.title}</h2>
+              <p>{published.explanation}</p>
+              <small>
+                Additional teaching notes · updated{" "}
+                {new Date(published.updated_at).toLocaleDateString()}
+              </small>
+            </section>
+          )}
           <ProblemNotes id={p.id} />
           <a
             className="feedback-link"

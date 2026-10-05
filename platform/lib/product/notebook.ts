@@ -37,7 +37,7 @@ export function notebookSnapshot() {
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)!;
     if (
-      /^(trace:note:|trace:problem:|trace:practice:|trace:curriculum:complete$|trace:language$)/.test(
+      /^(trace:note:|trace:problem:|trace:practice:|trace:study:|trace:curriculum:complete$|trace:language$|trace-progress-v1$)/.test(
         key,
       )
     )
@@ -50,16 +50,16 @@ export function restoreNotebook(data: Record<string, string>) {
     !data ||
     typeof data !== "object" ||
     Array.isArray(data) ||
-    JSON.stringify(data).length > 4000000
+    new TextEncoder().encode(JSON.stringify(data)).length > 4000000
   )
     throw Error("Invalid notebook backup.");
   const entries = Object.entries(data).filter(([key]) =>
-    /^(trace:note:|trace:problem:|trace:practice:|trace:curriculum:complete$|trace:language$)/.test(
+    /^(trace:note:|trace:problem:|trace:practice:|trace:study:|trace:curriculum:complete$|trace:language$|trace-progress-v1$)/.test(
       key,
     ),
   );
   for (const [key, value] of entries) {
-    if (typeof value !== "string" || value.length > 250000)
+    if (typeof value !== "string" || value.length > 1500000)
       throw Error("Invalid notebook values.");
     const languages = ["python", "cpp", "java", "javascript"],
       levels = ["guided", "independent", "challenge"];
@@ -72,7 +72,35 @@ export function restoreNotebook(data: Record<string, string>) {
       continue;
     }
     const parsed = JSON.parse(value);
-    if (key === "trace:curriculum:complete") {
+    if (key === "trace-progress-v1") {
+      const ids = [
+        "two-sum",
+        "binary-search",
+        "sliding-window",
+        "bubble-sort",
+        "insertion-sort",
+        "prefix-sum",
+      ];
+      if (
+        !parsed ||
+        !Array.isArray(parsed.mastered) ||
+        parsed.mastered.some(
+          (id: unknown) => typeof id !== "string" || !ids.includes(id),
+        ) ||
+        typeof parsed.attempts !== "number" ||
+        !parsed.answered ||
+        typeof parsed.answered !== "object" ||
+        Array.isArray(parsed.answered) ||
+        Object.values(parsed.answered).some(
+          (v) =>
+            !Array.isArray(v) ||
+            v.some((n) => !Number.isInteger(n) || n < 0 || n > 100),
+        ) ||
+        typeof parsed.lastLesson !== "string" ||
+        !ids.includes(parsed.lastLesson)
+      )
+        throw Error("Invalid foundation progress.");
+    } else if (key === "trace:curriculum:complete") {
       if (
         !Array.isArray(parsed) ||
         parsed.some((id) => typeof id !== "string" || !problemById[id])
@@ -96,7 +124,7 @@ export function restoreNotebook(data: Record<string, string>) {
         typeof parsed.drafts !== "object" ||
         Array.isArray(parsed.drafts) ||
         Object.values(parsed.drafts).some(
-          (v) => typeof v !== "string" || v.length > 18000,
+          (v) => typeof v !== "string" || v.length > 60000,
         )
       )
         throw Error("Invalid editor draft.");
@@ -128,6 +156,55 @@ export function restoreNotebook(data: Record<string, string>) {
         typeof parsed.explanation !== "string"
       )
         throw Error("Invalid practice draft.");
+    } else if (key.startsWith("trace:study:review:")) {
+      if (
+        !parsed ||
+        typeof parsed.date !== "string" ||
+        (parsed.date && !/^\d{4}-\d{2}-\d{2}$/.test(parsed.date))
+      )
+        throw Error("Invalid revision date.");
+    } else if (
+      key === "trace:study:experiments" ||
+      key.startsWith("trace:study:versions:") ||
+      key.startsWith("trace:study:mistakes:")
+    ) {
+      if (
+        !Array.isArray(parsed) ||
+        parsed.length > 40 ||
+        parsed.some(
+          (v) =>
+            !v ||
+            typeof v.id !== "string" ||
+            typeof v.createdAt !== "string" ||
+            !problemById[v.problemId] ||
+            !languages.includes(v.language) ||
+            typeof v.code !== "string" ||
+            v.code.length > 60000 ||
+            !v.input ||
+            typeof v.input !== "object" ||
+            Array.isArray(v.input),
+        )
+      )
+        throw Error("Invalid saved study work.");
+      if (key.startsWith("trace:study:mistakes:")) {
+        if (
+          parsed.some(
+            (v) =>
+              typeof v.note !== "string" ||
+              (v.error !== null && typeof v.error !== "string"),
+          )
+        )
+          throw Error("Invalid mistake journal.");
+      } else if (
+        parsed.some(
+          (v) =>
+            typeof v.title !== "string" ||
+            v.title.length > 120 ||
+            typeof v.description !== "string" ||
+            v.description.length > 2000,
+        )
+      )
+        throw Error("Invalid custom problem or code version.");
     } else throw Error("Unsupported notebook entry.");
   }
   const previous = entries.map(
@@ -145,4 +222,5 @@ export function restoreNotebook(data: Record<string, string>) {
     throw Error("Not enough browser storage to restore this notebook.");
   }
   window.dispatchEvent(new Event("trace:notebook"));
+  window.dispatchEvent(new Event("trace:restore"));
 }

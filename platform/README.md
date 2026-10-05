@@ -25,11 +25,16 @@ Every curriculum problem now includes Predict, Solve, and Challenge modes, with 
 
 ## Teacher and learner workspaces
 
+The interactive workspace now includes visual input editing, recorded breakpoints and watches, failing-case replay, custom variants, named code versions, mistake journals and a revision calendar. The owner matrix covers 100 problems × four languages × five specific checks, with dates/evidence and separate website workflow checks. See [Interactive workspace](docs/INTERACTIVE-WORKSPACE.md).
+
+The configured Supabase integration adds ordered reusable courses, written feedback, authenticated live classrooms with shared execution and prediction polls, automatic notebook sync with conflict handling, private owner diagnostics and teaching-note publication history. Apply the base schema and `supabase/002-interactive-workspace.sql` as described in [setup](docs/TEACHER-SETUP.md).
+
 - **Lessons & classes:** create links with custom inputs, teaching instructions, a language, optional edited code and a recorded step. Recipients explicitly run the example. Presentation mode expands the workbench and hides navigation; Escape exits it.
 - **Student notebook:** bookmarks, revision lists, personal explanations, concept learning paths, local backups and confirmed restore.
 - **Learning tools:** slower beginner playback, questions derived from the next actual recorded state, progressive authored hints, and counted reference comparisons for two pointers, binary search and fixed windows. A trace-size chart reports serialized snapshot values, not auxiliary memory or runtime.
-- **Configured cloud features:** email sign-in, manual cross-device notebook backup/restore, class invitations, assignments, due dates and teacher views of student explanations and submitted code. Browser scores are explicitly learner-reported.
+- **Configured cloud features:** email sign-in, manual/automatic notebook transfer, class invitations, assignments, courses, feedback, live sessions and owner access. Browser scores are explicitly learner-reported.
 - **Demo:** a guided introduction, showcase lessons, feedback issue links and [demo/presentation material](docs/DEMO-AND-PITCH.md).
+- **Launch:** a [LinkedIn post draft and recording outline](docs/LINKEDIN-POST.md). No social post or outreach message is sent automatically.
 
 Cloud features need the [Supabase setup](docs/TEACHER-SETUP.md). They are visibly unavailable without configuration. The schema is in `supabase/schema.sql`; public configuration names are in `.env.example`. The owner is handling acceptance testing for this release; compilation is not a substitute for that testing.
 

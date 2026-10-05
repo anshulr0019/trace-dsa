@@ -1,3 +1,4 @@
+import { observeRun } from "../lab/diagnostics";
 import type { Language } from "./playground";
 import { validateProblemInput } from "./validate";
 import { withExecutionBoundaries, type PlaybackRun } from "./execution";
@@ -10,29 +11,60 @@ export type Submission = {
   problemId: string;
   automatic?: boolean;
 };
-export const browserLanguages: Language[] = ["python", "cpp", "java", "javascript"];
+export const browserLanguages: Language[] = [
+  "python",
+  "cpp",
+  "java",
+  "javascript",
+];
 
-export async function runtimeCapabilities(signal?: AbortSignal): Promise<RuntimeCapabilities> {
+export async function runtimeCapabilities(
+  signal?: AbortSignal,
+): Promise<RuntimeCapabilities> {
   try {
     const response = await fetch("/api/local-runtime", { signal });
     if (response.ok) {
-      const value = await response.json() as {local?:boolean;available?:boolean;languages?:Language[]};
-      if (value.local || value.available) return { server: true, languages: [...new Set<Language>([...(value.languages ?? ["python", "javascript", "cpp"]), "java"])] };
+      const value = (await response.json()) as {
+        local?: boolean;
+        available?: boolean;
+        languages?: Language[];
+      };
+      if (value.local || value.available)
+        return {
+          server: true,
+          languages: [
+            ...new Set<Language>([
+              ...(value.languages ?? ["python", "javascript", "cpp"]),
+              "java",
+            ]),
+          ],
+        };
     }
-  } catch { signal?.throwIfAborted(); }
+  } catch {
+    signal?.throwIfAborted();
+  }
   return { server: false, languages: browserLanguages };
 }
 
-export function executeInBrowser(payload: Submission, signal?: AbortSignal): Promise<PlaybackRun> {
+function executeBrowser(
+  payload: Submission,
+  signal?: AbortSignal,
+): Promise<PlaybackRun> {
   signal?.throwIfAborted();
   if (!browserLanguages.includes(payload.language as Language))
     return Promise.reject(Error("This language cannot run in the browser."));
   const error = validateProblemInput(payload.problemId, payload.input);
   if (error) return Promise.reject(Error(error));
   if (!payload.code.trim() || payload.code.length > 60000)
-    return Promise.reject(Error("Write a solution of at most 60,000 characters."));
+    return Promise.reject(
+      Error("Write a solution of at most 60,000 characters."),
+    );
   return new Promise((resolve, reject) => {
-    const worker = new Worker(payload.language === "java" ? "/browser-runtime/java-runner.js" : "/browser-runtime/runner.js");
+    const worker = new Worker(
+      payload.language === "java"
+        ? "/browser-runtime/java-runner.js"
+        : "/browser-runtime/runner.js",
+    );
     let timer: ReturnType<typeof setTimeout>;
     const finish = (error?: Error, run?: PlaybackRun) => {
       clearTimeout(timer);
@@ -41,28 +73,74 @@ export function executeInBrowser(payload: Submission, signal?: AbortSignal): Pro
       if (error) reject(error);
       else resolve(withExecutionBoundaries(run!, payload.input));
     };
-    const abort = () => finish(new DOMException("Run cancelled.", "AbortError"));
+    const abort = () =>
+      finish(new DOMException("Run cancelled.", "AbortError"));
     signal?.addEventListener("abort", abort, { once: true });
-    timer = setTimeout(() => finish(Error("The browser runtime could not load. Check your connection and try Run again.")), ["cpp", "java"].includes(payload.language) ? 120000 : 60000);
+    timer = setTimeout(
+      () =>
+        finish(
+          Error(
+            "The browser runtime could not load. Check your connection and try Run again.",
+          ),
+        ),
+      ["cpp", "java"].includes(payload.language) ? 120000 : 60000,
+    );
     worker.onmessage = ({ data }) => {
       if (data.type === "ready") {
         clearTimeout(timer);
         const timeoutMs = Number(data.timeoutMs) || 6000;
-        timer = setTimeout(() => finish(Error(`Execution timed out (${timeoutMs / 1000} seconds). Try a smaller input or check your loop condition.`)), timeoutMs);
+        timer = setTimeout(
+          () =>
+            finish(
+              Error(
+                `Execution timed out (${timeoutMs / 1000} seconds). Try a smaller input or check your loop condition.`,
+              ),
+            ),
+          timeoutMs,
+        );
       } else if (data.type === "result") finish(undefined, data.run);
       else if (data.type === "error") finish(Error(data.error));
     };
-    worker.onerror = (event) => finish(Error(`The browser runtime could not start. ${event.message || "Reload this page and try again."}`));
+    worker.onerror = (event) =>
+      finish(
+        Error(
+          `The browser runtime could not start. ${event.message || "Reload this page and try again."}`,
+        ),
+      );
     worker.postMessage(payload);
   });
 }
 
-export async function executeSubmission(payload: Submission, capabilities: RuntimeCapabilities, signal?: AbortSignal): Promise<PlaybackRun> {
-  if (!capabilities.server || payload.language === "java") return executeInBrowser(payload, signal);
-  const response = await fetch("/api/local-runtime", {
-    method: "POST", signal, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
-  });
-  const run = await response.json() as PlaybackRun;
-  if (!response.ok) throw Error(run.error ?? "Code execution is unavailable. Please try again.");
-  return run;
+export function executeInBrowser(
+  payload: Submission,
+  signal?: AbortSignal,
+): Promise<PlaybackRun> {
+  return observeRun(() => executeBrowser(payload, signal), payload, "browser");
+}
+
+export async function executeSubmission(
+  payload: Submission,
+  capabilities: RuntimeCapabilities,
+  signal?: AbortSignal,
+): Promise<PlaybackRun> {
+  if (!capabilities.server || payload.language === "java")
+    return executeInBrowser(payload, signal);
+  return observeRun(
+    async () => {
+      const response = await fetch("/api/local-runtime", {
+        method: "POST",
+        signal,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const run = (await response.json()) as PlaybackRun;
+      if (!response.ok)
+        throw Error(
+          run.error ?? "Code execution is unavailable. Please try again.",
+        );
+      return run;
+    },
+    payload,
+    "server",
+  );
 }

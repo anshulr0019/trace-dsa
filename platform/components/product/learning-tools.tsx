@@ -103,11 +103,13 @@ export function LessonActions({
   step,
   onPresentation,
   presenting,
+  inputError,
 }: {
   lesson: SharedLesson;
   step: number;
   onPresentation: () => void;
   presenting: boolean;
+  inputError?: string;
 }) {
   const [message, setMessage] = useState(""),
     [link, setLink] = useState("");
@@ -119,6 +121,7 @@ export function LessonActions({
       <button
         onClick={() => {
           try {
+            if (inputError) throw Error(inputError);
             setLink(lessonURL({ ...lesson, step }));
             setMessage(
               "Link ready. It includes the code, input, and selected step; recipients press Play to execute it.",

@@ -33,8 +33,8 @@ import type { Language } from "@/lib/curriculum/playground";
 import { Editor } from "../curriculum/editor";
 import { TracePlayer } from "./trace-player";
 import "./practice.css";
-import {executeInBrowser} from "@/lib/curriculum/runtime-client";
-import {browserPractice} from "@/lib/practice/browser-practice";
+import { executeInBrowser } from "@/lib/curriculum/runtime-client";
+import { browserPractice } from "@/lib/practice/browser-practice";
 
 const historyKey = (id: string) => `trace:practice:attempts:${id}`;
 function readAttempts(id: string): Attempt[] {
@@ -101,10 +101,11 @@ export function PracticeLab({
           browser: !v.execution,
           ai: language !== "java" && !!v.execution && !!v.ai,
           checked: true,
-          progress: v.execution ? v.progress ?? "device" : "device",
+          progress: v.execution ? (v.progress ?? "device") : "device",
           signedIn: v.signedIn !== false,
         });
-        if (v.execution && v.progress === "account" && v.attempts) setAttempts(v.attempts);
+        if (v.execution && v.progress === "account" && v.attempts)
+          setAttempts(v.attempts);
       })
       .catch(() => {
         if (!c.signal.aborted)
@@ -123,6 +124,7 @@ export function PracticeLab({
     setLevel(next);
     try {
       localStorage.setItem(`trace:practice:level:${problem.id}`, next);
+      window.dispatchEvent(new Event("trace:notebook"));
     } catch {}
   }
   const progress = confidence(attempts),
@@ -132,6 +134,7 @@ export function PracticeLab({
       const next = [...old, a].slice(-30);
       try {
         localStorage.setItem(historyKey(problem.id), JSON.stringify(next));
+        window.dispatchEvent(new Event("trace:notebook"));
       } catch {
         setStorageWarning(
           "Browser storage is full or unavailable. Progress will last for this visit only.",
@@ -372,12 +375,36 @@ function PracticeSession({
     if (!ready) return;
     try {
       localStorage.setItem(key, JSON.stringify(draft));
+      window.dispatchEvent(new Event("trace:notebook"));
     } catch {
       setStorageError(
         "Draft saving is unavailable in this browser. Keep a copy before leaving.",
       );
     }
   }, [draft, key, ready]);
+  useEffect(() => {
+    const restore = () => {
+      try {
+        const value = JSON.parse(localStorage.getItem(key) ?? "null");
+        if (
+          value &&
+          typeof value.code === "string" &&
+          Number.isInteger(value.caseIndex) &&
+          value.caseIndex >= 0 &&
+          value.caseIndex < cases.length
+        ) {
+          controller.current?.abort();
+          sequence.current++;
+          inFlight.current = false;
+          setBusy("");
+          setDraft({ ...initial(), ...value });
+          clearResults();
+        }
+      } catch {}
+    };
+    window.addEventListener("trace:restore", restore);
+    return () => window.removeEventListener("trace:restore", restore);
+  }, [key]);
   function clearResults() {
     setGrade(null);
     setProposal(null);
@@ -444,37 +471,68 @@ function PracticeSession({
     if (action === "review" || action === "optimize")
       setDraft((d) => ({ ...d, assisted: true }));
     try {
-      const browserValue = (capabilities.browser || language === "java") ? await (action === "trace" ? executeInBrowser({language,code:draft.code,input:selected.input,problemId:p.id,automatic:true},controller.current.signal) : browserPractice({action,problemId:p.id,language,code:draft.code,caseId:selected.id,answer:parsed,explanation:draft.explanation},controller.current.signal)) : null;
-      const response = (capabilities.browser || language === "java") ? null : await fetch(
-        action === "trace" ? "/api/local-runtime" : "/api/practice",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: controller.current.signal,
-          body: JSON.stringify(
-            action === "trace"
-              ? {
-                  language,
-                  code: draft.code,
-                  input: selected.input,
-                  problemId: p.id,
-                  automatic: true,
-                }
-              : {
-                  action,
-                  problemId: p.id,
-                  language,
-                  code: draft.code,
-                  caseId: selected.id,
-                  answer: parsed,
-                  explanation: draft.explanation,
-                  level,
-                  assisted: draft.assisted,
-                },
-          ),
-        },
-      );
-      const value = (capabilities.browser || language === "java") ? browserValue : await response!.json();
+      const browserValue =
+        capabilities.browser || language === "java"
+          ? await (action === "trace"
+              ? executeInBrowser(
+                  {
+                    language,
+                    code: draft.code,
+                    input: selected.input,
+                    problemId: p.id,
+                    automatic: true,
+                  },
+                  controller.current.signal,
+                )
+              : browserPractice(
+                  {
+                    action,
+                    problemId: p.id,
+                    language,
+                    code: draft.code,
+                    caseId: selected.id,
+                    answer: parsed,
+                    explanation: draft.explanation,
+                  },
+                  controller.current.signal,
+                ))
+          : null;
+      const response =
+        capabilities.browser || language === "java"
+          ? null
+          : await fetch(
+              action === "trace" ? "/api/local-runtime" : "/api/practice",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                signal: controller.current.signal,
+                body: JSON.stringify(
+                  action === "trace"
+                    ? {
+                        language,
+                        code: draft.code,
+                        input: selected.input,
+                        problemId: p.id,
+                        automatic: true,
+                      }
+                    : {
+                        action,
+                        problemId: p.id,
+                        language,
+                        code: draft.code,
+                        caseId: selected.id,
+                        answer: parsed,
+                        explanation: draft.explanation,
+                        level,
+                        assisted: draft.assisted,
+                      },
+                ),
+              },
+            );
+      const value =
+        capabilities.browser || language === "java"
+          ? browserValue
+          : await response!.json();
       if (id !== sequence.current) return;
       if (response && !response.ok)
         throw Error(

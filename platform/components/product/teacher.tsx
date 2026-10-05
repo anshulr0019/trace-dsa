@@ -10,11 +10,17 @@ import {
 } from "@/lib/product/lessons";
 import { cloud, result } from "@/lib/product/cloud";
 import { useAccount, AccountPanel } from "./account";
+import {
+  CourseBuilder,
+  TeacherFeedback,
+  StudentFeedback,
+} from "../lab/course-builder";
 type ClassRow = {
   id: string;
   name: string;
   teacher_id: string;
   invite_code: string;
+  archived: boolean;
 };
 type Assignment = {
   id: string;
@@ -59,7 +65,10 @@ export function TeacherWorkspace() {
     [submissions, setSubmissions] = useState<Submission[]>([]),
     [due, setDue] = useState(""),
     [refresh, setRefresh] = useState(0),
-    [members, setMembers] = useState(0);
+    [members, setMembers] = useState(0),
+    [enrollment, setEnrollment] = useState<
+      { user_id: string; joined_at: string }[]
+    >([]);
   async function perform(fn: () => Promise<void>) {
     setBusy(true);
     setMessage("");
@@ -105,7 +114,8 @@ export function TeacherWorkspace() {
             .from("assignments")
             .select("*")
             .eq("class_id", classId)
-            .order("created_at", { ascending: false }),
+            .order("created_at", { ascending: false })
+            .order("course_order", { ascending: true, nullsFirst: false }),
         )) ?? [];
       const s = a.length
         ? ((await result(
@@ -125,7 +135,15 @@ export function TeacherWorkspace() {
         .select("*", { count: "exact", head: true })
         .eq("class_id", classId);
       if (error) throw Error(error.message);
+      const enrolled =
+        (await result(
+          cloud!
+            .from("class_members")
+            .select("user_id,joined_at")
+            .eq("class_id", classId),
+        )) ?? [];
       if (active) {
+        setEnrollment(enrolled);
         setAssignments(a);
         setSubmissions(s);
         setMembers(count ?? 0);
@@ -258,6 +276,13 @@ export function TeacherWorkspace() {
         )}
       </section>
       <AccountPanel />
+      <p>
+        <a href="/?view=classroom">Host or join a live classroom →</a>
+      </p>
+      <CourseBuilder
+        classes={classes}
+        onAssigned={() => setRefresh((n) => n + 1)}
+      />
       <section className="product-card">
         <h2>Your classes</h2>
         {!user ? (
@@ -339,7 +364,60 @@ export function TeacherWorkspace() {
                   <>
                     <p>
                       Invite code: <code>{selected?.invite_code}</code>
+                      {selected?.archived ? " · Class archived" : ""}
                     </p>
+                    <button
+                      disabled={busy}
+                      onClick={() =>
+                        void perform(async () => {
+                          await result(
+                            cloud!
+                              .from("classes")
+                              .update({ archived: !selected?.archived })
+                              .eq("id", classId),
+                          );
+                          await reload();
+                          setMessage(
+                            selected?.archived
+                              ? "Class reopened."
+                              : "Class archived. New joins are closed.",
+                          );
+                        })
+                      }
+                    >
+                      {selected?.archived ? "Reopen class" : "Archive class"}
+                    </button>
+                    <details>
+                      <summary>Manage enrollment</summary>
+                      {enrollment.map((m) => (
+                        <div className="saved-item" key={m.user_id}>
+                          <small>
+                            Joined {new Date(m.joined_at).toLocaleString()} ·
+                            account {m.user_id.slice(0, 8)}
+                          </small>
+                          <button
+                            disabled={busy}
+                            onClick={() =>
+                              void perform(async () => {
+                                await result(
+                                  cloud!
+                                    .from("class_members")
+                                    .delete()
+                                    .eq("class_id", classId)
+                                    .eq("user_id", m.user_id),
+                                );
+                                setRefresh((n) => n + 1);
+                                setMessage(
+                                  "Student removed from the class. They can rejoin with its invite code.",
+                                );
+                              })
+                            }
+                          >
+                            Remove enrollment
+                          </button>
+                        </div>
+                      ))}
+                    </details>
                     <label>
                       Due date (optional)
                       <input
@@ -349,7 +427,7 @@ export function TeacherWorkspace() {
                       />
                     </label>
                     <button
-                      disabled={busy}
+                      disabled={busy || selected?.archived}
                       onClick={() =>
                         void perform(async () => {
                           const d = draft();
@@ -441,6 +519,7 @@ export function TeacherWorkspace() {
                                 : `${s.score}/100`}
                             </small>
                             <p>{s.reflection}</p>
+                            <TeacherFeedback submissionId={s.id} />
                             {s.code && (
                               <details>
                                 <summary>View submitted draft</summary>
@@ -473,11 +552,13 @@ export function AssignmentPanel({
   language,
   code,
   input,
+  inputError,
 }: {
   problemId: string;
   language: string;
   code: string;
   input: Record<string, unknown>;
+  inputError?: string;
 }) {
   const { user } = useAccount(),
     [assignment, setAssignment] = useState<Assignment | null>(null),
@@ -523,6 +604,7 @@ export function AssignmentPanel({
       {assignment && (
         <>
           <p>{assignment.instructions}</p>
+          <StudentFeedback assignmentId={assignment.id} />
           <button
             onClick={() => {
               const lesson: SharedLesson = {
@@ -544,6 +626,10 @@ export function AssignmentPanel({
             onSubmit={(e) => {
               e.preventDefault();
               if (!cloud || !user) return;
+              if (source === "editor" && inputError) {
+                setMessage(inputError);
+                return;
+              }
               let submittedCode = code,
                 submittedInput = input;
               if (source === "practice") {

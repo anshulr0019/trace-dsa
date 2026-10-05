@@ -9,9 +9,16 @@ import {
 import type { User } from "@supabase/supabase-js";
 import { cloud, result } from "@/lib/product/cloud";
 import { notebookSnapshot, restoreNotebook } from "@/lib/product/notebook";
-const Context = createContext<{ user: User | null; ready: boolean }>({
+import { useNotebookSync } from "@/lib/lab/notebook-sync";
+import { signInReturn, safeReturnPath } from "@/lib/lab/auth-return";
+const Context = createContext<{
+  user: User | null;
+  ready: boolean;
+  sync: ReturnType<typeof useNotebookSync> | null;
+}>({
   user: null,
   ready: false,
+  sync: null,
 });
 export const useAccount = () => useContext(Context);
 export function AccountProvider({ children }: { children: ReactNode }) {
@@ -22,23 +29,45 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     void cloud.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null);
       setReady(true);
+      if (data.session) {
+        const next = safeReturnPath(location.search, location.origin);
+        if (next && next !== location.pathname + location.search)
+          location.replace(next);
+      }
     });
     const { data } = cloud.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setReady(true);
+      if (session) {
+        const next = safeReturnPath(location.search, location.origin);
+        if (next && next !== location.pathname + location.search)
+          location.replace(next);
+      }
     });
     return () => data.subscription.unsubscribe();
   }, []);
+  const sync = useNotebookSync(user);
   return (
-    <Context.Provider value={{ user, ready }}>{children}</Context.Provider>
+    <Context.Provider value={{ user, ready, sync }}>
+      {children}
+    </Context.Provider>
   );
 }
 export function AccountPanel() {
-  const { user } = useAccount(),
+  const { user, sync } = useAccount(),
     [email, setEmail] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
-    [restore, setRestore] = useState<Record<string, string> | null>(null);
+    [restore, setRestore] = useState<Record<string, string> | null>(null),
+    [shareHealth, setShareHealth] = useState(false);
+  useEffect(() => {
+    try {
+      setShareHealth(
+        localStorage.getItem(`trace:health:optin:${user?.id}`) === "on",
+      );
+    } catch {}
+    setRestore(null);
+  }, [user?.id]);
   async function action(fn: () => Promise<void>) {
     setBusy(true);
     setMessage("");
@@ -66,11 +95,66 @@ export function AccountPanel() {
       {user ? (
         <>
           <p>Signed in as {user.email}</p>
+          <details>
+            <summary>Automatic notebook sync</summary>
+            <p>
+              Choose the initial version for this device. Sync covers notes,
+              drafts, custom problems, versions and revision dates. Conflicting
+              changes pause sync for your choice.
+            </p>
+            {sync?.enabled ? (
+              <button onClick={() => sync.stop()}>
+                Turn automatic sync off
+              </button>
+            ) : (
+              <div className="product-actions">
+                <button
+                  disabled={sync?.busy}
+                  onClick={() => void sync?.choose("device")}
+                >
+                  Use this device’s notebook & start sync
+                </button>
+                <button
+                  disabled={sync?.busy}
+                  onClick={() => void sync?.choose("account")}
+                >
+                  Use account notebook & start sync
+                </button>
+              </div>
+            )}
+            {sync?.conflict && (
+              <p className="workspace-pending">
+                Conflicting account version from{" "}
+                {new Date(sync.conflict.updated_at).toLocaleString()}. Choosing
+                a version replaces matching saved work. Export a backup first if
+                you want to keep both.
+              </p>
+            )}
+            <p role="status">{sync?.status}</p>
+          </details>
+          <label>
+            <input
+              type="checkbox"
+              checked={shareHealth}
+              onChange={(e) => {
+                setShareHealth(e.target.checked);
+                try {
+                  localStorage.setItem(
+                    `trace:health:optin:${user.id}`,
+                    e.target.checked ? "on" : "off",
+                  );
+                } catch {}
+              }}
+            />{" "}
+            Share run timing and status with Trace’s owner to help improve the
+            runtime.
+          </label>
           <div className="product-actions">
             <button
               disabled={busy}
               onClick={() =>
                 void action(async () => {
+                  sync?.stop();
                   await result(
                     cloud!.from("notebooks").upsert({
                       user_id: user.id,
@@ -124,6 +208,7 @@ export function AccountPanel() {
               disabled={busy}
               onClick={() => {
                 void action(async () => {
+                  sync?.stop();
                   restoreNotebook(restore);
                   setRestore(null);
                   setMessage(
@@ -144,7 +229,10 @@ export function AccountPanel() {
               const { error } = await cloud!.auth.signInWithOtp({
                 email,
                 options: {
-                  emailRedirectTo: `${location.origin}/?view=notebook`,
+                  emailRedirectTo: signInReturn(
+                    location.origin,
+                    location.pathname + location.search,
+                  ),
                 },
               });
               if (error) throw error;

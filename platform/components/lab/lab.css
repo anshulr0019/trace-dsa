@@ -1,0 +1,411 @@
+/* Trace's foundation workbench remains the visual reference. */
+.input-builder fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.input-builder fieldset[disabled] {
+  opacity: 0.5;
+}
+.input-builder fieldset[disabled] svg {
+  pointer-events: none;
+}
+.lab-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+}
+.product-card h3 {
+  margin: 20px 0 12px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+.builder-array {
+  border-bottom: 1px solid #ffffff12;
+  padding: 0 0 16px;
+}
+.builder-array h3 small {
+  margin-left: 12px;
+}
+.builder-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+}
+.builder-fields > section {
+  grid-column: 1/-1;
+}
+.editable-cells {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.editable-cells > label {
+  position: relative;
+  width: 76px;
+  margin: 5px 0;
+}
+.editable-cells input {
+  padding: 8px;
+  width: 100%;
+  text-align: center;
+}
+.editable-cells button {
+  position: absolute;
+  right: 0;
+  top: -4px;
+  min-height: 20px;
+  padding: 0 6px;
+  font-size: 13px;
+  border: 0;
+  background: transparent;
+  color: #98b19f;
+}
+.editable-matrix {
+  max-width: 100%;
+  overflow: auto;
+}
+.editable-matrix > div {
+  display: flex;
+  gap: 5px;
+}
+.editable-matrix input {
+  min-width: 64px;
+  width: 64px;
+  margin-top: 5px;
+  text-align: center;
+  padding: 7px;
+}
+.structure-builder svg {
+  display: block;
+  width: 100%;
+  max-height: 520px;
+  background: #0e191a;
+  border: 1px solid #ffffff12;
+  border-radius: 10px;
+  touch-action: none;
+}
+.structure-builder line {
+  stroke: #5d806a;
+  stroke-width: 3;
+}
+.structure-builder g[role="button"] {
+  cursor: pointer;
+  outline: none;
+}
+.structure-builder g[role="button"]:focus-visible circle {
+  stroke: #fff;
+  stroke-width: 3;
+}
+.structure-builder g[role="button"]:focus-visible line {
+  stroke: #eab96e;
+  stroke-width: 5;
+}
+.structure-builder circle {
+  fill: #1b3226;
+  stroke: #6f967b;
+  stroke-width: 2;
+}
+.structure-builder circle.selected {
+  fill: #bde7a2;
+  stroke: #c9f1b5;
+}
+.structure-builder text {
+  fill: #dcf0e0;
+  font: 15px monospace;
+  pointer-events: none;
+}
+.structure-builder circle.selected + text {
+  fill: #132016;
+}
+.structure-builder marker path {
+  fill: #789583;
+}
+.breakpoint-dot {
+  width: 17px;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #546a5c;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.breakpoint-dot.active {
+  color: #e7b66a;
+}
+.breakpoint-dot:disabled {
+  visibility: hidden;
+}
+.breakpoint-dot:focus-visible {
+  outline: 2px solid #c7eba7;
+  outline-offset: 0;
+}
+.watch-list > div {
+  padding: 10px 0;
+  border-bottom: 1px solid #ffffff12;
+}
+.watch-list dt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: 13px monospace;
+}
+.watch-list dd {
+  font: 13px/1.7 monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 180px;
+  overflow: auto;
+  color: #aec6b6;
+}
+.watch-list button {
+  min-height: 22px;
+  padding: 0 7px;
+  background: transparent;
+  border: 0;
+}
+.watch-list .changed dd {
+  color: #a9d6ed;
+}
+.debug-stack {
+  font-size: 14px;
+  line-height: 2;
+  color: #acc9b3;
+  padding-left: 24px;
+}
+.saved-item {
+  padding: 14px 0;
+  border-top: 1px solid #ffffff14;
+}
+.saved-item small {
+  display: block;
+  margin: 6px 0;
+}
+.saved-item p {
+  margin: 6px 0;
+}
+.saved-item button {
+  margin-top: 7px;
+}
+.product-card pre {
+  max-height: 340px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+  font-size: 12px;
+  background: #0c1719;
+  padding: 14px;
+  border-radius: 5px;
+}
+.answer-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.answer-comparison > div {
+  padding: 14px;
+  background: #0f1b1c;
+  min-width: 0;
+}
+.answer-comparison small {
+  display: block;
+  margin-bottom: 8px;
+}
+.answer-comparison code {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.case-check-list > div {
+  display: flex;
+  gap: 18px;
+  padding: 10px 0;
+  border-bottom: 1px solid #ffffff12;
+  font-size: 13px;
+}
+.check-pass {
+  color: #bce49f;
+}
+.check-fail {
+  color: #e4ba7c;
+}
+.health-strip {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  padding: 20px 0;
+}
+.health-strip strong {
+  display: block;
+  font-size: 28px;
+  color: #c6eda6;
+}
+.health-strip span {
+  font-size: 12px;
+  color: #9db5a7;
+}
+.check-matrix-scroll {
+  overflow: auto;
+}
+.check-matrix {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+.check-matrix th {
+  text-align: left;
+  color: #9db5a7;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.check-matrix td,
+.check-matrix th {
+  padding: 12px 10px;
+  border-bottom: 1px solid #ffffff12;
+  vertical-align: top;
+}
+.check-matrix td:first-child {
+  min-width: 190px;
+}
+.check-matrix select {
+  min-width: 105px;
+  margin: 0;
+  padding: 7px;
+  font-size: 12px;
+}
+.check-matrix small {
+  display: block;
+  font-size: 10px;
+  margin-top: 5px;
+}
+.check-matrix tr {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 70px;
+}
+.revision-date {
+  color: #e2bd7b !important;
+}
+.workspace-pending {
+  color: #e6bd76;
+}
+.product-card input[type="checkbox"] {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin: 0 8px 0 0;
+  vertical-align: middle;
+  accent-color: #c6eda6;
+}
+.course-sequence {
+  padding-left: 24px;
+}
+.course-sequence li {
+  padding: 14px 0;
+  border-bottom: 1px solid #ffffff12;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.course-sequence small {
+  display: block;
+  margin-top: 6px;
+}
+.course-sequence .product-actions {
+  margin: 0;
+  flex-shrink: 0;
+}
+.course-sequence button {
+  padding: 5px 10px;
+}
+.classroom-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 18px;
+}
+.classroom-workbench .product-card {
+  margin-top: 0;
+  min-width: 0;
+}
+.classroom-code .curriculum-editor {
+  height: 520px;
+}
+.live-classroom .live-scene {
+  min-height: 320px;
+}
+.live-classroom > .product-actions {
+  margin: 20px 0;
+}
+.poll-results > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid #ffffff12;
+  font-size: 14px;
+}
+.poll-results strong {
+  color: #c7eba7;
+  font-size: 13px;
+}
+.live-classroom input[type="range"] {
+  accent-color: #c6eda6;
+}
+@media (max-width: 1000px) {
+  .classroom-workbench {
+    grid-template-columns: 1fr;
+  }
+  .classroom-code .curriculum-editor {
+    height: 360px;
+  }
+}
+@media (max-width: 750px) {
+  .lab-columns,
+  .builder-fields,
+  .answer-comparison {
+    grid-template-columns: 1fr;
+  }
+  .editable-cells > label {
+    width: 65px;
+  }
+  .product-card {
+    margin: 14px 0;
+  }
+  .health-strip {
+    gap: 20px;
+  }
+  .structure-builder svg {
+    min-height: 210px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .structure-builder * {
+    transition: none !important;
+  }
+}
+.input-builder .editable-cells button {
+  min-height: 20px;
+  height: 20px;
+  line-height: 20px;
+  padding: 0 6px;
+  border: 0;
+  background: transparent;
+  color: #98b19f;
+  top: 0;
+  right: 0;
+}
+.input-builder .editable-cells input {
+  padding: 8px;
+  text-align: center;
+}
+.visual-debugger .watch-list button {
+  min-height: 22px;
+  padding: 0 7px;
+  background: transparent;
+  border: 0;
+}

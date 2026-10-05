@@ -1,41 +1,69 @@
-# Accounts and classes setup
+# Accounts, classrooms and owner access
 
-Trace's public examples, lesson links, predictions, presentation mode and local notebook work without a backend. Email sign-in, account notebook backups, classes, assignments and student submissions use Supabase. These cloud features remain visibly unavailable until configuration is supplied.
+The visual builders, recorded debugger, custom problem variants, code versions, revision calendar, failing-case inspector and local check matrix work without a backend. Accounts, automatic notebook sync, courses, written feedback, live classrooms, private site diagnostics and published teaching notes use Supabase.
 
-## Connect Supabase
+## First setup or upgrade
 
-1. Create a Supabase project, or select an existing project with an empty application schema. The schema below is a **first-install migration**, not a reset script.
-2. Run [`supabase/schema.sql`](../supabase/schema.sql) in the SQL editor. It creates tables, indexes, row access policies and a class invitation function in one transaction. Keep row level security enabled.
-3. In Authentication → URL Configuration, set the Site URL to `https://trace-six-theta.vercel.app` and allow `https://trace-six-theta.vercel.app/?view=notebook`. Add your own domain and local development redirect separately if used.
-4. Keep the default email magic-link template for this browser application. Configure an email delivery provider for a public pilot; Supabase's default email service has delivery restrictions. See [passwordless sign-in](https://supabase.com/docs/guides/auth/auth-email-passwordless) and [SMTP setup](https://supabase.com/docs/guides/auth/auth-smtp).
-5. Add these variables in Vercel → Project → Settings → Environment Variables:
+1. Select your Supabase project. For a new application schema, run [`schema.sql`](../supabase/schema.sql) once. If these base tables already exist, keep them and proceed to the upgrade.
+2. Run [`002-interactive-workspace.sql`](../supabase/002-interactive-workspace.sql) once. It adds features in a transaction without resetting existing user data. Keep row level security enabled.
+3. Set the Authentication Site URL to `https://trace-six-theta.vercel.app`. Allow `https://trace-six-theta.vercel.app/?view=notebook*` for the fixed sign-in callback and its varying continuation query. The app checks the return target against its own origin and supported views. Add your own domain/local callback separately when needed. See [redirect configuration](https://supabase.com/docs/guides/auth/redirect-urls).
+4. Use the default email magic-link template for the browser's implicit flow. Configure an email delivery provider for a public pilot. See [passwordless sign-in](https://supabase.com/docs/guides/auth/auth-email-passwordless) and [SMTP setup](https://supabase.com/docs/guides/auth/auth-smtp).
+5. Set the public client variables in Vercel, then redeploy:
 
    ```text
    VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
    VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
    ```
 
-   Use the project URL and **publishable** client key. Never put a secret or service-role key in a `VITE_` variable. The browser receives these variables; database access is enforced by the SQL policies.
-6. Redeploy after changing environment variables. For local development, copy `.env.example` to `.env.local`, fill in the public values and restart the Vite server.
+   The publishable key belongs in the browser. Never put a secret/service-role key in a `VITE_` variable. For local development, fill `.env.local` from `.env.example` and restart Vite.
+6. Sign in to Trace, then register **your account** as owner through Supabase's SQL editor:
+
+   ```sql
+   insert into public.app_admins(user_id)
+   select id from auth.users where email = 'YOUR_EMAIL'
+   on conflict do nothing;
+   ```
+
+   Replace the placeholder with the email you signed in with. Owner access comes from this protected database row. Editing browser storage or a URL does not grant it.
+
+The migration enables Realtime publication for classroom state, polls, responses and enrollment. See [Postgres Changes](https://supabase.com/docs/guides/realtime/postgres-changes). The UI also refreshes classroom state periodically if events are interrupted.
 
 ## Teacher workflow
 
-- Open **Lessons & classes**, choose a problem, language, input and question, then create a lesson link. Links work without sign-in and run only after the recipient presses Play.
-- Sign in, create a class and give students the invite code. Anyone with that code can enroll. Share it only with the intended class.
-- Select the class, optionally set a due date, and assign the lesson. Due dates are displayed; they do not prohibit late submissions.
-- Students sign in, join the class, open the assignment, load the teacher's input, practice, and submit a reflection. They can include the Learn & explore editor or the saved draft for their selected practice level.
-- The teacher can refresh results to see enrollment, submissions, explanations and submitted code. Students see their own submissions; teachers see submissions for classes they own.
+- Create a custom lesson link in **Lessons & classes**. Inputs and source run only when the recipient presses Play.
+- Create a class and share its invite code. Select it to assign individual lessons, view submissions, remove enrollment or archive/reopen the class.
+- Build a reusable course with ordered problems, editable prompts, inputs and language choices. Assign new course lessons to a class. Previously assigned tasks retain their copied input and instructions.
+- Review submitted code and reflections, then save written feedback with Reviewed, Needs revision or Understood status. Students can refresh feedback from the assignment panel.
 
-Assignment scores are **learner-reported** browser practice scores for the selected language. They are not tamper-resistant exam grades and may come from earlier practice. Use explanations and code for discussion. Competitive ranking and high-stakes grading would require authoritative judging on a separate execution service.
+Browser practice scores remain learner-reported educational feedback. They can originate from earlier practice and are not authoritative exam grades.
 
-## Notebook behavior
+## Live classroom
 
-Notes, bookmarks, revision lists, understanding marks, editor drafts and practice history are saved on the current browser. **Save notebook to account** uploads a snapshot; **Restore from account** offers confirmation before replacing matching local entries. This is explicit cross-device backup/restore, not background synchronization or automatic conflict resolution.
+- Open **Live classroom**, create a session and give students the invite link/code. Students sign in and join with a display name.
+- The host chooses a problem/language, edits the source/input, and presses **Run & share**. Students receive the actual captured execution, without executing the teacher's source on their own device.
+- Play, pause, seek and speed changes update small session records. Each student follows the same saved run. Students can switch to their own pace and return to teacher playback.
+- The host can reveal the return value early, ask prediction questions, view response counts, close questions, and end/reopen the session.
+- Captures are bounded to 1,199 states and approximately 2.5 MB. Oversized results/states are rejected; omitted later states are labelled. Ending prevents new joins and votes while preserving the recorded session for existing participants.
 
-JSON export/import provides the same workflow without an account. Backups contain code and notes; keep them private. A shared example link contains the chosen input, code and instructions in its URL fragment. Anyone receiving it can read those contents.
+Classroom access and host controls use authenticated database policies. Questions support live discussion; their responses are not exam grading.
 
-## Pilot readiness
+## Notebook sync and backups
 
-The UI and migration are implemented, but actual authentication and database behavior require a configured project and teacher/student acceptance testing. The project owner is handling testing. Follow your organization's requirements for student consent, retention and deletion before a class pilot.
+Your browser saves notes, bookmarks, understanding marks, editor/practice drafts, custom variants, code versions, mistake journals and revision dates.
 
-Java runs with CheerpJ. A business deployment needs an appropriate licence under [CheerpJ's terms](https://cheerpj.com/docs/licensing.html); do not market the current Java runtime as universally free for commercial use.
+Use **Automatic notebook sync** to choose the initial device or account version. Sync saves changes after a short delay and checks for remote changes periodically. It uses the previously seen account timestamp to avoid overwriting a concurrent update. If both versions changed, it pauses for your choice. Export a backup before choosing if you want to preserve both. An active editor reloads restored drafts.
+
+Manual account backup/restore and JSON export/import remain available. Account notebook data is limited to 4 MB; backups may contain private code and notes. Local run reports and owner checks are exported separately and do not enter notebook sync.
+
+## Owner workspace
+
+Without cloud configuration, **Workspace checks** holds a matrix and logs on the current browser only. With configuration, the owner role gates private diagnostics, shared quality checks and publishing.
+
+- Execution checks run the five authored examples for each selected problem/language. Animation, alignment, explanation and mobile checks are manually recorded with dates and evidence.
+- Website workflow checks cover navigation, sharing, sign-in, sync, enrollment, courses, feedback, live playback and polls. Preview screens use sample content; they do not validate access permissions.
+- Local run reports contain source/input, status and latency including runtime loading/compilation. An account can opt into sharing timing/status metadata; those reports omit source/input.
+- The lesson editor publishes additional teaching explanations and records their history. Existing algorithm references and complexity annotations remain separately labelled.
+
+Actual sign-in, policies, cross-device conflicts and teacher/student classroom behavior require a configured project and acceptance testing. The project owner is handling that testing.
+
+Java uses CheerpJ. Its current Community License includes qualifying individuals/one-person companies, including revenue-generating projects with appropriate credits. Company, redistribution and OEM arrangements may need other terms. Check the intended arrangement against [the official licence](https://cheerpj.com/docs/licensing.html).

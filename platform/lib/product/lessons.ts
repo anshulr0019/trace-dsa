@@ -30,9 +30,9 @@ export function readSharedLesson(hash = location.hash): SharedLesson | null {
       typeof v.instructions !== "string" ||
       v.instructions.length > 3000 ||
       (v.code !== undefined &&
-        (typeof v.code !== "string" || v.code.length > 18000)) ||
+        (typeof v.code !== "string" || v.code.length > 24000)) ||
       (v.step !== undefined &&
-        (!Number.isInteger(v.step) || v.step < 0 || v.step > 1200))
+        (!Number.isInteger(v.step) || v.step < 0 || v.step > 1202))
     )
       throw Error("This lesson link is invalid.");
     return v;
@@ -43,6 +43,20 @@ export function readSharedLesson(hash = location.hash): SharedLesson | null {
   }
 }
 export function lessonURL(lesson: SharedLesson): string {
+  if (
+    !problemById[lesson.problemId] ||
+    validateProblemInput(lesson.problemId, lesson.input)
+  )
+    throw Error("Use a valid problem input before sharing.");
+  if (
+    lesson.title.length > 120 ||
+    lesson.instructions.length > 3000 ||
+    (lesson.step !== undefined &&
+      (!Number.isInteger(lesson.step) || lesson.step < 0 || lesson.step > 1202))
+  )
+    throw Error(
+      "The lesson title, instructions or selected step is too large to share.",
+    );
   const bytes = new TextEncoder().encode(JSON.stringify(lesson));
   if (bytes.length > 24000)
     throw Error(

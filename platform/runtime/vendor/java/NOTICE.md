@@ -12,9 +12,11 @@ Binary distribution: https://github.com/adoptium/temurin8-binaries/releases/tag/
     jar cf runtime/vendor/java/trace-runtime.jar -C /tmp/trace-java-classes .
 
 The JVM is CheerpJ 4.3, loaded directly from the official CDN. It is not
-redistributed in this repository. CheerpJ Core is free for personal and
-non-commercial projects under its community licence; business use requires
-reviewing its commercial terms: https://cheerpj.com/docs/licensing
+redistributed in this repository. CheerpJ's current Community License covers
+qualifying individuals and one-person companies, including revenue-generating
+projects with appropriate credits. Company, redistribution and OEM uses may
+require different terms. Review the intended deployment against the official
+terms: https://cheerpj.com/docs/licensing.html
 
 Java source and input execute in a disposable worker on the user's device.
 Only runtime assets are downloaded. No remote code execution service is used.
