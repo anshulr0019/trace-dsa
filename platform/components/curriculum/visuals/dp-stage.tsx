@@ -308,8 +308,12 @@ export function DPStage({
                   ? "Amount"
                   : p.id === "climbing-stairs"
                     ? "Step"
-                    : "Prefix"}{" "}
-                {i}
+                    : p.id === "house-robber"
+                      ? i < 2
+                        ? "Base"
+                        : "Houses"
+                      : "Prefix"}{" "}
+                {p.id === "house-robber" && i >= 2 ? i - 1 : i}
               </small>
               <motion.b
                 key={text(value)}

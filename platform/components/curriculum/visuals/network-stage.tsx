@@ -840,13 +840,29 @@ export function HeapStage({
           language === "python" &&
           (key === "lower" || p.id === "task-scheduler");
         const nodes = values.slice(0, 31).map((value, i) => {
-          const d = Math.floor(Math.log2(i + 1));
+          const d = Math.floor(Math.log2(i + 1)),
+            frequencyPair =
+              p.id === "top-k-frequent" &&
+              Array.isArray(value) &&
+              value.length === 2
+                ? value
+                : undefined;
           return {
             id: String(i),
-            label: text(negated && typeof value === "number" ? -value : value),
+            label: text(
+              frequencyPair
+                ? frequencyPair[1]
+                : negated && typeof value === "number"
+                  ? -value
+                  : value,
+            ),
             x: (700 * (i - (2 ** d - 1) + 0.5)) / 2 ** d,
             y: 65 + d * 72,
-            note: i === 0 ? "root" : `#${i}`,
+            note: frequencyPair
+              ? `freq ${Math.abs(Number(frequencyPair[0]))} · #${i}`
+              : i === 0
+                ? "root"
+                : `#${i}`,
           };
         });
         return (
@@ -860,7 +876,11 @@ export function HeapStage({
                     : "Priority heap"
               }
               detail={
-                negated ? "Python negation decoded for display" : undefined
+                p.id === "top-k-frequent"
+                  ? "Value inside · frequency below; signed priorities decoded"
+                  : negated
+                    ? "Python negation decoded for display"
+                    : undefined
               }
             />
             <NetworkCanvas
