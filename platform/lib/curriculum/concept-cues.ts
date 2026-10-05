@@ -1,6 +1,8 @@
+import {problemById} from "./catalog";
+import {visualStory} from "./visual-state";
 import type {ExecutionFrame} from '../../components/curriculum/scene';
 export type ConceptCue = {text:string; equation?:string; marks:Record<number,string>};
-export function conceptCue(id:string,frame:ExecutionFrame|undefined,previous:ExecutionFrame|undefined,input:Record<string,unknown>,source:string):ConceptCue|undefined {
+function arrayCue(id:string,frame:ExecutionFrame|undefined,previous:ExecutionFrame|undefined,input:Record<string,unknown>,source:string):ConceptCue|undefined {
  if(!frame||['input','error','complete','return'].includes(frame.event))return;
  const v=frame.vars,old=previous?.vars??{},nums=v.nums??input.nums;
  if(!Array.isArray(nums)||!nums.every(n=>typeof n==='number'&&Number.isFinite(n)))return;
@@ -29,4 +31,18 @@ export function conceptCue(id:string,frame:ExecutionFrame|undefined,previous:Exe
   if(value!==target)for(let i=v.left;i<=v.right;i++)if(i!==v.mid&&(value<target?i<v.mid:i>v.mid))marks[i]='can skip';
   return {text:value===target?'The middle value matches the target. Its index is the answer.':value<target?'The middle value is too small. Sorted order lets us skip it and everything to its left.':'The middle value is too large. Sorted order lets us skip it and everything to its right.',equation:`${value} ${value===target?'=':value<target?'<':'>'} ${target}`,marks};
  }
+}
+
+export function conceptCue(
+  id: string,
+  frame: ExecutionFrame | undefined,
+  previous: ExecutionFrame | undefined,
+  input: Record<string, unknown>,
+  source: string,
+): ConceptCue | undefined {
+  const detailed = arrayCue(id, frame, previous, input, source);
+  if (detailed) return detailed;
+  const problem = problemById[id];
+  if (!problem) return undefined;
+  return { ...visualStory(problem, frame, previous, input), marks: {} };
 }

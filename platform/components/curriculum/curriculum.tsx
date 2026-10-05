@@ -925,6 +925,9 @@ function ProblemStudio({
                       )}
                     </div>
                     <Scene
+                      source={
+                        snapshot.code.split("\n")[(frame?.line ?? 0) - 1] ?? ""
+                      }
                       cue={
                         !visualVariable
                           ? conceptCue(

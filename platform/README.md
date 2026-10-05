@@ -21,6 +21,8 @@ Browser practice checks use the same eight-case grading rules and store attempts
 
 ## Practice and feedback
 
+The roadmap uses concept-specific animated stages throughout all 100 problems, with foundation-style alignment, clickable cell/node inspection, grid and graph traversal, backtracking and labelled DP dependencies. See [Visualization coverage and state conventions](docs/VISUALIZATIONS.md).
+
 Every curriculum problem now includes Predict, Solve, and Challenge modes, with 300 practice inputs, eight-case correctness ratings, saved drafts and attempts, and verified solution comparisons with explicit adoption and undo. Playback has smooth, speed-aware transitions and reduced-motion support. See [Practice and feedback](docs/PRACTICE-AND-FEEDBACK.md) for behavior, verification, optional AI configuration, and hosted prerequisites.
 
 ## Teacher and learner workspaces
