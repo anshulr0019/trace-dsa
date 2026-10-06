@@ -1,5 +1,7 @@
 "use client";
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -125,6 +127,8 @@ const format = (v: unknown) =>
       : Array.isArray(v)
         ? `[${v.join(", ")}]`
         : String(v);
+const ComputerScience = lazy(() => import("./computer-science/hub"));
+
 function Navigation({
   lesson,
   onLesson,
@@ -163,6 +167,7 @@ function Navigation({
               { id: "studio", label: "Learning studio", Icon: FlaskConical },
               { id: "library", label: "Guided foundations", Icon: BookOpen },
               { id: "curriculum", label: "100-problem roadmap", Icon: Code2 },
+              { id: "cs", label: "Computer science", Icon: Cpu },
               { id: "progress", label: "My progress", Icon: Gauge },
               { id: "teacher", label: "Lessons & classes", Icon: BookOpen },
               { id: "notebook", label: "Student notebook", Icon: BookOpen },
@@ -257,6 +262,7 @@ function Navigation({
 export default function Studio() {
   const [lesson, setLesson] = useState(initial);
   const [view, setView] = useState("home");
+  const [csNavigation, setCsNavigation] = useState(0);
   const [roadmapNavigation, setRoadmapNavigation] = useState(0);
   const [tab, setTab] = useState("learn");
   const [nums, setNums] = useState(initial.input);
@@ -477,6 +483,7 @@ export default function Studio() {
               "notebook",
               "classroom",
               "owner",
+              "cs",
             ].includes(requestedView ?? "")
               ? requestedView!
               : "home",
@@ -490,6 +497,7 @@ export default function Studio() {
               "notebook",
               "classroom",
               "owner",
+              "cs",
             ].includes(requestedView ?? "")
               ? initialSearch + initialHash
               : requestedView
@@ -706,6 +714,10 @@ export default function Studio() {
           setView={(v) => {
             setPlaying(false);
             setView(v);
+            if (v === "cs") {
+              setCsNavigation((n) => n + 1);
+              window.scrollTo({ top: 0, behavior: "instant" });
+            }
             if (v === "curriculum") {
               setRoadmapNavigation((n) => n + 1);
               window.scrollTo({ top: 0, behavior: "instant" });
@@ -731,17 +743,19 @@ export default function Studio() {
                     ? "Guided foundations"
                     : view === "home"
                       ? "Overview"
-                      : view === "curriculum"
-                        ? "100-problem roadmap"
-                        : view === "teacher"
-                          ? "Lessons & classes"
-                          : view === "owner"
-                            ? "Workspace checks"
-                            : view === "classroom"
-                              ? "Live classroom"
-                              : view === "notebook"
-                                ? "Student notebook"
-                                : "My progress"}
+                      : view === "cs"
+                        ? "Computer science"
+                        : view === "curriculum"
+                          ? "100-problem roadmap"
+                          : view === "teacher"
+                            ? "Lessons & classes"
+                            : view === "owner"
+                              ? "Workspace checks"
+                              : view === "classroom"
+                                ? "Live classroom"
+                                : view === "notebook"
+                                  ? "Student notebook"
+                                  : "My progress"}
               </strong>
             </div>
             <div className="top-actions">
@@ -763,7 +777,11 @@ export default function Studio() {
             id="main-content"
             className={`workspace ${view === "studio" && tab === "learn" ? "has-playback" : ""}`}
           >
-            {view === "owner" ? (
+            {view === "cs" ? (
+              <Suspense fallback={<p>Loading computer science labs…</p>}>
+                <ComputerScience key={csNavigation} />
+              </Suspense>
+            ) : view === "owner" ? (
               <OwnerDashboard />
             ) : view === "classroom" ? (
               <Classroom />
@@ -781,13 +799,21 @@ export default function Studio() {
             ) : view === "home" ? (
               <>
                 <div className="product-intro">
-                  <h1>Make every step of DSA visible.</h1>
+                  <h1>Make computer science visible.</h1>
                   <p>
                     Explore algorithms in four languages, predict what happens
-                    next, and build lessons your students can investigate.
+                    next, and explore systems, databases, networks, and more.
                   </p>
                   <GuidedTour />
                   <div className="product-actions">
+                    <button
+                      onClick={() => {
+                        setView("cs");
+                        window.history.replaceState(null, "", "?view=cs");
+                      }}
+                    >
+                      Explore computer science →
+                    </button>
                     <button
                       onClick={() => {
                         setView("curriculum");
