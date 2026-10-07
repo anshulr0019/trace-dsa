@@ -1,4 +1,5 @@
 "use client";
+import { deepSpecs } from "@/lib/computer-science/deeper-catalog";
 import type { Module } from "@/lib/computer-science/catalog";
 import type { Settings } from "@/lib/computer-science/models";
 export function LabControls({
@@ -67,8 +68,15 @@ export function LabControls({
       {label}
     </label>
   );
+  const spec = deepSpecs[m.id];
   return (
     <div className="cs-controls">
+      {spec && (
+        <>
+          {num("quantity", spec.input, spec.min, spec.max)}
+          {select("variant", "Policy / behavior", spec.variants)}
+        </>
+      )}
       {m.kind === "sql" && (
         <>
           {select("join", "Join type", [

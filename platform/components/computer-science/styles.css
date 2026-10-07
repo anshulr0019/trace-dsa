@@ -623,3 +623,116 @@
     transition: none !important;
   }
 }
+.cs-example-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.cs-example-list button {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  padding: 18px;
+  background: #17251f;
+}
+.cs-example-list strong {
+  font-size: 15px;
+  font-weight: 500;
+}
+.cs-example-list span {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--cs-muted);
+}
+.cs-track-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  border: 1px solid #416043;
+  border-radius: 16px;
+  padding: 26px;
+  background: linear-gradient(110deg, #20372b, #13211f);
+  margin: 20px 0;
+}
+.cs-track-progress progress {
+  width: 100%;
+  height: 8px;
+  accent-color: var(--cs-green);
+}
+.cs-track-progress > div {
+  flex: 1;
+}
+.cs-track-progress > button {
+  max-width: 340px;
+}
+.cs-stage-heading {
+  margin-top: 34px;
+  border-bottom: 1px solid var(--cs-border);
+  padding-bottom: 12px;
+}
+.cs-next-lesson {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border: 1px solid var(--cs-border);
+  border-radius: 12px;
+  padding: 18px;
+  margin: 22px 0;
+}
+.cs-next-lesson > span {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--cs-muted);
+}
+@media (max-width: 700px) {
+  .cs-example-list {
+    grid-template-columns: 1fr;
+  }
+  .cs-track-progress,
+  .cs-next-lesson {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cs-track-progress > button {
+    max-width: none;
+  }
+}
+.cs-congestion-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+}
+.cs-congestion-chart text {
+  font:
+    12px ui-monospace,
+    monospace;
+}
+.cs-congestion-chart p {
+  text-align: center;
+  font-size: 12px;
+}
+.cs-example-list button[aria-pressed="true"] {
+  border-color: var(--cs-green);
+  background: #293d2c;
+}
+.cs-track-progress progress {
+  appearance: none;
+  border: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #35443e;
+}
+.cs-track-progress progress::-webkit-progress-bar {
+  background: #35443e;
+}
+.cs-track-progress progress::-webkit-progress-value {
+  background: var(--cs-green);
+}
+.cs-track-progress progress::-moz-progress-bar {
+  background: var(--cs-green);
+}

@@ -8,12 +8,14 @@ export function FlowDiagram({
   active = [],
   onSelect,
   selected,
+  directed = true,
 }: {
   nodes: DiagramNode[];
   edges: [string, string][];
   active?: string[];
   onSelect?: (id: string) => void;
   selected?: string;
+  directed?: boolean;
 }) {
   const marker = useId().replace(/:/g, ""),
     reduced = useReducedMotion();
@@ -51,7 +53,7 @@ export function FlowDiagram({
             key={`${a}:${b}`}
             className={active.includes(b) ? "active" : ""}
             d={`M${x + (dx / len) * 55},${y + (dy / len) * 25} L${to.x * 6.4 - (dx / len) * 61},${to.y * 3.2 - (dy / len) * 30}`}
-            markerEnd={`url(#${marker})`}
+            markerEnd={directed ? `url(#${marker})` : undefined}
           />
         );
       })}
@@ -98,17 +100,81 @@ export function StateScene({
   nodes,
   edges,
   index,
+  directed = true,
 }: {
   frame: Frame;
   nodes: DiagramNode[];
   edges: [string, string][];
   index: number;
+  directed?: boolean;
 }) {
   const reduced = useReducedMotion();
   return (
     <div className="cs-scene">
       {nodes.length > 0 && (
-        <FlowDiagram nodes={nodes} edges={edges} active={frame.active} />
+        <FlowDiagram
+          nodes={nodes}
+          edges={edges}
+          active={frame.active}
+          directed={directed}
+        />
+      )}
+      {frame.chart && (
+        <div className="cs-congestion-chart">
+          <svg
+            viewBox="0 0 560 220"
+            role="img"
+            aria-label={`Sending window by round: ${frame.chart.values.join(", ")}. Path capacity ${frame.chart.limit}.`}
+          >
+            <path d="M40 15 V185 H540" stroke="#61756b" fill="none" />
+            <line
+              x1="40"
+              x2="540"
+              y1={185 - frame.chart.limit * 17}
+              y2={185 - frame.chart.limit * 17}
+              stroke="#e6b973"
+              strokeDasharray="6 5"
+            />
+            <text x="44" y={179 - frame.chart.limit * 17} fill="#e6b973">
+              Capacity {frame.chart.limit}
+            </text>
+            <polyline
+              points={frame.chart.values
+                .map((v, i) => `${48 + i * 53},${185 - v * 17}`)
+                .join(" ")}
+              stroke="#c1f390"
+              strokeWidth="3"
+              fill="none"
+            />
+            {frame.chart.values.map((v, i) => (
+              <g key={i}>
+                <circle
+                  cx={48 + i * 53}
+                  cy={185 - v * 17}
+                  r="4"
+                  fill="#c1f390"
+                />
+                <text
+                  x={48 + i * 53}
+                  y="204"
+                  textAnchor="middle"
+                  fill="#a1b1aa"
+                >
+                  {i + 1}
+                </text>
+                <text
+                  x={48 + i * 53}
+                  y={177 - v * 17}
+                  textAnchor="middle"
+                  fill="#e1e9e4"
+                >
+                  {v}
+                </text>
+              </g>
+            ))}
+          </svg>
+          <p>Round → · Green: sending window · Amber: path capacity</p>
+        </div>
       )}
       {frame.timeline && (
         <div className="cs-timeline" aria-label="Timeline">

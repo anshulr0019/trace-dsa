@@ -8,12 +8,16 @@ import {
   type TopicId,
 } from "@/lib/computer-science/catalog";
 import { defaultSettings, type Settings } from "@/lib/computer-science/models";
-import {
-  architectureTemplate,
-  validArchitecture,
-} from "@/lib/computer-science/architecture";
+import { validArchitecture } from "@/lib/computer-science/architecture";
 import { GuidedLab, type Scenario } from "./guided-lab";
 import { InterviewPractice, type InterviewDraft } from "./interview";
+import { initialScenario } from "@/lib/computer-science/examples";
+import {
+  trackModules,
+  stages,
+  stageFor,
+  neighbors,
+} from "@/lib/computer-science/roadmaps";
 import "./styles.css";
 type Study = {
   completed: string[];
@@ -83,6 +87,9 @@ function readStudy(raw: string | null): Study {
   return result;
 }
 export default function ComputerScience() {
+  const [search, setSearch] = useState("");
+  const [stageFilter, setStageFilter] = useState("all");
+  const [reviewFilter, setReviewFilter] = useState("all");
   const [topic, setTopic] = useState<TopicId | null>(null),
     [moduleId, setModuleId] = useState<string | null>(null),
     [study, setStudy] = useState<Study>(empty),
@@ -118,6 +125,9 @@ export default function ComputerScience() {
     }
   };
   const navigate = (t: TopicId | null, id: string | null = null) => {
+    setSearch("");
+    setStageFilter("all");
+    setReviewFilter("all");
     setTopic(t);
     setModuleId(id);
     setChoice(null);
@@ -130,6 +140,18 @@ export default function ComputerScience() {
   };
   const m = moduleId ? moduleById[moduleId] : undefined,
     track = topics.find((t) => t.id === topic);
+  const path = topic ? trackModules(topic) : [];
+  const remaining = path.find((item) => !study.completed.includes(item.id));
+  const filtered = path.filter(
+    (item) =>
+      (stageFilter === "all" || stageFor(item.id) === stageFilter) &&
+      (reviewFilter === "all" ||
+        study.completed.includes(item.id) === (reviewFilter === "reviewed")) &&
+      `${item.title} ${item.summary}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+  );
+  const adjacent = m ? neighbors(m.id) : {};
   if (!ready) return <p>Loading computer science labs…</p>;
   return (
     <div className="cs-hub">
@@ -194,9 +216,9 @@ export default function ComputerScience() {
             })}
           </div>
           <p className="cs-muted">
-            19 interactive labs across five technical tracks, plus interview
-            practice. Your notes, scenarios, and reviewed lessons are stored
-            locally in this browser.
+            {modules.length} interactive labs across five technical tracks, plus
+            interview practice. Your notes, scenarios, and reviewed lessons are
+            stored locally in this browser.
           </p>
         </>
       )}
@@ -209,41 +231,135 @@ export default function ComputerScience() {
         />
       )}
       {topic && topic !== "interviews" && !m && (
-        <div className="cs-cards">
-          {modules
-            .filter((m) => m.topic === topic)
-            .map((m, i) => (
+        <>
+          <section className="cs-track-progress">
+            <div>
+              <small>YOUR LEARNING PATH</small>
+              <h2>
+                {
+                  path.filter((item) => study.completed.includes(item.id))
+                    .length
+                }{" "}
+                / {path.length} labs reviewed
+              </h2>
+              <p>
+                Follow the stages in order, or open any lesson. Review flags
+                reflect your own assessment.
+              </p>
+              <progress
+                aria-label="Track reviewed progress"
+                value={
+                  path.filter((item) => study.completed.includes(item.id))
+                    .length
+                }
+                max={path.length}
+              />
+            </div>
+            {remaining && (
               <button
-                className="cs-topic-card"
-                key={m.id}
-                onClick={() => navigate(topic, m.id)}
+                className="cs-primary"
+                onClick={() => navigate(topic, remaining.id)}
               >
-                <small>
-                  LAB {String(i + 1).padStart(2, "0")} · {m.minutes} MIN
-                </small>
-                <h2>{m.title}</h2>
-                <p>{m.summary}</p>
-                <footer>
-                  {study.completed.includes(m.id)
-                    ? "✓ Reviewed"
-                    : "Open guided lab"}
-                  <span>→</span>
-                </footer>
+                Continue: {remaining.title} →
               </button>
-            ))}
-        </div>
+            )}
+          </section>
+          <div className="cs-controls">
+            <label>
+              Find a lesson
+              <input
+                type="search"
+                value={search}
+                placeholder="Search concepts or lesson titles"
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </label>
+            <label>
+              Stage
+              <select
+                value={stageFilter}
+                onChange={(e) => setStageFilter(e.target.value)}
+              >
+                <option value="all">All stages</option>
+                {stages.map((stage) => (
+                  <option key={stage.id} value={stage.id}>
+                    {stage.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Review status
+              <select
+                value={reviewFilter}
+                onChange={(e) => setReviewFilter(e.target.value)}
+              >
+                <option value="all">All lessons</option>
+                <option value="unreviewed">Not yet reviewed</option>
+                <option value="reviewed">Reviewed</option>
+              </select>
+            </label>
+          </div>
+          {filtered.length === 0 && (
+            <p role="status">
+              No lessons match these filters. Try a different search or stage.
+            </p>
+          )}
+          {stages.map((stage) => {
+            const items = filtered.filter(
+              (item) => stageFor(item.id) === stage.id,
+            );
+            return (
+              items.length > 0 && (
+                <section key={stage.id}>
+                  <header className="cs-stage-heading">
+                    <h2>{stage.title}</h2>
+                    <p>{stage.description}</p>
+                  </header>
+                  <div className="cs-cards">
+                    {items.map((item) => (
+                      <button
+                        className="cs-topic-card"
+                        key={item.id}
+                        onClick={() => navigate(topic, item.id)}
+                      >
+                        <small>
+                          LAB {String(path.indexOf(item) + 1).padStart(2, "0")}{" "}
+                          · {item.minutes} MIN · 3 EXAMPLES
+                        </small>
+                        <h2>{item.title}</h2>
+                        <p>{item.summary}</p>
+                        <footer>
+                          {study.completed.includes(item.id)
+                            ? "✓ Reviewed"
+                            : "Open guided lab"}
+                          <span>→</span>
+                        </footer>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )
+            );
+          })}
+        </>
       )}
       {m && (
         <>
+          <div className="cs-section-head">
+            <span>
+              {stages.find((stage) => stage.id === stageFor(m.id))?.title}
+            </span>
+            {adjacent.previous && (
+              <button onClick={() => navigate(m.topic, adjacent.previous!.id)}>
+                ← Previous: {adjacent.previous.title}
+              </button>
+            )}
+          </div>
           <GuidedLab
             key={m.id}
             module={m}
-            scenario={
-              study.scenarios[m.id] ?? {
-                settings: defaultSettings,
-                architecture: architectureTemplate(m.id),
-              }
-            }
+            scenario={study.scenarios[m.id] ?? initialScenario(m.id)}
             onChange={(scenario) =>
               save({
                 ...study,
@@ -251,6 +367,14 @@ export default function ComputerScience() {
               })
             }
           />
+          {adjacent.next && (
+            <div className="cs-next-lesson">
+              <span>UP NEXT IN YOUR PATH</span>
+              <button onClick={() => navigate(m.topic, adjacent.next!.id)}>
+                {adjacent.next.title} →
+              </button>
+            </div>
+          )}
           <div className="cs-study-grid">
             <section className="cs-review">
               <small>CHECK YOUR UNDERSTANDING</small>

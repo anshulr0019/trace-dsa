@@ -1,3 +1,4 @@
+import { deeperLab } from "./deeper-models";
 import type { Module } from "./catalog";
 export type Cell = {
   id: string;
@@ -20,6 +21,7 @@ export type Frame = {
   metrics: Record<string, string | number>;
   table?: { columns: string[]; rows: (string | number)[][] };
   timeline?: string[];
+  chart?: { values: number[]; limit: number };
 };
 export type LabResult = {
   frames: Frame[];
@@ -28,8 +30,10 @@ export type LabResult = {
   code: string;
   assumptions: string;
   error?: string;
+  undirected?: boolean;
 };
 export type Settings = {
+  variant: string;
   bursts: string;
   quantum: number;
   policy: string;
@@ -54,6 +58,7 @@ export type Settings = {
   normalized: boolean;
 };
 export const defaultSettings: Settings = {
+  variant: "baseline",
   bursts: "5,3,1",
   quantum: 2,
   policy: "FCFS",
@@ -647,6 +652,8 @@ export function buildLab(m: Module, s: Settings): LabResult {
       "A deterministic teaching model. Change the controls and replay to compare outcomes.";
   try {
     switch (m.kind) {
+      case "deep":
+        return deeperLab(m.id, s);
       case "sql":
         number(s.minimum, 0, 250);
         frames = simulateJoin(s.join, s.minimum);

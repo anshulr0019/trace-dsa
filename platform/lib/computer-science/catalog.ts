@@ -1,3 +1,4 @@
+import { deeperModules } from "./deeper-catalog";
 export type TopicId =
   | "system-design"
   | "databases"
@@ -6,6 +7,7 @@ export type TopicId =
   | "oop"
   | "interviews";
 export type LabKind =
+  | "deep"
   | "architecture"
   | "sql"
   | "index"
@@ -509,6 +511,7 @@ export const modules: Module[] = [
     ),
   },
 ];
+modules.push(...deeperModules);
 export const moduleById = Object.fromEntries(modules.map((m) => [m.id, m]));
 export const interviewQuestions = [
   {
@@ -699,3 +702,17 @@ export const interviewQuestions = [
     ],
   },
 ];
+
+// Append so existing browser-local interview answer IDs remain stable.
+interviewQuestions.push(
+  ...deeperModules.map((m) => ({
+    topic: m.topic,
+    prompt: `Explain ${m.title.toLowerCase()}. ${m.challenge}`,
+    rubric: [
+      "State the initial conditions, inputs, and simplifying assumptions before explaining the steps",
+      m.idea,
+      m.invariant,
+      "Use a concrete example to compare the policies and explain when you would choose each one",
+    ],
+  })),
+);

@@ -1,14 +1,13 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { examplesFor, initialScenario } from "@/lib/computer-science/examples";
 import type { Module } from "@/lib/computer-science/catalog";
 import {
   buildLab,
-  defaultSettings,
   sampleTables,
   type Settings,
 } from "@/lib/computer-science/models";
 import {
-  architectureTemplate,
   simulateArchitecture,
   type Architecture,
 } from "@/lib/computer-science/architecture";
@@ -28,6 +27,8 @@ export function GuidedLab({
   const [step, setStep] = useState(0),
     [playing, setPlaying] = useState(false),
     [speed, setSpeed] = useState(1);
+  const examples = useMemo(() => examplesFor(m), [m]);
+  const [exampleNotice, setExampleNotice] = useState("");
   const architectural = m.kind === "architecture";
   const lab = useMemo(
     () => buildLab(m, scenario.settings),
@@ -40,6 +41,7 @@ export function GuidedLab({
   const frames = architectural ? architecture.frames : lab.frames,
     current = frames[Math.min(step, frames.length - 1)];
   const update = (v: Scenario) => {
+    setExampleNotice("");
     setPlaying(false);
     setStep(0);
     onChange(v);
@@ -65,16 +67,28 @@ export function GuidedLab({
   };
   return (
     <section className="cs-lab">
+      <div className="cs-example-list" aria-label="Worked examples">
+        {examples.map((example, i) => (
+          <button
+            key={example.title}
+            aria-pressed={
+              JSON.stringify(example.scenario) === JSON.stringify(scenario)
+            }
+            onClick={() => {
+              update(example.scenario);
+              setExampleNotice(example.why);
+            }}
+          >
+            <small>EXAMPLE {i + 1}</small>
+            <strong>{example.title}</strong>
+            <span>{example.why}</span>
+          </button>
+        ))}
+      </div>
+      {exampleNotice && <p role="status">{exampleNotice}</p>}
       <div className="cs-section-head">
         <span>EXPLORE THE MODEL</span>
-        <button
-          onClick={() =>
-            update({
-              settings: { ...defaultSettings },
-              architecture: architectureTemplate(m.id),
-            })
-          }
-        >
+        <button onClick={() => update(initialScenario(m.id))}>
           Reset this scenario
         </button>
       </div>
@@ -105,6 +119,7 @@ export function GuidedLab({
                   frame={current}
                   nodes={architectural ? [] : lab.nodes}
                   edges={lab.edges}
+                  directed={!lab.undirected}
                   index={step}
                 />
                 <div
