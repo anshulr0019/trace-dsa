@@ -1,0 +1,335 @@
+/* The same focus contract applies to every player; small screens keep readable content. */
+.playback-surface {
+  scroll-margin-top: 70px;
+  overflow-anchor: none;
+  min-width: 0;
+}
+.playback-focus-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #a5bbaa;
+}
+.playback-focus-toolbar button {
+  padding: 5px 12px;
+  border: 1px solid #526d5b;
+  background: #1a2921;
+  border-radius: 7px;
+  color: #d6e9dc;
+}
+.playback-surface.is-playback-focused .step-narrative {
+  height: auto;
+  min-height: 96px;
+  overflow: visible;
+  flex-shrink: 0;
+}
+.playback-surface.is-playback-focused .input-toolbar {
+  display: none;
+}
+.playback-surface.is-playback-focused .source-code {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow: auto;
+}
+.playback-surface.is-playback-focused .code-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.playback-surface.is-playback-focused .visual-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.playback-surface.is-playback-focused .motion-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.playback-surface.is-playback-focused .stage-readout {
+  height: 48px;
+  min-height: 48px;
+}
+.playback-surface.is-playback-focused .motion-canvas {
+  height: 170px;
+}
+.playback-surface.is-playback-focused .motion-legend {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.playback-surface.is-playback-focused .live-state {
+  max-height: 90px;
+  overflow: auto;
+}
+@media (min-width: 1001px) and (min-height: 650px) {
+  .playback-surface.is-playback-focused .resizable-workbench {
+    height: calc(100dvh - 210px) !important;
+    min-height: 0;
+  }
+  .playback-surface.is-playback-focused .panel-title {
+    height: 42px;
+    min-height: 42px;
+    padding: 10px 18px;
+  }
+  .playback-surface.is-playback-focused .step-narrative {
+    padding: 12px 18px;
+  }
+  .playback-surface.is-playback-focused .stage-topline {
+    padding-top: 10px;
+  }
+  .playback-surface.is-playback-focused .race-grid {
+    max-height: calc(100dvh - 190px);
+  }
+  .playback-surface.is-playback-focused .race-panel {
+    padding: 15px;
+  }
+  .playback-surface.is-playback-focused .race-count {
+    margin: 8px 0;
+  }
+  .playback-surface.is-playback-focused .race-message {
+    margin: 8px 0;
+  }
+}
+/* Override the old roadmap offset so its top bar never covers the scene. */
+.roadmap-foundation #visual-workbench.playback-focused {
+  scroll-margin-top: 70px;
+}
+@media (min-width: 1001px) and (min-height: 650px) {
+  .roadmap-foundation #visual-workbench.playback-focused .resizable-workbench {
+    height: calc(100dvh - 210px) !important;
+    min-height: 0;
+  }
+  .roadmap-foundation #visual-workbench.playback-focused .step-story {
+    flex-shrink: 0;
+    overflow: visible;
+  }
+  .roadmap-foundation #visual-workbench.playback-focused .visual-bindings {
+    display: none;
+  }
+}
+/* Labs retain the current explanation while setup controls move out of the playback area. */
+.cs-hub .cs-playback-surface.is-playback-focused .cs-stage {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-scene {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-explanation {
+  flex-shrink: 0;
+  min-height: 110px;
+  padding: 14px 20px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-explanation h3 {
+  margin: 6px 0;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-explanation p {
+  margin: 6px 0;
+  line-height: 1.5;
+  font-size: 14px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-reference {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 18px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-reference pre {
+  min-height: 0;
+  flex: 1;
+  margin: 10px 0;
+  max-height: none;
+}
+.cs-hub
+  .cs-playback-surface.is-playback-focused
+  .cs-reference
+  > p:last-of-type {
+  font-size: 12px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-architecture {
+  padding: 6px 14px;
+  min-height: 0;
+  flex: 1;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-architecture > .cs-palette,
+.cs-hub
+  .cs-playback-surface.is-playback-focused
+  .cs-architecture
+  > .cs-controls,
+.cs-hub .cs-playback-surface.is-playback-focused .cs-architecture > details,
+.cs-hub .cs-playback-surface.is-playback-focused .cs-architecture > p {
+  display: none;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-architecture > .cs-flow {
+  height: 100%;
+  max-height: 260px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-architecture + .cs-scene {
+  flex: 0 1 auto;
+  max-height: 180px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-cells {
+  margin: 10px 0;
+  gap: 8px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-cells > div {
+  min-height: 60px;
+  padding: 9px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-metrics {
+  margin: 12px 0 4px;
+  gap: 16px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-metrics dd {
+  font-size: 19px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-flow {
+  max-height: 220px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-playback {
+  margin: 10px 0;
+  position: sticky;
+  bottom: 10px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-congestion-chart svg {
+  max-height: 150px;
+}
+@media (min-width: 1001px) and (min-height: 650px) {
+  .cs-hub .cs-playback-surface.is-playback-focused .cs-lab-grid {
+    height: calc(100dvh - 220px);
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+    align-items: stretch;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused .cs-lab-grid.cs-wide {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 1000px) {
+  .playback-surface {
+    scroll-margin-top: 65px;
+  }
+  .playback-surface.is-playback-focused .motion-canvas {
+    height: 170px;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused .cs-lab-grid {
+    grid-template-columns: 1fr;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused .cs-stage {
+    min-height: 340px;
+    max-height: none;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused .cs-reference {
+    max-height: 360px;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused .cs-reference pre {
+    max-height: 220px;
+  }
+  .playback-surface.is-playback-focused .step-narrative {
+    min-height: 100px;
+  }
+  .playback-surface.is-playback-focused .race-grid {
+    grid-template-columns: 1fr;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused .cs-architecture > .cs-flow {
+    min-height: 220px;
+  }
+}
+@media (max-height: 649px) {
+  .playback-surface.is-playback-focused .resizable-workbench,
+  .roadmap-foundation #visual-workbench.playback-focused .resizable-workbench {
+    height: auto !important;
+    min-height: 0;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused .cs-stage {
+    min-height: 360px;
+  }
+}
+.cs-focus-tabs {
+  display: none;
+}
+.cs-flow > path.active {
+  animation-duration: inherit;
+  animation-play-state: paused;
+}
+.cs-flow.cs-flow-playing > path.active {
+  animation-play-state: running;
+}
+@media (max-width: 1000px) {
+  .cs-focus-tabs {
+    display: flex;
+    gap: 6px;
+  }
+  .cs-hub
+    .cs-playback-surface.is-playback-focused:not(.cs-show-code)
+    .cs-reference {
+    display: none;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused.cs-show-code .cs-stage {
+    display: none;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused .cs-stage {
+    min-height: 0;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused .cs-scene {
+    max-height: calc(100dvh - 370px);
+    min-height: 180px;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused.cs-show-code .cs-reference {
+    height: calc(100dvh - 240px);
+    max-height: none;
+  }
+  .cs-hub .cs-playback-surface.is-playback-focused .cs-focus-tabs button {
+    font-size: 11px;
+    padding: 6px;
+  }
+  .cs-hub .cs-playback-surface .playback-focus-toolbar {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 1000px) and (min-height: 650px) {
+  .roadmap-foundation #visual-workbench.playback-focused .trace-visual-panel {
+    height: calc(100dvh - 225px);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .roadmap-foundation #visual-workbench.playback-focused .trace-visual-body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+  .roadmap-foundation
+    #visual-workbench.playback-focused
+    .trace-visual-body
+    > .live-scene {
+    min-height: 0;
+  }
+  .roadmap-foundation #visual-workbench.playback-focused .visual-bindings {
+    display: none;
+  }
+  .roadmap-foundation #visual-workbench.playback-focused .step-story {
+    min-height: 0;
+    flex-shrink: 0;
+    padding: 12px 14px;
+  }
+  .roadmap-foundation #visual-workbench.playback-focused .step-story-summary {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 6px 0;
+  }
+  .roadmap-foundation #visual-workbench.playback-focused .motion-legend {
+    padding: 6px;
+  }
+}

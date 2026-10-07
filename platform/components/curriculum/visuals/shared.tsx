@@ -1,13 +1,11 @@
 "use client";
+import {stageTransition} from "@/lib/playback-motion";
 import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import { text, list, type State } from "@/lib/curriculum/visual-state";
 export function useStageMotion(speed = 1) {
   const reduced = useReducedMotion();
-  return {
-    duration: reduced ? 0 : Math.min(0.45, 0.55 / speed),
-    ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-  };
+  return stageTransition(speed, !!reduced);
 }
 export function StageLabel({
   title,

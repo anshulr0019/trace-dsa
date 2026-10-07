@@ -1,4 +1,5 @@
 "use client";
+import {usePlaybackFocus} from "../experience/use-playback-focus";
 import { useEffect, useRef, useState } from "react";
 import { problems, problemById } from "@/lib/curriculum/catalog";
 import type { Language } from "@/lib/curriculum/playground";
@@ -234,6 +235,7 @@ function LiveBoard({ id, onBack }: { id: string; onBack: () => void }) {
     run?.run.frames.length ?? 0,
     Number(room?.speed ?? 1),
   );
+  const playbackFocus=usePlaybackFocus(playing,id);
   stepRef.current = step;
   useEffect(() => {
     active.current = true;
@@ -693,7 +695,7 @@ function LiveBoard({ id, onBack }: { id: string; onBack: () => void }) {
           classroom capture.
         </p>
       )}
-      <div className="classroom-workbench">
+      <div ref={playbackFocus.ref} className="classroom-workbench playback-surface">
         <section className="product-card">
           <h2>{run ? displayProblem.title : "Waiting for an example"}</h2>
           {!run && <p>The teacher will share a captured run here.</p>}

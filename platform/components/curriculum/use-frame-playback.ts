@@ -1,4 +1,5 @@
 "use client";
+import {stepDuration} from "@/lib/playback-motion";
 import {
   useCallback,
   useEffect,
@@ -43,7 +44,7 @@ export function useFramePlayback(count: number, speed: number) {
       }
       elapsed.current += last === undefined ? 0 : Math.min(now - last, 100);
       last = now;
-      if (elapsed.current >= 850 / speed) {
+      if (elapsed.current >= stepDuration(speed)) {
         elapsed.current = 0;
         setCurrent((old) => Math.min(count - 1, old + 1));
       }

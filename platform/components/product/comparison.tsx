@@ -1,4 +1,5 @@
 "use client";
+import {usePlaybackFocus} from "../experience/use-playback-focus";
 import { useState } from "react";
 import { comparisonTraces } from "@/lib/trace/comparisons";
 import { Scene, type ExecutionFrame } from "@/components/curriculum/scene";
@@ -52,6 +53,7 @@ function ComparisonBody({
     traces = comparisonTraces(id, nums, target),
     count = Math.max(...traces.map((t) => t.length));
   const { step, playing, setPlaying, setStep } = useFramePlayback(count, 1);
+  const focus=usePlaybackFocus(playing,problem.id);
   const labels =
     id === "sliding-window"
       ? ["Recalculate each window", "Reuse the previous sum"]
@@ -66,7 +68,7 @@ function ComparisonBody({
     stack: [],
   });
   return (
-    <>
+    <div ref={focus.ref} className="playback-surface">
       <p>
         These are illustrative reference algorithms for the same input. Each
         captured state counts one array comparison or sum update; animation
@@ -128,7 +130,7 @@ function ComparisonBody({
           />
         </label>
       </div>
-    </>
+    </div>
   );
 }
 export function TraceStats({ frames }: { frames: ExecutionFrame[] }) {

@@ -1,4 +1,6 @@
 "use client";
+import {usePlaybackFocus} from "../experience/use-playback-focus";
+import {PLAYBACK_SPEEDS} from "@/lib/playback-motion";
 import { useState } from "react";
 import { Play, Pause, ArrowLeft, ArrowRight } from "lucide-react";
 import type { Problem } from "@/lib/curriculum/catalog";
@@ -25,8 +27,10 @@ export function TracePlayer({
     run.frames.length,
     speed,
   );
+  const focus=usePlaybackFocus(playing,run);
   const frame = run.frames[step];
   return (
+    <div ref={focus.ref} className={`playback-surface ${focus.focused?"is-playback-focused":""}`}>
     <section className="practice-trace" aria-label="Your solution playback">
       <div className="practice-section-heading">
         <h3>Your code, step by step</h3>
@@ -88,7 +92,7 @@ export function TracePlayer({
           value={speed}
           onChange={(e) => setSpeed(Number(e.target.value))}
         >
-          {[0.5, 1, 2, 4].map((s) => (
+          {PLAYBACK_SPEEDS.map((s) => (
             <option key={s} value={s}>
               {s}× speed
             </option>
@@ -113,6 +117,6 @@ export function TracePlayer({
           the completed run.
         </p>
       )}
-    </section>
+    </section></div>
   );
 }

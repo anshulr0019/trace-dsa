@@ -1,4 +1,5 @@
 "use client";
+import {usePlaybackFocus} from "../experience/use-playback-focus";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -127,24 +128,6 @@ function ProblemStudio({
       window.removeEventListener("keydown", escape);
     };
   }, [presenting]);
-  const [focusRequest, setFocusRequest] = useState(0),
-    [focused, setFocused] = useState(false);
-  function focusPlayback() {
-    setFocused(true);
-    setFocusRequest((n) => n + 1);
-  }
-  useEffect(() => {
-    if (!focusRequest) return;
-    const id = requestAnimationFrame(() =>
-      document.getElementById("visual-workbench")?.scrollIntoView({
-        block: "start",
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "instant"
-          : "smooth",
-      }),
-    );
-    return () => cancelAnimationFrame(id);
-  }, [focusRequest]);
   const [language, setLanguage] = useState<Language>("python"),
     [code, setCode] = useState(sourceFor(p, "python")),
     [input, setInput] = useState(formatInput(p.input));
@@ -156,6 +139,7 @@ function ProblemStudio({
     result?.frames.length ?? 0,
     speed,
   );
+  const {ref: playbackRef,focused,focusRequest,focus:focusPlayback,setFocused}=usePlaybackFocus(playing,p.id);
   const [experience, setExperience] = useState<"learn" | "practice">("learn");
   const [snapshot, setSnapshot] = useState({
       code: "",
@@ -808,13 +792,14 @@ function ProblemStudio({
             · Edit the input or run the solution to inspect each step.
           </p>
           <div
+            ref={playbackRef}
             id="visual-workbench"
-            className={focused ? "playback-focused" : ""}
+            className={`playback-surface ${focused ? "playback-focused" : ""}`}
           >
             {focused && (
               <div className="focus-toolbar">
                 <span>Playback view</span>
-                <button onClick={() => setFocused(false)}>Full layout</button>
+                <button onClick={() => { setPlaying(false); setFocused(false); }}>Full layout</button>
               </div>
             )}
             <Workbench

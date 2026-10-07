@@ -1,5 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { MotionConfig, useReducedMotion } from "motion/react";
+import { PLAYBACK_SPEEDS, stageTransition } from "@/lib/playback-motion";
+import { useFramePlayback } from "../curriculum/use-frame-playback";
+import { usePlaybackFocus } from "../experience/use-playback-focus";
 import { examplesFor, initialScenario } from "@/lib/computer-science/examples";
 import type { Module } from "@/lib/computer-science/catalog";
 import {
@@ -24,9 +28,9 @@ export function GuidedLab({
   scenario: Scenario;
   onChange: (v: Scenario) => void;
 }) {
-  const [step, setStep] = useState(0),
-    [playing, setPlaying] = useState(false),
-    [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState(1);
+  const reduced = useReducedMotion();
+  const [focusPanel, setFocusPanel] = useState("visual");
   const examples = useMemo(() => examplesFor(m), [m]);
   const [exampleNotice, setExampleNotice] = useState("");
   const architectural = m.kind === "architecture";
@@ -38,29 +42,22 @@ export function GuidedLab({
     () => simulateArchitecture(scenario.architecture),
     [scenario.architecture],
   );
-  const frames = architectural ? architecture.frames : lab.frames,
-    current = frames[Math.min(step, frames.length - 1)];
+  const frames = architectural ? architecture.frames : lab.frames;
+  const { step, setStep, playing, setPlaying } = useFramePlayback(
+    frames.length,
+    speed,
+  );
+  const focus = usePlaybackFocus(playing, m.id);
+  useEffect(() => {
+    setFocusPanel("visual");
+  }, [focus.focusRequest]);
+  const current = frames[Math.min(step, frames.length - 1)];
   const update = (v: Scenario) => {
     setExampleNotice("");
     setPlaying(false);
     setStep(0);
     onChange(v);
   };
-  useEffect(() => {
-    if (!playing) return;
-    const timer = setInterval(
-      () =>
-        setStep((n) => {
-          if (n >= frames.length - 1) {
-            setPlaying(false);
-            return n;
-          }
-          return n + 1;
-        }),
-      1400 / speed,
-    );
-    return () => clearInterval(timer);
-  }, [playing, speed, frames.length]);
   const jump = (n: number) => {
     setPlaying(false);
     setStep(Math.max(0, Math.min(frames.length - 1, n)));
@@ -105,65 +102,112 @@ export function GuidedLab({
         </p>
       ) : (
         current && (
-          <>
-            <div className={`cs-lab-grid ${architectural ? "cs-wide" : ""}`}>
-              <div className="cs-stage">
-                {architectural && (
-                  <ArchitectureEditor
-                    value={scenario.architecture}
-                    active={current.active}
-                    onChange={(a) => update({ ...scenario, architecture: a })}
-                  />
+          <div
+            ref={focus.ref}
+            className={`playback-surface cs-playback-surface ${focus.focused ? "is-playback-focused" : ""} ${focusPanel === "code" ? "cs-show-code" : ""}`}
+          >
+            {focus.focused && (
+              <div className="playback-focus-toolbar">
+                <span>Playback view</span>
+                {!architectural && (
+                  <div className="cs-focus-tabs">
+                    <button
+                      aria-pressed={focusPanel === "visual"}
+                      onClick={() => {
+                        setPlaying(false);
+                        setFocusPanel("visual");
+                      }}
+                    >
+                      Visualization
+                    </button>
+                    <button
+                      aria-pressed={focusPanel === "code"}
+                      onClick={() => {
+                        setPlaying(false);
+                        setFocusPanel("code");
+                      }}
+                    >
+                      Reference logic
+                    </button>
+                  </div>
                 )}
-                <StateScene
-                  frame={current}
-                  nodes={architectural ? [] : lab.nodes}
-                  edges={lab.edges}
-                  directed={!lab.undirected}
-                  index={step}
-                />
-                <div
-                  className="cs-explanation"
-                  aria-live={playing ? "off" : "polite"}
+                <button
+                  onClick={() => {
+                    setPlaying(false);
+                    focus.setFocused(false);
+                  }}
                 >
-                  <span>
-                    STEP {step + 1} / {frames.length}
-                  </span>
-                  <h3>{current.title}</h3>
-                  <p>{current.explanation}</p>
-                </div>
+                  Full layout
+                </button>
               </div>
-              {!architectural && (
-                <aside className="cs-reference">
-                  <h3>Reference logic</h3>
-                  <p>
-                    Illustrative code. The visual teaching model produces the
-                    steps.
-                  </p>
-                  <pre>
-                    <code>{lab.code}</code>
-                  </pre>
-                  <p>{lab.assumptions}</p>
-                  {m.kind === "sql" && (
-                    <details>
-                      <summary>Source tables</summary>
-                      <h4>Customers</h4>
-                      <pre>
-                        {sampleTables.customers
-                          .map((c) => `${c[0]}  ${c[1]}`)
-                          .join("\n")}
-                      </pre>
-                      <h4>Orders (id · customer · amount)</h4>
-                      <pre>
-                        {sampleTables.orders
-                          .map((o) => `${o[0]}  ${o[1]}  ${o[2]}`)
-                          .join("\n")}
-                      </pre>
-                    </details>
+            )}
+            <MotionConfig
+              transition={stageTransition(speed, !!reduced)}
+              reducedMotion="user"
+            >
+              <div className={`cs-lab-grid ${architectural ? "cs-wide" : ""}`}>
+                <div className="cs-stage">
+                  {architectural && (
+                    <ArchitectureEditor
+                      speed={speed}
+                      playing={playing}
+                      value={scenario.architecture}
+                      active={current.active}
+                      onChange={(a) => update({ ...scenario, architecture: a })}
+                    />
                   )}
-                </aside>
-              )}
-            </div>
+                  <StateScene
+                    speed={speed}
+                    playing={playing}
+                    frame={current}
+                    nodes={architectural ? [] : lab.nodes}
+                    edges={lab.edges}
+                    directed={!lab.undirected}
+                    index={step}
+                  />
+                  <div
+                    className="cs-explanation"
+                    aria-live={playing ? "off" : "polite"}
+                  >
+                    <span>
+                      STEP {step + 1} / {frames.length}
+                    </span>
+                    <h3>{current.title}</h3>
+                    <p>{current.explanation}</p>
+                  </div>
+                </div>
+                {!architectural && (
+                  <aside className="cs-reference">
+                    <h3>Reference logic</h3>
+                    <p>
+                      Illustrative code. The visual teaching model produces the
+                      steps.
+                    </p>
+                    <pre>
+                      <code>{lab.code}</code>
+                    </pre>
+                    <p>{lab.assumptions}</p>
+                    {m.kind === "sql" && (
+                      <details>
+                        <summary>Source tables</summary>
+                        <h4>Customers</h4>
+                        <pre>
+                          {sampleTables.customers
+                            .map((c) => `${c[0]}  ${c[1]}`)
+                            .join("\n")}
+                        </pre>
+                        <h4>Orders (id · customer · amount)</h4>
+                        <pre>
+                          {sampleTables.orders
+                            .map((o) => `${o[0]}  ${o[1]}  ${o[2]}`)
+                            .join("\n")}
+                        </pre>
+                      </details>
+                    )}
+                  </aside>
+                )}
+              </div>
+            </MotionConfig>
             <div className="cs-playback">
               <button
                 aria-label="First step"
@@ -209,7 +253,7 @@ export function GuidedLab({
                   value={speed}
                   onChange={(e) => setSpeed(Number(e.target.value))}
                 >
-                  {[0.5, 1, 2].map((s) => (
+                  {PLAYBACK_SPEEDS.map((s) => (
                     <option value={s} key={s}>
                       {s}×
                     </option>
@@ -233,7 +277,7 @@ export function GuidedLab({
                   Continue from trace end: {architecture.queue} queued jobs
                 </button>
               )}
-          </>
+          </div>
         )
       )}
       <div className="cs-insights">

@@ -1,5 +1,6 @@
 "use client";
 import { motion, useReducedMotion } from "motion/react";
+import { stageTransition } from "@/lib/playback-motion";
 import { useId } from "react";
 import type { DiagramNode, Frame } from "@/lib/computer-science/models";
 export function FlowDiagram({
@@ -8,6 +9,8 @@ export function FlowDiagram({
   active = [],
   onSelect,
   selected,
+  speed = 1,
+  playing = false,
   directed = true,
 }: {
   nodes: DiagramNode[];
@@ -16,12 +19,15 @@ export function FlowDiagram({
   onSelect?: (id: string) => void;
   selected?: string;
   directed?: boolean;
+  speed?: number;
+  playing?: boolean;
 }) {
   const marker = useId().replace(/:/g, ""),
     reduced = useReducedMotion();
   return (
     <svg
-      className="cs-flow"
+      className={`cs-flow ${playing ? "cs-flow-playing" : ""}`}
+      style={{ animationDuration: `${0.85 / speed}s` }}
       viewBox="0 0 640 320"
       role="group"
       aria-label="Component relationships and current activity"
@@ -62,7 +68,7 @@ export function FlowDiagram({
           key={n.id}
           initial={false}
           animate={{ x: n.x * 6.4, y: n.y * 3.2 }}
-          transition={{ duration: reduced ? 0 : 0.35 }}
+          transition={stageTransition(speed, !!reduced)}
           className={`cs-flow-node ${active.includes(n.id) ? "active" : ""} ${selected === n.id ? "selected" : ""}`}
           role={onSelect ? "button" : undefined}
           tabIndex={onSelect ? 0 : undefined}
@@ -100,6 +106,8 @@ export function StateScene({
   nodes,
   edges,
   index,
+  speed = 1,
+  playing = false,
   directed = true,
 }: {
   frame: Frame;
@@ -107,6 +115,8 @@ export function StateScene({
   edges: [string, string][];
   index: number;
   directed?: boolean;
+  speed?: number;
+  playing?: boolean;
 }) {
   const reduced = useReducedMotion();
   return (
@@ -117,6 +127,8 @@ export function StateScene({
           edges={edges}
           active={frame.active}
           directed={directed}
+          speed={speed}
+          playing={playing}
         />
       )}
       {frame.chart && (
@@ -205,12 +217,12 @@ export function StateScene({
               layout={!reduced}
               key={c.id}
               className={c.tone ?? ""}
-              transition={{ duration: reduced ? 0 : 0.3 }}
+              transition={stageTransition(speed, !!reduced)}
             >
               <small>{c.label}</small>
               <motion.strong
                 key={String(c.value)}
-                initial={{ opacity: 0.3 }}
+                initial={{ opacity: reduced ? 1 : 0.3 }}
                 animate={{ opacity: 1 }}
               >
                 {c.value}
@@ -232,11 +244,17 @@ export function StateScene({
             </thead>
             <tbody>
               {frame.table.rows.map((r, i) => (
-                <tr key={i}>
+                <motion.tr
+                  layout={!reduced}
+                  initial={false}
+                  animate={{ opacity: 1 }}
+                  transition={stageTransition(speed, !!reduced)}
+                  key={i}
+                >
                   {r.map((v, j) => (
                     <td key={j}>{v === "NULL" ? <em>NULL</em> : v}</td>
                   ))}
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>

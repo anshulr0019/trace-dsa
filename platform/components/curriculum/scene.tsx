@@ -1,4 +1,5 @@
 "use client";
+import {stageTransition} from "@/lib/playback-motion";
 import {motion,AnimatePresence,useReducedMotion,MotionConfig} from "motion/react";
 import {ArrayStage} from "./array-stage";
 import {ConceptStage} from "./visuals/concept-stage";
@@ -68,8 +69,8 @@ function Heap({name,values,state}:{name:string;values:unknown[];state:Record<str
 }
 type SceneProps={cue?:ConceptCue;problem:Problem;frame?:ExecutionFrame;previous?:ExecutionFrame;input:Record<string,unknown>;language?:string;speed?:number;source?:string;binding?:{name:string;kind:string;marker:string}};
 export function Scene(props:SceneProps){
- const reduced=useReducedMotion(),duration=reduced?0:Math.min(.42,.55/(props.speed??1));
- return <SceneTiming.Provider value={duration}><MotionConfig reducedMotion="user" transition={{duration,ease:[.22,1,.36,1]}}>{props.binding ? <SceneContent {...props}/> : <ConceptStage {...props}/>}</MotionConfig></SceneTiming.Provider>;
+ const reduced=useReducedMotion(),transition=stageTransition(props.speed,!!reduced),duration=transition.duration;
+ return <SceneTiming.Provider value={duration}><MotionConfig reducedMotion="user" transition={transition}>{props.binding ? <SceneContent {...props}/> : <ConceptStage {...props}/>}</MotionConfig></SceneTiming.Provider>;
 }
 function SceneContent({problem,frame,previous,input,language="python",binding,cue}:SceneProps){
  const reduced=useReducedMotion();

@@ -373,7 +373,8 @@
   margin: 20px 0;
   box-shadow: 0 10px 24px #0003;
 }
-.cs-hub .cs-primary {
+.cs-hub .cs-primary,
+.cs-hub .cs-primary:hover {
   background: var(--cs-green);
   color: #1c301c;
   border-color: var(--cs-green);

@@ -1,4 +1,5 @@
 "use client";
+import {stepDuration} from "@/lib/playback-motion";
 import { useCallback, useEffect, useRef, useState, type SetStateAction } from "react";
 import { useMotionValue } from "motion/react";
 
@@ -46,7 +47,7 @@ export function usePlayback(count: number, speed: number, gate?: (step: number) 
       if (document.hidden) { last = undefined; id = requestAnimationFrame(tick); return; }
       const delta = last === undefined ? 0 : Math.min(now - last, 80);
       last = now;
-      const p = Math.min(1, phase.get() + delta / (850 / speed));
+      const p = Math.min(1, phase.get() + delta / (stepDuration(speed)));
       phase.set(p);
       if (p === 1) {
         const s = current.current;

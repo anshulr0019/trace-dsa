@@ -11,10 +11,14 @@ export function ArchitectureEditor({
   value: a,
   onChange,
   active,
+  speed=1,
+  playing=false,
 }: {
   value: Architecture;
   onChange: (a: Architecture) => void;
   active: string[];
+  speed?: number;
+  playing?: boolean;
 }) {
   const [selected, setSelected] = useState("");
   const [from, setFrom] = useState(""),
@@ -52,6 +56,8 @@ export function ArchitectureEditor({
         }))}
         edges={a.edges}
         active={active}
+        speed={speed}
+        playing={playing}
         selected={selected}
         onSelect={setSelected}
       />

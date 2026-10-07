@@ -1,4 +1,5 @@
 "use client";
+import {usePlaybackFocus} from "./experience/use-playback-focus";
 import {
   lazy,
   Suspense,
@@ -289,6 +290,7 @@ export default function Studio() {
     return true;
   });
   const { step, setStep, playing, setPlaying } = playback;
+  const foundationFocus = usePlaybackFocus(playing && view === "studio" && tab === "learn", `${lesson.id}:${view}:${tab}`);
   const [running, setRunning] = useState(false);
   const [inputError, setInputError] = useState("");
   const [notice, setNotice] = useState("");
@@ -949,7 +951,10 @@ export default function Studio() {
                     </label>
                   </div>
                   <TabsContent value="learn">
+                    <div ref={foundationFocus.ref} className={`playback-surface foundation-playback-surface ${foundationFocus.focused ? "is-playback-focused" : ""}`}>
+                    {foundationFocus.focused && <div className="playback-focus-toolbar"><span>Playback view · visualization and code</span><button onClick={()=>{setPlaying(false);foundationFocus.setFocused(false);}}>Full layout</button></div>}
                     <Workbench
+                      focusRequest={foundationFocus.focusRequest}
                       onSwitch={() => setPlaying(false)}
                       visual={
                         <section className="visual-panel panel">
@@ -1117,6 +1122,7 @@ export default function Studio() {
                         </div>
                       }
                     />
+                    </div>
                     <PlaybackDock
                       playback={playback}
                       count={run.frames.length}
