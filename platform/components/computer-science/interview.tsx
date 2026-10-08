@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { CourseGuide } from "../learning/course-guide";
 import { interviewQuestions, topics } from "@/lib/computer-science/catalog";
 export type InterviewDraft = { text: string; checks: number[] };
 export function InterviewPractice({
@@ -41,6 +42,29 @@ export function InterviewPractice({
     setRemaining(minutes * 60);
     setReview(false);
   };
+  const [reasoningStep, setReasoningStep] = useState(0);
+  const reasoning = [
+    {
+      title: "Clarify",
+      prompt:
+        "State the inputs, the desired result and two assumptions you need to confirm.",
+    },
+    {
+      title: "Compare",
+      prompt:
+        "Describe a straightforward approach and an alternative. Explain their costs.",
+    },
+    {
+      title: "Trace",
+      prompt:
+        "Walk through a small example. Name the state that changes at each decision.",
+    },
+    {
+      title: "Challenge",
+      prompt:
+        "Try a boundary or failure case. Explain why the design still works, or revise it.",
+    },
+  ];
   return (
     <section className="cs-interview">
       <div className="cs-controls">
@@ -98,6 +122,7 @@ export function InterviewPractice({
           </select>
         </label>
       </div>
+      <CourseGuide track="interviews" goal={item.q.prompt} />
       <article className="cs-interview-prompt">
         <small>EXPLAIN YOUR REASONING</small>
         <h2>{item.q.prompt}</h2>
@@ -131,6 +156,19 @@ export function InterviewPractice({
           page ends the timer; your writing stays.
         </p>
       </article>
+      <div className="learning-reasoning" aria-label="Reasoning walkthrough">
+        {reasoning.map((r, i) => (
+          <button
+            key={r.title}
+            aria-pressed={reasoningStep === i}
+            onClick={() => setReasoningStep(i)}
+          >
+            <span>0{i + 1} →</span>
+            {r.title}
+          </button>
+        ))}
+      </div>
+      <p role="status">{reasoning[reasoningStep].prompt}</p>
       <label className="cs-notes">
         Your answer
         <textarea

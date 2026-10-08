@@ -1,3 +1,4 @@
+import { validateFoundationInput } from "../foundations/input";
 import { observeRun } from "../lab/diagnostics";
 import type { Language } from "./playground";
 import { validateProblemInput } from "./validate";
@@ -53,7 +54,9 @@ function executeBrowser(
   signal?.throwIfAborted();
   if (!browserLanguages.includes(payload.language as Language))
     return Promise.reject(Error("This language cannot run in the browser."));
-  const error = validateProblemInput(payload.problemId, payload.input);
+  const error = payload.problemId.startsWith("foundation:")
+    ? validateFoundationInput(payload.problemId, payload.input)
+    : validateProblemInput(payload.problemId, payload.input);
   if (error) return Promise.reject(Error(error));
   if (!payload.code.trim() || payload.code.length > 60000)
     return Promise.reject(

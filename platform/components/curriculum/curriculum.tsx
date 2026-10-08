@@ -55,6 +55,9 @@ import { readSharedLesson, type SharedLesson } from "@/lib/product/lessons";
 import { Workbench } from "../experience/workbench";
 import { RoadmapDock } from "./roadmap-dock";
 import { RoadmapInsights } from "./roadmap-insights";
+import { CourseGuide } from "../learning/course-guide";
+import { EvidenceBoard } from "../learning/evidence-board";
+import { recordChanges } from "@/lib/learning/evidence";
 import { ConceptIntro } from "./concept-intro";
 import { conceptCue } from "@/lib/curriculum/concept-cues";
 import { LearningGuide } from "./learning-guide";
@@ -1359,6 +1362,8 @@ function ProblemStudio({
                     : "Automatic steps show state before a statement. Explicit checkpoints show state when called. Unknown custom types remain labeled rather than guessed."}
               </small>
             </div>
+            <CourseGuide track="dsa" goal={p.goal} challenge={p.caveat ? `Test this constraint: ${p.caveat}` : undefined}/>
+            {result&&step>0&&<details className="learning-state-review"><summary>Inspect before → after at step {step+1}</summary><EvidenceBoard changes={recordChanges(result.frames[step-1].vars,result.frames[step].vars)}/></details>}
             <ConceptIntro key={p.id} id={p.id} />
             <LearningGuide
               key={selectedExample}

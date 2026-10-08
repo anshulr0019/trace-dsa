@@ -15,6 +15,11 @@ import {
   simulateArchitecture,
   type Architecture,
 } from "@/lib/computer-science/architecture";
+import { CourseGuide } from "../learning/course-guide";
+import { EvidenceBoard } from "../learning/evidence-board";
+import { frameChanges } from "@/lib/learning/evidence";
+import { PredictionCheckpoint } from "./prediction-checkpoint";
+import { ExperimentComparison } from "./experiment-comparison";
 import { LabControls } from "./controls";
 import { StateScene } from "./scene";
 import { ArchitectureEditor } from "./architecture-editor";
@@ -28,6 +33,7 @@ export function GuidedLab({
   scenario: Scenario;
   onChange: (v: Scenario) => void;
 }) {
+  const [compare, setCompare] = useState(false);
   const [speed, setSpeed] = useState(1);
   const reduced = useReducedMotion();
   const [focusPanel, setFocusPanel] = useState("visual");
@@ -64,6 +70,7 @@ export function GuidedLab({
   };
   return (
     <section className="cs-lab">
+      <CourseGuide track={m.topic} goal={m.idea} challenge={m.challenge} />
       <div className="cs-example-list" aria-label="Worked examples">
         {examples.map((example, i) => (
           <button
@@ -160,6 +167,7 @@ export function GuidedLab({
                     speed={speed}
                     playing={playing}
                     frame={current}
+                    previous={step > 0 ? frames[step - 1] : undefined}
                     nodes={architectural ? [] : lab.nodes}
                     edges={lab.edges}
                     directed={!lab.undirected}
@@ -280,6 +288,35 @@ export function GuidedLab({
           </div>
         )
       )}
+      {!lab.error && frames.length > 1 && (
+        <>
+          <PredictionCheckpoint
+            key={JSON.stringify(scenario)}
+            frames={frames}
+            step={step}
+            onPause={() => setPlaying(false)}
+            onJump={jump}
+          />
+          <details className="learning-state-review">
+            <summary>What changed in this step?</summary>
+            <EvidenceBoard
+              changes={step > 0 ? frameChanges(frames[step - 1], current) : []}
+            />
+          </details>
+        </>
+      )}
+      <button
+        aria-expanded={compare}
+        onClick={() => {
+          setPlaying(false);
+          setCompare(!compare);
+        }}
+      >
+        {compare
+          ? "Close experiment comparison"
+          : "Compare examples side by side"}
+      </button>
+      {compare && <ExperimentComparison key={m.id} module={m} />}
       <div className="cs-insights">
         <article>
           <small>THE IDEA</small>

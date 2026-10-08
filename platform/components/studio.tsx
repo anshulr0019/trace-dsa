@@ -1,5 +1,14 @@
 "use client";
-import {usePlaybackFocus} from "./experience/use-playback-focus";
+import {
+  foundationSource,
+  foundationLanguages,
+  isFoundationLanguage,
+} from "@/lib/foundations/sources";
+import { foundationRun } from "@/lib/foundations/adapter";
+import type { Language } from "@/lib/curriculum/playground";
+import { executeInBrowser } from "@/lib/curriculum/runtime-client";
+import { CourseGuide } from "./learning/course-guide";
+import { usePlaybackFocus } from "./experience/use-playback-focus";
 import {
   lazy,
   Suspense,
@@ -270,6 +279,13 @@ export default function Studio() {
   const [parameter, setParameter] = useState(initial.target);
   const [raw, setRaw] = useState(initial.input.join(", "));
   const [paramRaw, setParamRaw] = useState(String(initial.target));
+  const [foundationLanguage, setFoundationLanguage] =
+    useState<Language>("python");
+  const languageRef = useRef<Language>("python");
+  const foundationAbort = useRef<AbortController | null>(null);
+  const languageDrafts = useRef<
+    Record<string, Partial<Record<Language, string>>>
+  >({});
   const [code, setCode] = useState(initial.code);
   const [executedCode, setExecutedCode] = useState(initial.code);
   const [editing, setEditing] = useState(false);
@@ -290,7 +306,10 @@ export default function Studio() {
     return true;
   });
   const { step, setStep, playing, setPlaying } = playback;
-  const foundationFocus = usePlaybackFocus(playing && view === "studio" && tab === "learn", `${lesson.id}:${view}:${tab}`);
+  const foundationFocus = usePlaybackFocus(
+    playing && view === "studio" && tab === "learn",
+    `${lesson.id}:${view}:${tab}`,
+  );
   const [running, setRunning] = useState(false);
   const [inputError, setInputError] = useState("");
   const [notice, setNotice] = useState("");
@@ -312,6 +331,8 @@ export default function Studio() {
   const dirty = code !== executedCode;
   const runTrace = useCallback(
     (l: Lesson, values: number[], p: number, source: string, seek = 0) => {
+      foundationAbort.current?.abort();
+      if (timeout.current) clearTimeout(timeout.current);
       setPlaying(false);
       setCheckpoint(null);
       answeredSteps.current.clear();
@@ -325,7 +346,52 @@ export default function Studio() {
         setStep(Math.min(seek, result.frames.length - 1));
         setRunning(false);
       };
-      if (worker.current) {
+      if (languageRef.current !== "python") {
+        const controller = new AbortController();
+        foundationAbort.current = controller;
+        const inputs = lessonInputs(l, values, p);
+        setStep(0);
+        setRun({
+          frames: [
+            {
+              line: 0,
+              vars: inputs,
+              comparisons: 0,
+              message: "Starting input.",
+            },
+          ],
+          finished: false,
+        });
+        void executeInBrowser(
+          {
+            language: languageRef.current,
+            code: source,
+            input: inputs,
+            problemId: `foundation:${l.id}`,
+            automatic: true,
+          },
+          controller.signal,
+        )
+          .then((value) => {
+            if (id === requestId.current)
+              apply(foundationRun(value, inputs, source));
+          })
+          .catch((e) => {
+            if (id !== requestId.current || controller.signal.aborted) return;
+            apply({
+              frames: [
+                {
+                  line: 0,
+                  vars: inputs,
+                  comparisons: 0,
+                  message: "Execution stopped.",
+                },
+              ],
+              finished: false,
+              error: (e as Error).message,
+            });
+          });
+      } else if (worker.current) {
         worker.current.postMessage({
           id,
           code: source,
@@ -345,14 +411,19 @@ export default function Studio() {
     [],
   );
   const changeLesson = useCallback(
-    (l: Lesson) => {
+    (l: Lesson, execute = true) => {
       setLesson(l);
       setNums(l.input);
       setParameter(l.target);
       setRaw(l.input.join(", "));
       setParamRaw(String(l.target));
-      setCode(l.code);
-      setCustom(false);
+      const source =
+        languageDrafts.current[l.id]?.[languageRef.current] ??
+        foundationSource(l, l.input.length, languageRef.current);
+      setCode(source);
+      setCustom(
+        source !== foundationSource(l, l.input.length, languageRef.current),
+      );
       setEditing(false);
       setView("studio");
       setTab("learn");
@@ -360,9 +431,14 @@ export default function Studio() {
       setQuestion(0);
       setChoice(null);
       setChecked(false);
-      runTrace(l, l.input, l.target, l.code);
+      if (execute) runTrace(l, l.input, l.target, source);
+      else setExecutedCode(source);
       setSaved((s) => ({ ...s, lastLesson: l.id }));
-      window.history.replaceState(null, "", `?lesson=${l.id}`);
+      window.history.replaceState(
+        null,
+        "",
+        `?lesson=${l.id}&language=${languageRef.current}`,
+      );
     },
     [runTrace],
   );
@@ -390,6 +466,30 @@ export default function Studio() {
         "Worker unavailable. The bounded interpreter will run locally.",
       );
     }
+    try {
+      const requested =
+        new URLSearchParams(location.search).get("language") ??
+        localStorage.getItem("trace:language");
+      if (isFoundationLanguage(requested)) {
+        languageRef.current = requested;
+        setFoundationLanguage(requested);
+      }
+    } catch {}
+    try {
+      const drafts = JSON.parse(
+        localStorage.getItem("trace:foundation-drafts") ?? "null",
+      );
+      if (drafts && typeof drafts === "object")
+        for (const l of lessons)
+          for (const lang of foundationLanguages) {
+            const value = drafts[l.id]?.[lang.id];
+            if (typeof value === "string" && value.length <= 16000)
+              languageDrafts.current[l.id] = {
+                ...languageDrafts.current[l.id],
+                [lang.id]: value,
+              };
+          }
+    } catch {}
     let stored = emptySaved;
     try {
       const data = JSON.parse(
@@ -451,8 +551,16 @@ export default function Studio() {
         setRaw(validated.nums.join(", "));
         setParameter(validated.parameter);
         setParamRaw(String(validated.parameter));
+        const replayLanguage = isFoundationLanguage(replay.language)
+          ? replay.language
+          : "python";
+        languageRef.current = replayLanguage;
+        setFoundationLanguage(replayLanguage);
         setCode(replay.code);
-        setCustom(replay.code !== lessonCode(l, validated.nums.length));
+        setCustom(
+          replay.code !==
+            foundationSource(l, validated.nums.length, languageRef.current),
+        );
         runTrace(
           l,
           validated.nums,
@@ -473,7 +581,7 @@ export default function Studio() {
         const hasLesson = new URLSearchParams(window.location.search).has(
           "lesson",
         );
-        if (l) changeLesson(l);
+        if (l) changeLesson(l, hasLesson);
         if (!hasLesson) {
           setView(
             [
@@ -514,6 +622,7 @@ export default function Studio() {
       );
     }
     return () => {
+      foundationAbort.current?.abort();
       worker.current?.terminate();
       if (timeout.current) clearTimeout(timeout.current);
     };
@@ -569,12 +678,48 @@ export default function Studio() {
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, [step, seek, view, tab, guide, about, running]);
+  useEffect(() => {
+    languageDrafts.current[lesson.id] = {
+      ...languageDrafts.current[lesson.id],
+      [foundationLanguage]: code,
+    };
+    if (storageReady)
+      try {
+        localStorage.setItem(
+          "trace:foundation-drafts",
+          JSON.stringify(languageDrafts.current),
+        );
+      } catch {}
+  }, [lesson.id, foundationLanguage, code, storageReady]);
+  const changeFoundationLanguage = (next: Language) => {
+    languageDrafts.current[lesson.id] = {
+      ...languageDrafts.current[lesson.id],
+      [foundationLanguage]: code,
+    };
+    languageRef.current = next;
+    setFoundationLanguage(next);
+    const source =
+      languageDrafts.current[lesson.id]?.[next] ??
+      foundationSource(lesson, nums.length, next);
+    setCode(source);
+    setCustom(source !== foundationSource(lesson, nums.length, next));
+    setEditing(false);
+    const url = new URL(location.href);
+    url.searchParams.set("language", next);
+    history.replaceState(null, "", url);
+    try {
+      localStorage.setItem("trace:language", next);
+    } catch {}
+    runTrace(lesson, nums, parameter, source);
+  };
   const applyInputs = () => {
     try {
       const v = validateInput(lesson, raw, paramRaw);
       setNums(v.nums);
       setParameter(v.parameter);
-      const source = custom ? executedCode : lessonCode(lesson, v.nums.length);
+      const source = custom
+        ? executedCode
+        : foundationSource(lesson, v.nums.length, foundationLanguage);
       if (!dirty) setCode(source);
       runTrace(lesson, v.nums, v.parameter, source);
     } catch (e) {
@@ -582,12 +727,14 @@ export default function Studio() {
     }
   };
   const runEdits = () => {
-    setCustom(code !== lessonCode(lesson, nums.length));
+    setCustom(
+      code !== foundationSource(lesson, nums.length, foundationLanguage),
+    );
     setEditing(false);
     runTrace(lesson, nums, parameter, code);
   };
   const resetCode = () => {
-    const source = lessonCode(lesson, nums.length);
+    const source = foundationSource(lesson, nums.length, foundationLanguage);
     setCode(source);
     setCustom(false);
     setEditing(false);
@@ -611,7 +758,9 @@ export default function Studio() {
     setParamRaw(String(p));
     setNums(values);
     setParameter(p);
-    const source = custom ? executedCode : lessonCode(lesson, values.length);
+    const source = custom
+      ? executedCode
+      : foundationSource(lesson, values.length, foundationLanguage);
     if (!dirty) setCode(source);
     runTrace(lesson, values, p, source);
   };
@@ -626,6 +775,7 @@ export default function Studio() {
           nums,
           parameter,
           code: executedCode,
+          language: foundationLanguage,
           step,
         }),
       );
@@ -890,7 +1040,11 @@ export default function Studio() {
                       </span>
                       <span>
                         <Code2 size={13} />
-                        Python subset
+                        {
+                          foundationLanguages.find(
+                            (l) => l.id === foundationLanguage,
+                          )?.label
+                        }
                       </span>
                     </div>
                   </div>
@@ -951,177 +1105,199 @@ export default function Studio() {
                     </label>
                   </div>
                   <TabsContent value="learn">
-                    <div ref={foundationFocus.ref} className={`playback-surface foundation-playback-surface ${foundationFocus.focused ? "is-playback-focused" : ""}`}>
-                    {foundationFocus.focused && <div className="playback-focus-toolbar"><span>Playback view · visualization and code</span><button onClick={()=>{setPlaying(false);foundationFocus.setFocused(false);}}>Full layout</button></div>}
-                    <Workbench
-                      focusRequest={foundationFocus.focusRequest}
-                      onSwitch={() => setPlaying(false)}
-                      visual={
-                        <section className="visual-panel panel">
-                          <div className="panel-title">
-                            <span>
-                              <span className="panel-icon">
-                                <Layers3 size={16} />
-                              </span>
-                              Visualization
-                            </span>
-                            <span className="live-badge">
-                              {running
-                                ? "RUNNING"
-                                : completed
-                                  ? "COMPLETE"
-                                  : "INTERACTIVE"}
-                            </span>
-                          </div>
-                          <form
-                            className="input-toolbar"
-                            onSubmit={(e) => {
-                              e.preventDefault();
-                              applyInputs();
+                    <CourseGuide
+                      track="dsa"
+                      goal={lesson.intuition}
+                      challenge={lesson.invariant}
+                    />
+                    <div
+                      ref={foundationFocus.ref}
+                      className={`playback-surface foundation-playback-surface ${foundationFocus.focused ? "is-playback-focused" : ""}`}
+                    >
+                      {foundationFocus.focused && (
+                        <div className="playback-focus-toolbar">
+                          <span>Playback view · visualization and code</span>
+                          <button
+                            onClick={() => {
+                              setPlaying(false);
+                              foundationFocus.setFocused(false);
                             }}
                           >
-                            <label className="array-input">
-                              Input array
-                              <input
-                                value={raw}
-                                onChange={(e) => {
-                                  setPlaying(false);
-                                  setRaw(e.target.value);
-                                }}
-                                aria-label="Input array"
-                                spellCheck={false}
-                              />
-                            </label>
-                            {lesson.parameter !== "none" && (
-                              <label className="target-input">
-                                {lesson.parameter === "k"
-                                  ? "Window size"
-                                  : "Target"}
+                            Full layout
+                          </button>
+                        </div>
+                      )}
+                      <Workbench
+                        focusRequest={foundationFocus.focusRequest}
+                        onSwitch={() => setPlaying(false)}
+                        visual={
+                          <section className="visual-panel panel">
+                            <div className="panel-title">
+                              <span>
+                                <span className="panel-icon">
+                                  <Layers3 size={16} />
+                                </span>
+                                Visualization
+                              </span>
+                              <span className="live-badge">
+                                {running
+                                  ? "RUNNING"
+                                  : completed
+                                    ? "COMPLETE"
+                                    : "INTERACTIVE"}
+                              </span>
+                            </div>
+                            <form
+                              className="input-toolbar"
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                applyInputs();
+                              }}
+                            >
+                              <label className="array-input">
+                                Input array
                                 <input
-                                  type="number"
-                                  value={paramRaw}
+                                  value={raw}
                                   onChange={(e) => {
                                     setPlaying(false);
-                                    setParamRaw(e.target.value);
+                                    setRaw(e.target.value);
                                   }}
-                                  aria-label={
-                                    lesson.parameter === "k"
-                                      ? "Window size"
-                                      : "Target"
-                                  }
+                                  aria-label="Input array"
+                                  spellCheck={false}
                                 />
                               </label>
+                              {lesson.parameter !== "none" && (
+                                <label className="target-input">
+                                  {lesson.parameter === "k"
+                                    ? "Window size"
+                                    : "Target"}
+                                  <input
+                                    type="number"
+                                    value={paramRaw}
+                                    onChange={(e) => {
+                                      setPlaying(false);
+                                      setParamRaw(e.target.value);
+                                    }}
+                                    aria-label={
+                                      lesson.parameter === "k"
+                                        ? "Window size"
+                                        : "Target"
+                                    }
+                                  />
+                                </label>
+                              )}
+                              <button
+                                type="submit"
+                                className="button small-button"
+                                disabled={running}
+                              >
+                                Apply
+                              </button>
+                              <button
+                                type="button"
+                                className="icon-button shuffle"
+                                title="Try a random input"
+                                aria-label="Try a random input"
+                                onClick={randomize}
+                                disabled={running}
+                              >
+                                <RotateCcw size={16} />
+                              </button>
+                            </form>
+                            {inputError && (
+                              <div className="inline-error" role="alert">
+                                {inputError}
+                              </div>
                             )}
-                            <button
-                              type="submit"
-                              className="button small-button"
-                              disabled={running}
-                            >
-                              Apply
-                            </button>
-                            <button
-                              type="button"
-                              className="icon-button shuffle"
-                              title="Try a random input"
-                              aria-label="Try a random input"
-                              onClick={randomize}
-                              disabled={running}
-                            >
-                              <RotateCcw size={16} />
-                            </button>
-                          </form>
-                          {inputError && (
-                            <div className="inline-error" role="alert">
-                              {inputError}
-                            </div>
-                          )}
-                          {checkpoint && (
-                            <PredictionCard
-                              key={checkpoint.step}
-                              question={checkpoint}
-                              onContinue={() => {
-                                answeredSteps.current.add(checkpoint.step);
-                                setCheckpoint(null);
-                                setPlaying(true);
-                              }}
+                            {checkpoint && (
+                              <PredictionCard
+                                key={checkpoint.step}
+                                question={checkpoint}
+                                onContinue={() => {
+                                  answeredSteps.current.add(checkpoint.step);
+                                  setCheckpoint(null);
+                                  setPlaying(true);
+                                }}
+                              />
+                            )}
+                            <MotionStage
+                              key={lesson.id}
+                              frame={frame}
+                              nextFrame={run.frames[playback.target] ?? frame}
+                              phase={playback.phase}
+                              lesson={lesson}
+                              custom={custom}
                             />
-                          )}
-                          <MotionStage
-                            key={lesson.id}
-                            frame={frame}
-                            nextFrame={run.frames[playback.target] ?? frame}
-                            phase={playback.phase}
-                            lesson={lesson}
-                            custom={custom}
-                          />
-                          <div
-                            className="step-narrative"
-                            aria-live={playing ? "off" : "polite"}
-                          >
-                            <span className="step-symbol">
-                              <ChevronRight size={16} />
-                            </span>
                             <div
-                              className="step-transition"
-                              key={`${step}:${frame.message}`}
+                              className="step-narrative"
+                              aria-live={playing ? "off" : "polite"}
                             >
-                              <strong>
-                                {step === 0
-                                  ? "Ready when you are"
-                                  : completed
-                                    ? "You reached the result"
-                                    : `Line ${frame.line}`}
-                              </strong>
-                              <p>
-                                {step === 0
-                                  ? "Press play, or move one step at a time. Watch the code and state change together."
-                                  : describeFrame(frame, lesson, custom)}
-                              </p>
+                              <span className="step-symbol">
+                                <ChevronRight size={16} />
+                              </span>
+                              <div
+                                className="step-transition"
+                                key={`${step}:${frame.message}`}
+                              >
+                                <strong>
+                                  {step === 0
+                                    ? "Ready when you are"
+                                    : completed
+                                      ? "You reached the result"
+                                      : `Line ${frame.line}`}
+                                </strong>
+                                <p>
+                                  {step === 0
+                                    ? "Press play, or move one step at a time. Watch the code and state change together."
+                                    : describeFrame(frame, lesson, custom)}
+                                </p>
+                              </div>
+                            </div>
+                          </section>
+                        }
+                        code={
+                          <CodePanel
+                            language={foundationLanguage}
+                            onLanguageChange={changeFoundationLanguage}
+                            frame={frame}
+                            nextLine={
+                              playback.target !== step
+                                ? run.frames[playback.target]?.line
+                                : undefined
+                            }
+                            lesson={lesson}
+                            editing={editing}
+                            setEditing={setEditing}
+                            setPlaying={setPlaying}
+                            code={code}
+                            setCode={setCode}
+                            executedCode={executedCode}
+                            dirty={dirty}
+                            custom={custom}
+                            running={running}
+                            error={run.error}
+                            resetCode={resetCode}
+                            runEdits={runEdits}
+                          />
+                        }
+                        explanation={
+                          <div className="mobile-explanation panel">
+                            <span className="eyebrow mint">THE IDEA</span>
+                            <h2>Every move has a reason.</h2>
+                            <p>{lesson.intuition}</p>
+                            <h3>What stays true</h3>
+                            <p>{lesson.invariant}</p>
+                            <div className="explanation-complexity">
+                              <span>
+                                Time <b>{lesson.complexity}</b>
+                              </span>
+                              <span>
+                                Extra space <b>{lesson.space}</b>
+                              </span>
                             </div>
                           </div>
-                        </section>
-                      }
-                      code={
-                        <CodePanel
-                          frame={frame}
-                          nextLine={
-                            playback.target !== step
-                              ? run.frames[playback.target]?.line
-                              : undefined
-                          }
-                          lesson={lesson}
-                          editing={editing}
-                          setEditing={setEditing}
-                          setPlaying={setPlaying}
-                          code={code}
-                          setCode={setCode}
-                          executedCode={executedCode}
-                          dirty={dirty}
-                          custom={custom}
-                          running={running}
-                          error={run.error}
-                          resetCode={resetCode}
-                          runEdits={runEdits}
-                        />
-                      }
-                      explanation={
-                        <div className="mobile-explanation panel">
-                          <span className="eyebrow mint">THE IDEA</span>
-                          <h2>Every move has a reason.</h2>
-                          <p>{lesson.intuition}</p>
-                          <h3>What stays true</h3>
-                          <p>{lesson.invariant}</p>
-                          <div className="explanation-complexity">
-                            <span>
-                              Time <b>{lesson.complexity}</b>
-                            </span>
-                            <span>
-                              Extra space <b>{lesson.space}</b>
-                            </span>
-                          </div>
-                        </div>
-                      }
-                    />
+                        }
+                      />
                     </div>
                     <PlaybackDock
                       playback={playback}
@@ -1546,9 +1722,10 @@ export default function Studio() {
             </DialogHeader>
             <p>
               The six guided foundations run in your browser using a bounded
-              educational Python subset. It supports numeric lists, variables,
-              indexing, arithmetic, comparisons, if/else, for/range, while,
-              break, len, min, max, and abs. Use spaces for indentation.
+              Python subset for its Python examples and browser runtimes for
+              C++, Java and JavaScript. Python supports numeric lists,
+              variables, indexing, arithmetic, comparisons, if/else, for/range,
+              while, break, len, min, max, and abs. Use spaces for indentation.
             </p>
             <p>
               Imports, strings, functions, recursion, classes, and external

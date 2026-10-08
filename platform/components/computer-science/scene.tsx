@@ -103,6 +103,7 @@ export function FlowDiagram({
 }
 export function StateScene({
   frame,
+  previous,
   nodes,
   edges,
   index,
@@ -111,6 +112,7 @@ export function StateScene({
   directed = true,
 }: {
   frame: Frame;
+  previous?: Frame;
   nodes: DiagramNode[];
   edges: [string, string][];
   index: number;
@@ -150,14 +152,20 @@ export function StateScene({
             <text x="44" y={179 - frame.chart.limit * 17} fill="#e6b973">
               Capacity {frame.chart.limit}
             </text>
-            <polyline
-              points={frame.chart.values
-                .map((v, i) => `${48 + i * 53},${185 - v * 17}`)
-                .join(" ")}
-              stroke="#c1f390"
-              strokeWidth="3"
-              fill="none"
-            />
+            {frame.chart.values.slice(1).map((v, i) => (
+              <motion.line
+                key={i}
+                x1={48 + i * 53}
+                y1={185 - frame.chart!.values[i] * 17}
+                x2={48 + (i + 1) * 53}
+                y2={185 - v * 17}
+                stroke="#c1f390"
+                strokeWidth="3"
+                initial={{ pathLength: reduced ? 1 : 0 }}
+                animate={{ pathLength: 1 }}
+                transition={stageTransition(speed, !!reduced)}
+              />
+            ))}
             {frame.chart.values.map((v, i) => (
               <g key={i}>
                 <circle
@@ -199,8 +207,9 @@ export function StateScene({
             {frame.timeline.slice(-25).map((value, i) => (
               <motion.div
                 key={i + Math.max(0, frame.timeline!.length - 25)}
-                initial={false}
-                animate={{ opacity: 1 }}
+                initial={{ opacity: reduced ? 1 : 0, y: reduced ? 0 : 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={stageTransition(speed, !!reduced)}
                 className={`cs-process p${Number(value.replace("P", "")) % 5}`}
               >
                 <b>{value}</b>
@@ -212,23 +221,31 @@ export function StateScene({
       )}
       {frame.cells.length > 0 && (
         <div className="cs-cells">
-          {frame.cells.map((c) => (
-            <motion.div
-              layout={!reduced}
-              key={c.id}
-              className={c.tone ?? ""}
-              transition={stageTransition(speed, !!reduced)}
-            >
-              <small>{c.label}</small>
-              <motion.strong
-                key={String(c.value)}
-                initial={{ opacity: reduced ? 1 : 0.3 }}
-                animate={{ opacity: 1 }}
+          {frame.cells.map((c) => {
+            const old = previous?.cells.find((p) => p.id === c.id);
+            const changed = !!old && old.value !== c.value;
+            return (
+              <motion.div
+                layout={!reduced}
+                key={c.id}
+                className={`${c.tone ?? ""} ${changed ? "cs-cell-changed" : ""}`}
+                transition={stageTransition(speed, !!reduced)}
               >
-                {c.value}
-              </motion.strong>
-            </motion.div>
-          ))}
+                <small>{c.label}</small>
+                {changed && (
+                  <span className="cs-previous-value">{old.value} →</span>
+                )}
+                <motion.strong
+                  key={String(c.value)}
+                  initial={{ opacity: reduced ? 1 : 0.3 }}
+                  animate={{ opacity: 1 }}
+                >
+                  {c.value}
+                </motion.strong>
+                {changed && <span className="cs-change-label">Changed</span>}
+              </motion.div>
+            );
+          })}
         </div>
       )}
       {frame.table && (

@@ -1,0 +1,443 @@
+.learning-guide,
+.learning-checkpoint,
+.learning-experiment,
+.learning-state-review {
+  border: 1px solid #34463c;
+  background: #111b19;
+  border-radius: 14px;
+  margin: 18px 0;
+  color: #dce7df;
+  overflow: hidden;
+}
+.learning-guide summary,
+.learning-state-review > summary {
+  padding: 16px 20px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.learning-guide summary span {
+  font-weight: 400;
+  color: #a4b5ac;
+  font-size: 12px;
+  margin-left: 14px;
+}
+.learning-route {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  padding: 0 18px;
+}
+.learning-route article {
+  padding: 16px;
+  border-left: 2px solid #83ad69;
+  min-width: 0;
+}
+.learning-route small,
+.learning-experiment > header > small {
+  font:
+    11px ui-monospace,
+    monospace;
+  color: #b6e391;
+  letter-spacing: 0.08em;
+}
+.learning-route h3 {
+  font-size: 16px;
+  margin: 10px 0;
+}
+.learning-route p,
+.learning-guide footer p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #b3c4ba;
+  margin: 8px 0;
+}
+.learning-guide footer {
+  border-top: 1px solid #34463c;
+  padding: 14px 20px;
+  margin-top: 16px;
+}
+.learning-guide footer a {
+  color: #b8ef90;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.learning-guide footer small {
+  display: block;
+  color: #9aaba1;
+  font-size: 11px;
+  margin-top: 8px;
+}
+.learning-evidence {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  padding: 14px;
+}
+.learning-change {
+  background: #17241e;
+  border: 1px solid #354b3d;
+  border-radius: 9px;
+  padding: 12px;
+  min-width: 0;
+}
+.learning-change > strong {
+  display: block;
+  font-size: 12px;
+  color: #b8c9be;
+  margin-bottom: 8px;
+}
+.learning-change > div {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+.learning-change code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  max-height: 140px;
+  overflow: auto;
+  color: #c0cfc5;
+}
+.learning-change code:last-child {
+  color: #cef5ab;
+}
+.learning-change span {
+  color: #9dcc7d;
+}
+.learning-checkpoint {
+  padding: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+.learning-checkpoint p {
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 6px 0;
+  color: #b3c4ba;
+}
+.learning-question {
+  flex-basis: 100%;
+  padding-top: 14px;
+  border-top: 1px solid #34463c;
+}
+.learning-question form {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.learning-question label,
+.learning-pair-select label,
+.learning-transport label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #b3c4ba;
+}
+.learning-question input,
+.learning-pair-select select,
+.learning-transport select {
+  border: 1px solid #526d5b;
+  background: #0e1713;
+  color: #e3eedb;
+  padding: 10px;
+  border-radius: 7px;
+}
+.learning-question input:focus-visible {
+  outline: 2px solid #b8ef90;
+  outline-offset: 3px;
+}
+.learning-experiment {
+  padding: 20px;
+  scroll-margin-top: 24px;
+}
+.learning-experiment h3 {
+  font-size: 22px;
+  margin: 8px 0;
+}
+.learning-experiment p {
+  font-size: 13px;
+  color: #b3c4ba;
+  line-height: 1.6;
+}
+.learning-pair-select {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin: 18px 0;
+}
+.learning-pair-select select {
+  width: 100%;
+  min-width: 0;
+}
+.learning-comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin: 18px 0;
+}
+.learning-comparison-grid > article {
+  min-width: 0;
+  border: 1px solid #34463c;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.learning-comparison-grid header {
+  padding: 15px;
+  border-bottom: 1px solid #34463c;
+}
+.learning-comparison-grid header small {
+  font:
+    11px ui-monospace,
+    monospace;
+  color: #b6e391;
+}
+.learning-comparison-grid h4 {
+  margin: 7px 0;
+  font-size: 17px;
+}
+.learning-comparison-grid .cs-scene {
+  min-height: 250px;
+  max-height: 430px;
+  overflow: auto;
+  flex: 1;
+  padding: 12px;
+}
+.learning-comparison-grid .cs-flow {
+  max-height: 210px;
+  min-height: 140px;
+}
+.learning-comparison-grid .cs-cells {
+  gap: 8px;
+}
+.learning-comparison-grid .cs-cells > div {
+  min-width: 70px;
+  padding: 9px;
+}
+.learning-comparison-caption {
+  padding: 16px;
+  background: #1b2b21;
+  border-top: 1px solid #34463c;
+}
+.learning-comparison-caption strong {
+  font-size: 14px;
+}
+.learning-transport {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.learning-reasoning {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.learning-reasoning button {
+  flex: 1;
+  min-width: 120px;
+  text-align: left !important;
+}
+.learning-reasoning button[aria-pressed="true"] {
+  border-color: #b8ef90;
+  background: #253c2a;
+}
+.learning-reasoning span {
+  display: block;
+  font-size: 11px;
+  color: #aec29e;
+  margin-bottom: 6px;
+}
+@media (max-width: 800px) {
+  .learning-route {
+    grid-template-columns: 1fr 1fr;
+  }
+  .learning-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+  .learning-guide summary span {
+    display: block;
+    margin: 7px 0 0;
+  }
+  .learning-experiment {
+    padding: 14px;
+  }
+  .learning-comparison-grid .cs-scene {
+    max-height: 320px;
+  }
+}
+@media (max-width: 480px) {
+  .learning-route {
+    grid-template-columns: 1fr;
+  }
+  .learning-pair-select {
+    grid-template-columns: 1fr;
+  }
+  .learning-evidence {
+    grid-template-columns: 1fr;
+  }
+}
+.cs-hub .cs-cells .cs-previous-value {
+  font:
+    12px ui-monospace,
+    monospace;
+  color: #9bae9f;
+}
+.cs-hub .cs-cells .cs-change-label {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #c8ef9f;
+}
+.cs-hub .cs-cells .cs-cell-changed {
+  border-color: #aecb88;
+  box-shadow: inset 0 0 0 1px #aecb8822;
+}
+@media (min-width: 1001px) and (min-height: 650px) {
+  .learning-experiment-focused {
+    padding: 14px;
+    scroll-margin-top: 14px;
+  }
+  .learning-experiment-focused > header h3 {
+    font-size: 18px;
+    margin: 5px 0;
+  }
+  .learning-experiment-focused > header p {
+    font-size: 11px;
+    margin: 5px 0;
+  }
+  .learning-experiment-focused .learning-pair-select {
+    margin: 10px 0;
+  }
+  .learning-experiment-focused .learning-comparison-grid {
+    margin: 10px 0;
+  }
+  .learning-experiment-focused .learning-comparison-grid > article {
+    height: calc(100dvh - 320px);
+    min-height: 300px;
+  }
+  .learning-experiment-focused .learning-comparison-grid header {
+    padding: 10px;
+  }
+  .learning-experiment-focused .learning-comparison-grid header p {
+    margin: 5px 0;
+    font-size: 11px;
+  }
+  .learning-experiment-focused .learning-comparison-grid .cs-scene {
+    min-height: 0;
+  }
+  .learning-experiment-focused .learning-comparison-caption {
+    padding: 10px;
+    flex-shrink: 0;
+  }
+  .learning-experiment-focused .learning-comparison-caption p {
+    font-size: 11px;
+    line-height: 1.4;
+    margin: 5px 0;
+  }
+  .learning-experiment-focused > p {
+    font-size: 11px;
+    margin: 8px 0;
+  }
+}
+.foundation-playback-surface .file-tab select {
+  margin-left: auto;
+  min-width: 100px;
+  padding: 5px 7px;
+  border: 1px solid #405647;
+  border-radius: 6px;
+  background: #132018;
+  color: #dbeed1;
+  font-size: 12px;
+}
+.foundation-playback-surface .file-tab {
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.foundation-playback-surface .file-tab select:focus-visible {
+  outline: 2px solid #b8ef90;
+  outline-offset: 2px;
+}
+.cs-hub .learning-comparison-grid .cs-cells {
+  margin: 10px 0;
+  gap: 6px;
+}
+.cs-hub .learning-comparison-grid .cs-cells > div {
+  flex: 1;
+  min-width: 85px;
+  min-height: 62px;
+  max-width: 180px;
+  padding: 7px;
+  gap: 4px;
+}
+.cs-hub .learning-comparison-grid .cs-cells strong {
+  font-size: 15px;
+}
+.cs-hub .learning-comparison-grid .cs-cells small {
+  font-size: 11px;
+}
+.cs-hub .learning-comparison-grid .cs-metrics {
+  margin: 8px 0;
+  gap: 12px;
+}
+.cs-hub .learning-comparison-grid .cs-metrics dd {
+  font-size: 17px;
+  margin: 4px 0;
+}
+.cs-hub .learning-comparison-grid .cs-timeline {
+  margin: 0 0 8px;
+}
+.cs-hub .learning-comparison-grid .cs-process {
+  padding: 6px;
+  min-height: 45px;
+}
+.learning-transport {
+  position: sticky;
+  bottom: 12px;
+  z-index: 4;
+  background: #17261efa;
+  border: 1px solid #415b48;
+  border-radius: 10px;
+  padding: 8px;
+}
+@media (min-width: 1001px) and (min-height: 650px) {
+  .learning-experiment-focused .learning-comparison-grid > article {
+    height: calc(100dvh - 370px);
+    min-height: 280px;
+  }
+  .learning-experiment-focused .learning-comparison-grid header p {
+    display: none;
+  }
+  .learning-experiment-focused .learning-comparison-grid .cs-scene {
+    padding: 10px;
+  }
+}
+.cs-hub .learning-comparison-grid .cs-timeline > div {
+  margin: 6px 0;
+}
+.cs-hub .learning-comparison-grid .cs-process small {
+  margin-top: 3px;
+}
+.cs-hub .learning-comparison-grid .cs-metrics dt {
+  font-size: 10px;
+}
+.cs-hub .learning-comparison-grid .cs-metrics dd {
+  font-size: 15px;
+  margin: 3px 0;
+}
+.cs-hub .learning-comparison-grid .cs-cells .cs-previous-value {
+  font-size: 10px;
+}
+.cs-hub .learning-comparison-grid .cs-cells .cs-change-label {
+  font-size: 9px;
+}
