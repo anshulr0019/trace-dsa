@@ -13,7 +13,7 @@ import {
   scheduleReview,
   type Experiment,
 } from "@/lib/lab/study";
-import { display } from "@/components/curriculum/scene";
+import { display } from "@/lib/curriculum/display";
 export function StudyTools({
   problem,
   language,

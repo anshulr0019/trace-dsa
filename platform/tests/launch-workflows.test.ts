@@ -8,6 +8,7 @@ import {
   learningStatus,
   recordLearning,
   reviewDue,
+  importEarlierProgress,
 } from "../lib/product/mastery";
 import { sqlSetup, sqlTasks } from "../lib/learning/sql-project";
 const memory = new Map<string, string>();
@@ -86,8 +87,14 @@ test("evidence distinguishes exploration, supported success and independent succ
   recordLearning("p", "watched", "Played again");
   assert.equal(learningEvidence("p").length, 1);
   assert.equal(learningStatus(learningEvidence("p")), "Explored");
+  recordLearning("p", "exercise", "Predicted a window sum");
+  assert.equal(learningStatus(learningEvidence("p")), "Practised");
+  const backup = notebookSnapshot();
+  memory.clear();
+  restoreNotebook(backup);
+  assert.equal(learningStatus(learningEvidence("p")), "Practised");
   recordLearning("p", "assisted", "Hints");
-  assert.equal(learningStatus(learningEvidence("p")), "Solved with support");
+  assert.equal(learningStatus(learningEvidence("p")), "Practised");
   recordLearning("p", "independent", "Eight checks");
   assert.equal(learningStatus(learningEvidence("p")), "Solved independently");
   const rows = [
@@ -100,6 +107,84 @@ test("evidence distinguishes exploration, supported success and independent succ
   ];
   assert.equal(reviewDue(rows, Date.parse("2026-10-09T00:00:00Z")), true);
   assert.equal(reviewDue(rows, Date.parse("2026-10-02T00:00:00Z")), false);
+});
+test("earlier review marks survive the progress upgrade without becoming independent solutions", () => {
+  memory.clear();
+  memory.set(
+    "trace:curriculum:complete",
+    JSON.stringify(["binary-search-standard"]),
+  );
+  memory.set(
+    "trace-progress-v1",
+    JSON.stringify({ mastered: ["binary-search"] }),
+  );
+  memory.set(
+    "trace-computer-science-v1",
+    JSON.stringify({ completed: ["tcp-retries"] }),
+  );
+  importEarlierProgress();
+  assert.equal(
+    learningStatus(learningEvidence("binary-search-standard")),
+    "Explored",
+  );
+  assert.equal(
+    learningStatus(learningEvidence("foundation:binary-search")),
+    "Practised",
+  );
+  assert.equal(learningStatus(learningEvidence("cs:tcp-retries")), "Explored");
+  recordLearning(
+    "binary-search-standard",
+    "independent",
+    "Fresh submission passed",
+  );
+  importEarlierProgress();
+  assert.equal(
+    learningStatus(learningEvidence("binary-search-standard")),
+    "Solved independently",
+  );
+  assert.equal(learningEvidence("foundation:binary-search").length, 1);
+  assert.equal(
+    memory.get("trace:curriculum:complete"),
+    '["binary-search-standard"]',
+  );
+});
+test("earlier successful code attempts remain solved with their original revision date", () => {
+  memory.clear();
+  recordLearning("p", "watched", "New visit");
+  memory.set(
+    "trace:practice:attempts:p",
+    JSON.stringify([
+      {
+        level: "guided",
+        total: 8,
+        passed: 8,
+        assisted: false,
+        at: "2026-10-01T00:00:00Z",
+      },
+      {
+        level: "independent",
+        total: 8,
+        passed: 7,
+        assisted: false,
+        at: "2026-10-01T00:00:00Z",
+      },
+      {
+        level: "challenge",
+        total: 8,
+        passed: 8,
+        assisted: false,
+        at: "2026-10-01T00:00:00Z",
+      },
+    ]),
+  );
+  importEarlierProgress();
+  assert.equal(learningStatus(learningEvidence("p")), "Solved independently");
+  assert.equal(
+    reviewDue(learningEvidence("p"), Date.parse("2026-10-09T00:00:00Z")),
+    true,
+  );
+  importEarlierProgress();
+  assert.equal(learningEvidence("p").length, 2);
 });
 test("all project SQL solutions execute and return the authored rows, including empty joins", () => {
   const result = JSON.parse(

@@ -4,7 +4,9 @@ import { motion, useReducedMotion } from "motion/react";
 import "./launch.css";
 export function HandsOn({
   initial = "binary",
+  scoped = false,
 }: {
+  scoped?: boolean;
   initial?: "binary" | "window" | "bubble" | "grid" | "pointers" | "prefix";
 }) {
   const [mode, setMode] = useState(initial),
@@ -74,30 +76,30 @@ export function HandsOn({
       <small>MAKE THE NEXT MOVE</small>
       <h3>Control the algorithm yourself.</h3>
       <div className="launch-actions">
-        {(
-          ["binary", "window", "pointers", "prefix", "bubble", "grid"] as const
-        ).map((v) => (
-          <button
-            key={v}
-            aria-pressed={mode === v}
-            onClick={() => {
-              setMode(v);
-              reset();
-            }}
-          >
-            {v === "binary"
-              ? "Binary search"
-              : v === "window"
-                ? "Sliding window"
-                : v === "pointers"
-                  ? "Two pointers"
-                  : v === "prefix"
-                    ? "Prefix sums"
-                    : v === "bubble"
-                      ? "Adjacent swaps"
-                      : "Grid traversal"}
-          </button>
-        ))}
+        {(["binary", "window", "pointers", "prefix", "bubble", "grid"] as const)
+          .filter((v) => !scoped || v === initial)
+          .map((v) => (
+            <button
+              key={v}
+              aria-pressed={mode === v}
+              onClick={() => {
+                setMode(v);
+                reset();
+              }}
+            >
+              {v === "binary"
+                ? "Binary search"
+                : v === "window"
+                  ? "Sliding window"
+                  : v === "pointers"
+                    ? "Two pointers"
+                    : v === "prefix"
+                      ? "Prefix sums"
+                      : v === "bubble"
+                        ? "Adjacent swaps"
+                        : "Grid traversal"}
+            </button>
+          ))}
       </div>
       {mode === "binary" && (
         <>

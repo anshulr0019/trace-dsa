@@ -1,6 +1,6 @@
 "use client";
 import { usePlaybackFocus } from "../experience/use-playback-focus";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -55,10 +55,20 @@ import { readSharedLesson, type SharedLesson } from "@/lib/product/lessons";
 import { Workbench } from "../experience/workbench";
 import { RoadmapDock } from "./roadmap-dock";
 import { RoadmapInsights } from "./roadmap-insights";
-import { LessonJourney, MasteryPanel } from "../learning/lesson-journey";
-import { HandsOn } from "../learning/hands-on";
+import {
+  LessonJourney,
+  MasteryPanel,
+  LearningBadge,
+  type JourneyStep,
+} from "../learning/lesson-journey";
+import { ProblemInteraction } from "../learning/problem-interaction";
+import { ReadableCode } from "../learning/readable-code";
 import { RuntimeStatus } from "../learning/runtime-status";
-import { recordLearning } from "@/lib/product/mastery";
+import {
+  recordLearning,
+  learningEvidence,
+  learningStatus,
+} from "@/lib/product/mastery";
 import { TrackProject } from "../learning/track-project";
 import { ProblemSolvingClinic } from "../learning/problem-solving-clinic";
 import { CourseGuide } from "../learning/course-guide";
@@ -69,11 +79,14 @@ import { conceptCue } from "@/lib/curriculum/concept-cues";
 import { LearningGuide } from "./learning-guide";
 import { Editor } from "./editor";
 import { Scene, display, type ExecutionFrame } from "./scene";
-import { PracticeLab } from "../practice/practice-lab";
+const PracticeLab = lazy(() =>
+  import("../practice/practice-lab").then((m) => ({ default: m.PracticeLab })),
+);
 import { useFramePlayback } from "./use-frame-playback";
 import "./curriculum.css";
 import "./workspace.css";
 import "./foundation-style.css";
+import "../learning/lesson-workspace.css";
 import { usePublishedLesson } from "../lab/editorial";
 import { InputBuilder } from "../lab/input-builder";
 import { VisualDebugger } from "../lab/debugger";
@@ -114,6 +127,10 @@ function ProblemStudio({
   onProblem: (id: string) => void;
   onExisting: (id: string) => void;
 }) {
+  const [journey, setJourney] = useState<JourneyStep>("Watch");
+  const [codeView, setCodeView] = useState<"algorithm" | "full">("algorithm");
+  const [consoleOpen, setConsoleOpen] = useState(false);
+  const [codeRequest, setCodeRequest] = useState(0);
   const published = usePublishedLesson(p.id);
   const [shared, setShared] = useState<SharedLesson | null>(null),
     [beginner, setBeginner] = useState(false),
@@ -168,11 +185,11 @@ function ProblemStudio({
     [runInput, setRunInput] = useState(p.input),
     [runtime, setRuntime] = useState<RuntimeCapabilities | null>(null);
   const [panel, setPanel] = useState("input"),
-    [ready, setReady] = useState(false),
-    [complete, setComplete] = useState(false);
+    [ready, setReady] = useState(false);
   function switchExperience(next: "learn" | "practice") {
     setPlaying(false);
     setExperience(next);
+    setJourney(next === "practice" ? "Solve" : "Watch");
     const url = new URL(location.href);
     if (next === "practice") url.searchParams.set("practice", "1");
     else url.searchParams.delete("practice");
@@ -240,7 +257,14 @@ function ProblemStudio({
     setCustomMode(index < 0);
     if (index >= 0) setInput(formatInput(examples[index].input));
     else {
-      document.getElementById("problem-input")?.focus();
+      setConsoleOpen(true);
+      setPanel("input");
+      setCodeRequest((n) => n + 1);
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() =>
+          document.getElementById("problem-input")?.focus(),
+        ),
+      );
     }
   }
   const drafts = useRef<Record<string, string>>({}),
@@ -268,11 +292,6 @@ function ProblemStudio({
         );
         setInput(saved.input ?? formatInput(p.input));
       }
-      setComplete(
-        JSON.parse(
-          localStorage.getItem("trace:curriculum:complete") ?? "[]",
-        ).includes(p.id),
-      );
     } catch {}
     const requested = new URLSearchParams(location.search).get("language");
     if (languages.some((l) => l.id === requested)) {
@@ -414,15 +433,22 @@ function ProblemStudio({
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setPanel("input");
+      setConsoleOpen(true);
+      setCodeRequest((n) => n + 1);
       return;
     }
     const inputError = validateProblemInput(p.id, data);
     if (inputError) {
       setError(inputError);
       setPanel("input");
+      setConsoleOpen(true);
+      setCodeRequest((n) => n + 1);
       return;
     }
-    if (autoplay) focusPlayback();
+    if (autoplay) {
+      setJourney("Watch");
+      focusPlayback();
+    }
     predicted.current.clear();
     lastBreakpoint.current = -1;
     setQuestion(null);
@@ -504,22 +530,6 @@ function ProblemStudio({
     const url = new URL(location.href);
     url.searchParams.set("language", next);
     window.history.replaceState(null, "", url.pathname + url.search);
-  }
-  function mark() {
-    let list: string[] = [];
-    try {
-      list = JSON.parse(
-        localStorage.getItem("trace:curriculum:complete") ?? "[]",
-      );
-    } catch {}
-    list = complete
-      ? list.filter((id) => id !== p.id)
-      : [...new Set([...list, p.id])];
-    try {
-      localStorage.setItem("trace:curriculum:complete", JSON.stringify(list));
-      window.dispatchEvent(new Event("trace:notebook"));
-    } catch {}
-    setComplete(!complete);
   }
   async function runExamples() {
     if (inFlight.current || !runtime || !runtime.languages.includes(language))
@@ -609,6 +619,17 @@ function ProblemStudio({
   if (!previewError) previewError = validateProblemInput(p.id, preview) ?? "";
   return (
     <section
+      onKeyDown={(e) => {
+        if (
+          (e.metaKey || e.ctrlKey) &&
+          e.key === "Enter" &&
+          codeView === "algorithm" &&
+          experience === "learn"
+        ) {
+          e.preventDefault();
+          void run(true);
+        }
+      }}
       className={`curriculum problem-studio roadmap-foundation has-playback ${presenting ? "presentation-studio" : ""}`}
     >
       <div className="problem-navigation">
@@ -633,84 +654,23 @@ function ProblemStudio({
           <h1>{p.title}</h1>
           <p>{p.goal}</p>
         </div>
-        <button
-          className={`complete-button ${complete ? "is-complete" : ""}`}
-          onClick={mark}
-        >
-          <Check size={16} />
-          {complete ? "Understood" : "Mark understood"}
-        </button>
-      </div>
-      <div className="studio-controls">
-        <div
-          className="learning-mode-switch"
-          role="group"
-          aria-label="Learning mode"
-        >
-          <button
-            aria-pressed={experience === "learn"}
-            onClick={() => switchExperience("learn")}
-          >
-            Learn & explore
-          </button>
-          <button
-            aria-pressed={experience === "practice"}
-            disabled={running}
-            onClick={() => {
-              switchExperience("practice");
-            }}
-          >
-            Practice & improve
-          </button>
-        </div>
-        {experience === "learn" && (
-          <div className="studio-run-toolbar">
-            <div role="group" aria-label="Code source">
-              <button
-                disabled={running}
-                aria-pressed={mode === "mine"}
-                onClick={() => {
-                  setMode("mine");
-                  setPlaying(false);
-                  setResult(null);
-                  setBatch([]);
-                }}
-              >
-                My code
-              </button>
-              <button
-                disabled={running}
-                aria-pressed={mode === "guided"}
-                onClick={() => {
-                  setMode("guided");
-                  setPlaying(false);
-                  setResult(null);
-                  setBatch([]);
-                }}
-              >
-                Guided solution
-              </button>
-            </div>
-            <button
-              disabled={
-                running || !ready || !runtime?.languages.includes(language)
-              }
-              onClick={() => void runExamples()}
-            >
-              Check all 5 examples
-            </button>
-            {running && <button onClick={stop}>Cancel run</button>}
-            <span>
-              {mode === "mine"
-                ? language === "java"
-                  ? "Your actual execution · trace checkpoints"
-                  : "Your actual execution · automatic tracing"
-                : "Reference code · guided checkpoints"}
-            </span>
-          </div>
-        )}
+        <LearningBadge
+          id={p.id}
+          onClick={() => {
+            switchExperience("learn");
+            setJourney("Review");
+            requestAnimationFrame(() =>
+              requestAnimationFrame(() =>
+                document
+                  .getElementById(`review-${p.id}`)
+                  ?.scrollIntoView({ block: "start", behavior: "instant" }),
+              ),
+            );
+          }}
+        />
       </div>
       <LessonJourney
+        active={experience === "practice" ? "Solve" : journey}
         disabled={running}
         onStep={(stage) => {
           setPlaying(false);
@@ -721,6 +681,7 @@ function ProblemStudio({
             return;
           }
           switchExperience("learn");
+          setJourney(stage);
           requestAnimationFrame(() =>
             requestAnimationFrame(() => {
               if (stage === "Watch") {
@@ -746,17 +707,6 @@ function ProblemStudio({
           );
         }}
       />
-      {experience === "learn" && (
-        <section className="launch-card">
-          <small>START WITH THE IDEA</small>
-          <p>{lessons[p.id].idea}</p>
-          <p>
-            <strong>Watch for:</strong>{" "}
-            {p.caveat ||
-              "Explain which decision changes the state, and why that decision is safe."}
-          </p>
-        </section>
-      )}
       <AssignmentPanel
         problemId={p.id}
         language={language}
@@ -765,12 +715,14 @@ function ProblemStudio({
         inputError={previewError}
       />
       {experience === "practice" ? (
-        <PracticeLab
-          problem={p}
-          language={language}
-          onLanguage={changeLanguage}
-          onProblem={onProblem}
-        />
+        <Suspense fallback={<p role="status">Loading practice workspace…</p>}>
+          <PracticeLab
+            problem={p}
+            language={language}
+            onLanguage={changeLanguage}
+            onProblem={onProblem}
+          />
+        </Suspense>
       ) : (
         <>
           {shared && (
@@ -783,84 +735,29 @@ function ProblemStudio({
               </small>
             </section>
           )}
-          <LessonActions
-            inputError={previewError}
-            lesson={{
-              version: 1,
-              problemId: p.id,
-              title: shared?.title ?? p.title,
-              instructions: shared?.instructions ?? lessons[p.id].idea,
-              input: preview,
-              language,
-              code: activeCode,
-            }}
-            step={step}
-            presenting={presenting}
-            onPresentation={() => {
-              setPresenting((v) => !v);
-              focusPlayback();
-            }}
-          />
-          <div className="learning-preferences">
+          <div className="lesson-quick-controls">
             <label>
-              <input
-                type="checkbox"
-                checked={beginner}
-                onChange={(e) => {
-                  setBeginner(e.target.checked);
-                  setSpeed(e.target.checked ? 0.5 : 1);
-                }}
-              />{" "}
-              Beginner pace
+              Example{" "}
+              <select
+                aria-label="Choose example"
+                value={selectedExample}
+                disabled={running}
+                onChange={(e) => chooseExample(Number(e.target.value))}
+              >
+                {examples.map((e, i) => (
+                  <option key={i} value={i}>
+                    {i + 1}. {e.label}
+                  </option>
+                ))}
+                <option value={-1}>Your input</option>
+              </select>
             </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={predict}
-                onChange={(e) => {
-                  setPredict(e.target.checked);
-                  setQuestion(null);
-                  predicted.current.clear();
-                }}
-              />{" "}
-              Predict the next state
-            </label>
-            {beginner && (
-              <span>
-                Half speed. Pause on a change and explain it in your own words.
-              </span>
-            )}
+            <span>
+              {mode === "guided" ? "Guided solution" : "Your code"} ·{" "}
+              {languages.find((l) => l.id === language)?.label}
+            </span>
+            <a href="#lesson-tools">Options & tools ↓</a>
           </div>
-          <InputBuilder
-            problem={p}
-            input={preview}
-            inputError={previewError}
-            disabled={running}
-            onApply={applyInput}
-          />
-          <VisualDebugger
-            frames={result?.frames ?? []}
-            step={step}
-            code={activeCode}
-            breakpoints={breakpoints}
-            onBreakpoints={setBreakpoints}
-            onSeek={seekDebug}
-            watches={watches}
-            onWatches={setWatches}
-          />
-          <ExampleShelf
-            examples={examples}
-            selected={selectedExample}
-            onSelect={chooseExample}
-            disabled={running}
-            batch={batch}
-          />
-          <p className="example-run-hint">
-            {selectedExample >= 0
-              ? `Example ${selectedExample + 1}: ${examples[selectedExample].label}`
-              : "Custom input"}{" "}
-            · Edit the input or run the solution to inspect each step.
-          </p>
           <div
             ref={playbackRef}
             id="visual-workbench"
@@ -880,7 +777,9 @@ function ProblemStudio({
               </div>
             )}
             <Workbench
+              visualSize={55}
               focusRequest={focusRequest}
+              codeRequest={codeRequest}
               onSwitch={() => setPlaying(false)}
               visual={
                 <section
@@ -1105,27 +1004,61 @@ function ProblemStudio({
                         : "Run & visualize"}
                     </button>
                   </div>
-                  <Editor
-                    language={language}
-                    value={activeCode}
-                    breakpoints={breakpoints}
-                    onBreakpoint={(n) =>
-                      setBreakpoints((v) =>
-                        v.includes(n) ? v.filter((x) => x !== n) : [...v, n],
-                      )
-                    }
-                    readOnly={mode === "guided" || running}
-                    onChange={(value) => {
-                      setQuestion(null);
-                      setBreakpoints([]);
-                      lastBreakpoint.current = -1;
-                      setCode(value);
-                      setPlaying(false);
-                      setBatch([]);
-                    }}
-                    line={!stale ? (frame?.line ?? 0) : 0}
-                    onRun={() => void run(true)}
-                  />
+                  <div
+                    className="code-view-switch"
+                    role="group"
+                    aria-label="Code view"
+                  >
+                    <button
+                      aria-pressed={codeView === "algorithm"}
+                      onClick={() => setCodeView("algorithm")}
+                    >
+                      Algorithm
+                    </button>
+                    <button
+                      aria-pressed={codeView === "full"}
+                      onClick={() => {
+                        setCodeView("full");
+                        setPlaying(false);
+                      }}
+                    >
+                      Full code & editor
+                    </button>
+                    <small>
+                      {codeView === "algorithm"
+                        ? "Algorithm excerpt · source line numbers"
+                        : "Complete runnable source"}
+                    </small>
+                  </div>
+                  {codeView === "algorithm" ? (
+                    <ReadableCode
+                      source={activeCode}
+                      language={language}
+                      line={!stale ? (frame?.line ?? 0) : 0}
+                    />
+                  ) : (
+                    <Editor
+                      language={language}
+                      value={activeCode}
+                      breakpoints={breakpoints}
+                      onBreakpoint={(n) =>
+                        setBreakpoints((v) =>
+                          v.includes(n) ? v.filter((x) => x !== n) : [...v, n],
+                        )
+                      }
+                      readOnly={mode === "guided" || running}
+                      onChange={(value) => {
+                        setQuestion(null);
+                        setBreakpoints([]);
+                        lastBreakpoint.current = -1;
+                        setCode(value);
+                        setPlaying(false);
+                        setBatch([]);
+                      }}
+                      line={!stale ? (frame?.line ?? 0) : 0}
+                      onRun={() => void run(true)}
+                    />
+                  )}
                   <div className="scalar-state">
                     {watches.map((path) => {
                       const value = watchValue(frame?.vars ?? {}, path),
@@ -1176,174 +1109,194 @@ function ProblemStudio({
                         </div>
                       ))}
                   </div>
-                  <div
-                    className="console-tabs"
-                    role="tablist"
-                    aria-label="Code console"
+                  <details
+                    className="code-console"
+                    open={consoleOpen}
+                    onToggle={(e) => setConsoleOpen(e.currentTarget.open)}
                   >
-                    {["input", "output", "help"].map((tab) => (
-                      <button
-                        key={tab}
-                        role="tab"
-                        aria-selected={panel === tab}
-                        onClick={() => setPanel(tab)}
-                      >
-                        {tab === "input"
-                          ? "Input JSON"
-                          : tab === "output"
-                            ? "Output & errors"
-                            : "Runtime guide"}
-                      </button>
-                    ))}
-                  </div>
-                  {panel === "input" ? (
-                    <div className="input-panel">
-                      <label htmlFor="problem-input">
-                        Edit the values passed to solve(data).
-                      </label>
-                      <textarea
-                        id="problem-input"
-                        disabled={running}
-                        value={input}
-                        onChange={(e) => {
-                          setInput(e.target.value);
-                          setCustomMode(true);
-                          setQuestion(null);
-                          setPlaying(false);
-                          setResult(null);
-                          setStep(0);
-                        }}
-                        spellCheck={false}
-                      />
-                      <button
-                        className="text-action"
-                        disabled={running}
-                        onClick={() => chooseExample(0)}
-                      >
-                        Restore example input
-                      </button>
-                    </div>
-                  ) : panel === "output" ? (
-                    <div className="output-panel" aria-live="polite">
-                      {result ? (
-                        <>
-                          <div className="output-status">
-                            <Terminal size={14} />
-                            {result.error
-                              ? "Runtime error"
-                              : sample
-                                ? match
-                                  ? "Example passed"
-                                  : "Different from example answer"
-                                : "Executed · custom answer not verified"}
-                          </div>
-                          {result.error ? (
-                            <pre className="runtime-error">{result.error}</pre>
-                          ) : (
-                            <pre>{JSON.stringify(result.result, null, 2)}</pre>
-                          )}
-                          {sample && !match && !result.error && (
-                            <p>
-                              Expected: <code>{display(sample.expected)}</code>
-                            </p>
-                          )}
-                          {result.stdout && (
-                            <>
-                              <label>Standard output</label>
-                              <pre>{result.stdout}</pre>
-                            </>
-                          )}
-                          {result.truncated && (
-                            <p className="trace-notice">
-                              Trace limited to the first 1,200 states. The
-                              result is from the completed execution.
-                            </p>
-                          )}
-                          {!result.frames.some(
-                            (f) =>
-                              f.event === "checkpoint" || f.event === "line",
-                          ) && (
-                            <p>
-                              This run captured input and output only. Add trace
-                              checkpoints to inspect intermediate variables.
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        <p>
-                          Run your code to see the returned result and compiler
-                          or runtime errors.
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="runtime-guide">
-                      <p>
-                        <strong>Python 3</strong> — complete solutions for all
-                        100 problems. Standard Python with automatic line
-                        tracing. tree() and linked() return values and
-                        index-based links.
-                      </p>
-                      <p>
-                        <strong>C++17</strong> — compiled in your browser with
-                        Clang WebAssembly, or with local Clang in development.
-                        Define <code>json solve(json data)</code>; main() is
-                        provided. Use{" "}
-                        <code>TRACE({`{{"nums",nums},{"i",i}}`});</code> to add
-                        custom state. My code mode also captures supported local
-                        variables automatically. Pointer and custom types may
-                        require explicit serializable checkpoints. trace.hpp
-                        includes the STL and nlohmann JSON.
-                      </p>
-                      <p>
-                        <strong>Java 8</strong> — define{" "}
-                        <code>
-                          public Object solve(Map&lt;String, Object&gt; data)
-                        </code>{" "}
-                        inside <code>public class Solution extends Trace</code>.
-                        The runner supplies main(). Read arrays with{" "}
-                        <code>ints(data, "nums")</code>, integers with{" "}
-                        <code>num(data, "k")</code>, and strings with{" "}
-                        <code>str(data, "s")</code>. Add{" "}
-                        <code>trace("nums", nums, "i", i)</code> to capture
-                        intermediate state. Java uses explicit checkpoints;
-                        edited code without them shows input and output only.
-                      </p>
-                      <p>
-                        <strong>JavaScript</strong> — define{" "}
-                        <code>solve(data)</code> and return JSON. Use{" "}
-                        <code>trace({`{nums, i}`})</code> for visual
-                        checkpoints. My code mode automatically captures
-                        ordinary statements and local values. Explicit trace
-                        calls remain available for additional detail.
-                      </p>
-                      <p>
-                        All 100 problems include complete, editable Python, C++,
-                        Java and JavaScript references. Java compiles and runs
-                        on your device using{" "}
-                        <a
-                          href="https://cheerpj.com"
-                          target="_blank"
-                          rel="noreferrer"
+                    <summary>
+                      Input & output{" "}
+                      {result && !stale && !result.error
+                        ? `· Result: ${display(result.result).slice(0, 80)}`
+                        : ""}
+                    </summary>
+                    <div
+                      className="console-tabs"
+                      role="tablist"
+                      aria-label="Code console"
+                    >
+                      {["input", "output", "help"].map((tab) => (
+                        <button
+                          key={tab}
+                          role="tab"
+                          aria-selected={panel === tab}
+                          onClick={() => setPanel(tab)}
                         >
-                          CheerpJ
-                        </a>{" "}
-                        and OpenJDK. No execution API key is needed. C++ uses
-                        64-bit integers for counts; JavaScript integers are
-                        exact through 2⁵³−1. Inputs are bounded for learning.
-                      </p>
-                      <p>
-                        Java runs in a disposable browser worker. The first run
-                        downloads its compiler and JVM; subsequent runs reuse
-                        cached downloads. Python, C++ and JavaScript run in
-                        separate browser workers when a server runtime is not
-                        connected. C++ downloads about 28 MB of compiler assets
-                        on first use and may compile more slowly on older
-                        devices. Browser C++ does not support C++ exceptions.
-                        Runs can be cancelled. Drafts stay in this browser.
-                      </p>
+                          {tab === "input"
+                            ? "Input JSON"
+                            : tab === "output"
+                              ? "Output & errors"
+                              : "Runtime guide"}
+                        </button>
+                      ))}
                     </div>
-                  )}
+                    {panel === "input" ? (
+                      <div className="input-panel">
+                        <label htmlFor="problem-input">
+                          Edit the values passed to solve(data).
+                        </label>
+                        <textarea
+                          id="problem-input"
+                          disabled={running}
+                          value={input}
+                          onChange={(e) => {
+                            setInput(e.target.value);
+                            setCustomMode(true);
+                            setQuestion(null);
+                            setPlaying(false);
+                            setResult(null);
+                            setStep(0);
+                          }}
+                          spellCheck={false}
+                        />
+                        <button
+                          className="text-action"
+                          disabled={running}
+                          onClick={() => chooseExample(0)}
+                        >
+                          Restore example input
+                        </button>
+                      </div>
+                    ) : panel === "output" ? (
+                      <div className="output-panel" aria-live="polite">
+                        {result ? (
+                          <>
+                            <div className="output-status">
+                              <Terminal size={14} />
+                              {result.error
+                                ? "Runtime error"
+                                : sample
+                                  ? match
+                                    ? "Example passed"
+                                    : "Different from example answer"
+                                  : "Executed · custom answer not verified"}
+                            </div>
+                            {result.error ? (
+                              <pre className="runtime-error">
+                                {result.error}
+                              </pre>
+                            ) : (
+                              <pre>
+                                {JSON.stringify(result.result, null, 2)}
+                              </pre>
+                            )}
+                            {sample && !match && !result.error && (
+                              <p>
+                                Expected:{" "}
+                                <code>{display(sample.expected)}</code>
+                              </p>
+                            )}
+                            {result.stdout && (
+                              <>
+                                <label>Standard output</label>
+                                <pre>{result.stdout}</pre>
+                              </>
+                            )}
+                            {result.truncated && (
+                              <p className="trace-notice">
+                                Trace limited to the first 1,200 states. The
+                                result is from the completed execution.
+                              </p>
+                            )}
+                            {!result.frames.some(
+                              (f) =>
+                                f.event === "checkpoint" || f.event === "line",
+                            ) && (
+                              <p>
+                                This run captured input and output only. Add
+                                trace checkpoints to inspect intermediate
+                                variables.
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <p>
+                            Run your code to see the returned result and
+                            compiler or runtime errors.
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="runtime-guide">
+                        <p>
+                          <strong>Python 3</strong> — complete solutions for all
+                          100 problems. Standard Python with automatic line
+                          tracing. tree() and linked() return values and
+                          index-based links.
+                        </p>
+                        <p>
+                          <strong>C++17</strong> — compiled in your browser with
+                          Clang WebAssembly, or with local Clang in development.
+                          Define <code>json solve(json data)</code>; main() is
+                          provided. Use{" "}
+                          <code>TRACE({`{{"nums",nums},{"i",i}}`});</code> to
+                          add custom state. My code mode also captures supported
+                          local variables automatically. Pointer and custom
+                          types may require explicit serializable checkpoints.
+                          trace.hpp includes the STL and nlohmann JSON.
+                        </p>
+                        <p>
+                          <strong>Java 8</strong> — define{" "}
+                          <code>
+                            public Object solve(Map&lt;String, Object&gt; data)
+                          </code>{" "}
+                          inside{" "}
+                          <code>public class Solution extends Trace</code>. The
+                          runner supplies main(). Read arrays with{" "}
+                          <code>ints(data, "nums")</code>, integers with{" "}
+                          <code>num(data, "k")</code>, and strings with{" "}
+                          <code>str(data, "s")</code>. Add{" "}
+                          <code>trace("nums", nums, "i", i)</code> to capture
+                          intermediate state. Java uses explicit checkpoints;
+                          edited code without them shows input and output only.
+                        </p>
+                        <p>
+                          <strong>JavaScript</strong> — define{" "}
+                          <code>solve(data)</code> and return JSON. Use{" "}
+                          <code>trace({`{nums, i}`})</code> for visual
+                          checkpoints. My code mode automatically captures
+                          ordinary statements and local values. Explicit trace
+                          calls remain available for additional detail.
+                        </p>
+                        <p>
+                          All 100 problems include complete, editable Python,
+                          C++, Java and JavaScript references. Java compiles and
+                          runs on your device using{" "}
+                          <a
+                            href="https://cheerpj.com"
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            CheerpJ
+                          </a>{" "}
+                          and OpenJDK. No execution API key is needed. C++ uses
+                          64-bit integers for counts; JavaScript integers are
+                          exact through 2⁵³−1. Inputs are bounded for learning.
+                        </p>
+                        <p>
+                          Java runs in a disposable browser worker. The first
+                          run downloads its compiler and JVM; subsequent runs
+                          reuse cached downloads. Python, C++ and JavaScript run
+                          in separate browser workers when a server runtime is
+                          not connected. C++ downloads about 28 MB of compiler
+                          assets on first use and may compile more slowly on
+                          older devices. Browser C++ does not support C++
+                          exceptions. Runs can be cancelled. Drafts stay in this
+                          browser.
+                        </p>
+                      </div>
+                    )}
+                  </details>
                   {runtime && !canRun && (
                     <div className="trace-notice">
                       This language runtime is unavailable. Your code is saved;
@@ -1371,29 +1324,163 @@ function ProblemStudio({
             }}
             onSpeed={setSpeed}
           />
-          <RoadmapInsights id={p.id} />
-          <AlgorithmComparison
-            problem={p}
-            input={result ? runInput : preview}
-          />
-          {result && <TraceStats frames={result.frames} />}
-          <LearningHints key={p.id} id={p.id} />
-          <FindMistake
-            problem={p}
-            language={language}
-            code={activeCode}
-            runtime={runtime}
-            disabled={running}
-            onInspect={inspectCase}
-          />
-          <StudyTools
-            problem={p}
-            language={language}
-            code={activeCode}
-            input={preview}
-            inputError={previewError}
-            onRestore={restoreExperiment}
-          />
+          <details id="lesson-tools" className="lesson-tools">
+            <summary>Examples, playback options & advanced tools</summary>
+            <div className="studio-run-toolbar">
+              <div role="group" aria-label="Code source">
+                <button
+                  disabled={running}
+                  aria-pressed={mode === "mine"}
+                  onClick={() => {
+                    setMode("mine");
+                    setPlaying(false);
+                    setResult(null);
+                    setBatch([]);
+                  }}
+                >
+                  My code
+                </button>
+                <button
+                  disabled={running}
+                  aria-pressed={mode === "guided"}
+                  onClick={() => {
+                    setMode("guided");
+                    setPlaying(false);
+                    setResult(null);
+                    setBatch([]);
+                  }}
+                >
+                  Guided solution
+                </button>
+              </div>
+              <button
+                disabled={
+                  running || !ready || !runtime?.languages.includes(language)
+                }
+                onClick={() => void runExamples()}
+              >
+                Check all 5 examples
+              </button>
+              {running && <button onClick={stop}>Cancel run</button>}
+              <span>
+                {mode === "mine"
+                  ? language === "java"
+                    ? "Your actual execution · trace checkpoints"
+                    : "Your actual execution · automatic tracing"
+                  : "Reference code · guided checkpoints"}
+              </span>
+            </div>
+            <LessonActions
+              inputError={previewError}
+              lesson={{
+                version: 1,
+                problemId: p.id,
+                title: shared?.title ?? p.title,
+                instructions: shared?.instructions ?? lessons[p.id].idea,
+                input: preview,
+                language,
+                code: activeCode,
+              }}
+              step={step}
+              presenting={presenting}
+              onPresentation={() => {
+                setPresenting((v) => !v);
+                focusPlayback();
+              }}
+            />
+            <div className="learning-preferences">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={beginner}
+                  onChange={(e) => {
+                    setBeginner(e.target.checked);
+                    setSpeed(e.target.checked ? 0.5 : 1);
+                  }}
+                />{" "}
+                Beginner pace
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={predict}
+                  onChange={(e) => {
+                    setPredict(e.target.checked);
+                    setQuestion(null);
+                    predicted.current.clear();
+                  }}
+                />{" "}
+                Predict the next state
+              </label>
+              {beginner && (
+                <span>
+                  Half speed. Pause on a change and explain it in your own
+                  words.
+                </span>
+              )}
+            </div>
+            <InputBuilder
+              problem={p}
+              input={preview}
+              inputError={previewError}
+              disabled={running}
+              onApply={applyInput}
+            />
+            <VisualDebugger
+              frames={result?.frames ?? []}
+              step={step}
+              code={activeCode}
+              breakpoints={breakpoints}
+              onBreakpoints={setBreakpoints}
+              onSeek={seekDebug}
+              watches={watches}
+              onWatches={setWatches}
+            />
+            <ExampleShelf
+              examples={examples}
+              selected={selectedExample}
+              onSelect={chooseExample}
+              disabled={running}
+              batch={batch}
+            />
+            <p className="example-run-hint">
+              {selectedExample >= 0
+                ? `Example ${selectedExample + 1}: ${examples[selectedExample].label}`
+                : "Custom input"}{" "}
+              · Edit the input or run the solution to inspect each step.
+            </p>
+          </details>
+          <details className="lesson-tools">
+            <summary>Why this approach works · time & memory</summary>
+            <RoadmapInsights id={p.id} />
+          </details>
+          <details className="lesson-tools">
+            <summary>
+              Compare approaches, find mistakes & save experiments
+            </summary>
+            <AlgorithmComparison
+              problem={p}
+              input={result ? runInput : preview}
+            />
+            {result && <TraceStats frames={result.frames} />}
+            <LearningHints key={p.id} id={p.id} />
+            <FindMistake
+              problem={p}
+              language={language}
+              code={activeCode}
+              runtime={runtime}
+              disabled={running}
+              onInspect={inspectCase}
+            />
+            <StudyTools
+              problem={p}
+              language={language}
+              code={activeCode}
+              input={preview}
+              inputError={previewError}
+              onRestore={restoreExperiment}
+            />
+          </details>
           {published && (
             <section className="product-card">
               <h2>{published.title}</h2>
@@ -1405,36 +1492,16 @@ function ProblemStudio({
             </section>
           )}
           <section id="problem-try" className="journey-anchor">
-            <h2>Make the next move</h2>
-            <p>
-              Practice a small visual example, or predict the next state from
-              this problem’s actual execution.
-            </p>
-            <button
-              className="button secondary"
-              onClick={() => {
-                setPredict(true);
-                predicted.current.clear();
-                setQuestion(null);
-                focusPlayback();
-                void run(true);
-              }}
-            >
-              Predict this problem’s next state →
-            </button>
-            {[1, 2, 8, 9, 14].includes(p.group) && (
-              <HandsOn
-                initial={
-                  p.group === 1
-                    ? "window"
-                    : p.group === 2
-                      ? "pointers"
-                      : p.group === 14
-                        ? "grid"
-                        : "binary"
-                }
-              />
-            )}
+            <ProblemInteraction
+              key={`${snapshot.code}:${snapshot.input}:${language}`}
+              problem={p}
+              run={!stale ? result : null}
+              input={result && !stale ? runInput : preview}
+              source={activeCode}
+              language={language}
+              busy={running}
+              onRun={() => void run(false)}
+            />
           </section>
           <MasteryPanel
             id={p.id}
@@ -1457,8 +1524,14 @@ function ProblemStudio({
               Problem details & walkthrough · 5 explained examples
             </summary>{" "}
             <div className="learning-note">
-              <strong>Watch for this</strong>
-              <p>{p.caveat}</p>
+              <p>
+                <strong>The idea:</strong> {lessons[p.id].idea}
+              </p>
+              <p>
+                <strong>Watch for:</strong>{" "}
+                {p.caveat ||
+                  "Explain which decision changes the state and why it is safe."}
+              </p>
               {frame && (
                 <code>{snapshot.code.split("\n")[frame.line - 1]}</code>
               )}
@@ -1575,12 +1648,25 @@ export function Curriculum({
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
   }, [navigationRequest]);
+  const [, refreshProgress] = useState(0);
   useEffect(() => {
-    try {
+    const update = () => {
       setCompleted(
-        JSON.parse(localStorage.getItem("trace:curriculum:complete") ?? "[]"),
+        problems
+          .filter((p) =>
+            learningEvidence(p.id).some((e) => e.kind === "independent"),
+          )
+          .map((p) => p.id),
       );
-    } catch {}
+      refreshProgress((n) => n + 1);
+    };
+    update();
+    window.addEventListener("trace:notebook", update);
+    window.addEventListener("trace:restore", update);
+    return () => {
+      window.removeEventListener("trace:notebook", update);
+      window.removeEventListener("trace:restore", update);
+    };
   }, [selected]);
   function select(id: string | null) {
     setSelected(id);
@@ -1629,7 +1715,7 @@ export function Curriculum({
             {completed.length}
             <span>/100</span>
           </strong>
-          <small>problems understood</small>
+          <small>solved independently</small>
           <div>
             <i style={{ width: `${completed.length}%` }} />
           </div>
@@ -1716,7 +1802,7 @@ export function Curriculum({
                         <span className="problem-card-bottom">
                           {p.existing
                             ? "Existing lesson linked"
-                            : p.scene + " visualization"}
+                            : learningStatus(learningEvidence(p.id))}
                           <span>Explore ↗</span>
                         </span>
                       </button>

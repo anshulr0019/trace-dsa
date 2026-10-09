@@ -1,6 +1,13 @@
 "use client";
-import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { Code2, RotateCcw, Play, ChevronRight, Terminal } from "lucide-react";
+import { ReadableCode } from "../learning/readable-code";
 import type { Frame } from "@/lib/trace/interpreter";
 import { foundationLanguages } from "@/lib/foundations/sources";
 import type { Language } from "@/lib/curriculum/playground";
@@ -80,6 +87,7 @@ export function CodePanel({
   resetCode: () => void;
   runEdits: () => void;
 }) {
+  const [algorithm, setAlgorithm] = useState(true);
   const codeRef = useRef<HTMLDivElement | null>(null);
   const selectedLanguage = foundationLanguages.find((l) => l.id === language)!;
   const vars = Object.entries(frame.vars).filter(
@@ -139,6 +147,17 @@ export function CodePanel({
           <span>{selectedLanguage.label}</span>
         )}
       </div>
+      {!editing && (
+        <div className="code-view-switch" role="group" aria-label="Code view">
+          <button aria-pressed={algorithm} onClick={() => setAlgorithm(true)}>
+            Algorithm
+          </button>
+          <button aria-pressed={!algorithm} onClick={() => setAlgorithm(false)}>
+            Full source
+          </button>
+          <small>Original line numbers</small>
+        </div>
+      )}
       {editing ? (
         <textarea
           className="code-editor"
@@ -147,6 +166,12 @@ export function CodePanel({
           onChange={(e) => setCode(e.target.value)}
           spellCheck={false}
           maxLength={16000}
+        />
+      ) : algorithm ? (
+        <ReadableCode
+          source={executedCode}
+          language={language}
+          line={nextLine ?? frame.line}
         />
       ) : (
         <div

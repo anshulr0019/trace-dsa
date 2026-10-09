@@ -11,6 +11,7 @@ import { cloud, result } from "@/lib/product/cloud";
 import { notebookSnapshot, restoreNotebook } from "@/lib/product/notebook";
 import { useNotebookSync } from "@/lib/lab/notebook-sync";
 import { signInReturn, safeReturnPath } from "@/lib/lab/auth-return";
+import { importEarlierProgress } from "@/lib/product/mastery";
 const Context = createContext<{
   user: User | null;
   ready: boolean;
@@ -24,6 +25,12 @@ export const useAccount = () => useContext(Context);
 export function AccountProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null),
     [ready, setReady] = useState(!cloud);
+  useEffect(() => {
+    importEarlierProgress();
+    window.addEventListener("trace:restore", importEarlierProgress);
+    return () =>
+      window.removeEventListener("trace:restore", importEarlierProgress);
+  }, []);
   useEffect(() => {
     if (!cloud) return;
     void cloud.auth.getSession().then(({ data }) => {

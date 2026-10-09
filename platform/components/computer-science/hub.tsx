@@ -424,7 +424,7 @@ export default function ComputerScience() {
                   if (choice === m.quiz.answer)
                     recordLearning(
                       `cs:${m.id}`,
-                      "assisted",
+                      "exercise",
                       "Passed the guided lesson quiz after exploring its explanation",
                     );
                 }}
@@ -459,23 +459,16 @@ export default function ComputerScience() {
               />
             </label>
           </div>
-          <MasteryPanel id={`cs:${m.id}`} />
+          <MasteryPanel
+            id={`cs:${m.id}`}
+            onSelfReview={() =>
+              save({
+                ...study,
+                completed: [...new Set([...study.completed, m.id])],
+              })
+            }
+          />
           <div className="cs-section-head">
-            <label className="cs-toggle">
-              <input
-                type="checkbox"
-                checked={study.completed.includes(m.id)}
-                onChange={(e) =>
-                  save({
-                    ...study,
-                    completed: e.target.checked
-                      ? [...study.completed, m.id]
-                      : study.completed.filter((id) => id !== m.id),
-                  })
-                }
-              />
-              Mark this lesson reviewed
-            </label>
             <button onClick={() => navigate(m.topic)}>
               Back to {track?.title} →
             </button>

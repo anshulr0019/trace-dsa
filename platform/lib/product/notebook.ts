@@ -177,9 +177,13 @@ export function restoreNotebook(data: Record<string, string>) {
         parsed.some(
           (v) =>
             !v ||
-            !["watched", "assisted", "independent", "self-review"].includes(
-              v.kind,
-            ) ||
+            ![
+              "watched",
+              "exercise",
+              "assisted",
+              "independent",
+              "self-review",
+            ].includes(v.kind) ||
             typeof v.at !== "string" ||
             !Number.isFinite(Date.parse(v.at)) ||
             typeof v.detail !== "string" ||

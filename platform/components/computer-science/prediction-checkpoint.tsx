@@ -7,16 +7,19 @@ import {
   matchesPrediction,
 } from "@/lib/learning/evidence";
 import { EvidenceBoard } from "../learning/evidence-board";
+import { recordLearning } from "@/lib/product/mastery";
 export function PredictionCheckpoint({
   frames,
   step,
   onJump,
   onPause,
+  learningId,
 }: {
   frames: Frame[];
   step: number;
   onJump: (n: number) => void;
   onPause: () => void;
+  learningId?: string;
 }) {
   const [question, setQuestion] = useState<ReturnType<typeof checkpoint>>(null),
     [origin, setOrigin] = useState(0),
@@ -55,6 +58,12 @@ export function PredictionCheckpoint({
             onSubmit={(e) => {
               e.preventDefault();
               if (!guess.trim()) return;
+              if (learningId && matchesPrediction(guess, question.change.after))
+                recordLearning(
+                  learningId,
+                  "exercise",
+                  `Predicted ${question.change.label} in the guided lab`,
+                );
               onPause();
               setRevealed(true);
               onJump(question.target);

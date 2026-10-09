@@ -16,7 +16,7 @@ import {
   type Architecture,
 } from "@/lib/computer-science/architecture";
 import { csCourseContent } from "@/lib/learning/cs-course-content";
-import { LessonJourney } from "../learning/lesson-journey";
+import { LessonJourney, type JourneyStep } from "../learning/lesson-journey";
 import { recordLearning } from "@/lib/product/mastery";
 import { CourseStudy } from "../learning/course-study";
 import { CourseGuide } from "../learning/course-guide";
@@ -37,6 +37,7 @@ export function GuidedLab({
   scenario: Scenario;
   onChange: (v: Scenario) => void;
 }) {
+  const [journey, setJourney] = useState<JourneyStep>("Watch");
   const [compare, setCompare] = useState(false);
   const [speed, setSpeed] = useState(1);
   const reduced = useReducedMotion();
@@ -59,8 +60,10 @@ export function GuidedLab({
   );
   const focus = usePlaybackFocus(playing, m.id);
   useEffect(() => {
-    if (playing)
+    if (playing) {
+      setJourney("Watch");
       recordLearning(`cs:${m.id}`, "watched", "Played the guided lab");
+    }
   }, [playing, m.id]);
   useEffect(() => {
     setFocusPanel("visual");
@@ -79,7 +82,9 @@ export function GuidedLab({
   return (
     <section className="cs-lab">
       <LessonJourney
+        active={journey}
         onStep={(stage) => {
+          setJourney(stage);
           setPlaying(false);
           focus.setFocused(false);
           if (stage === "Watch") {
@@ -100,60 +105,17 @@ export function GuidedLab({
               ?.scrollIntoView({ block: "start", behavior: "instant" });
             return;
           }
-          requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            const details = document.getElementById(
+              target!,
+            ) as HTMLDetailsElement | null;
+            if (details?.tagName === "DETAILS") details.open = true;
             document
               .getElementById(target!)
-              ?.scrollIntoView({ block: "start", behavior: "instant" }),
-          );
+              ?.scrollIntoView({ block: "start", behavior: "instant" });
+          });
         }}
       />
-      <div id={`cs-understand-${m.id}`} className="journey-anchor" />
-      <CourseGuide track={m.topic} goal={m.idea} challenge={m.challenge} />
-      <CourseStudy
-        key={`study:${m.id}`}
-        id={m.id}
-        unit={csCourseContent[m.id]}
-        track={m.topic}
-        onExplore={() =>
-          focus.ref.current?.scrollIntoView({
-            block: "start",
-            behavior: "smooth",
-          })
-        }
-      />
-      <div id={`cs-try-${m.id}`} className="journey-anchor" />
-      <div className="cs-example-list" aria-label="Worked examples">
-        {examples.map((example, i) => (
-          <button
-            key={example.title}
-            aria-pressed={
-              JSON.stringify(example.scenario) === JSON.stringify(scenario)
-            }
-            onClick={() => {
-              update(example.scenario);
-              setExampleNotice(example.why);
-            }}
-          >
-            <small>EXAMPLE {i + 1}</small>
-            <strong>{example.title}</strong>
-            <span>{example.why}</span>
-          </button>
-        ))}
-      </div>
-      {exampleNotice && <p role="status">{exampleNotice}</p>}
-      <div className="cs-section-head">
-        <span>EXPLORE THE MODEL</span>
-        <button onClick={() => update(initialScenario(m.id))}>
-          Reset this scenario
-        </button>
-      </div>
-      {!architectural && (
-        <LabControls
-          module={m}
-          value={scenario.settings}
-          onChange={(settings) => update({ ...scenario, settings })}
-        />
-      )}
       {lab.error && !architectural ? (
         <p role="alert" className="cs-error">
           {lab.error}
@@ -339,9 +301,64 @@ export function GuidedLab({
           </div>
         )
       )}
+      <details
+        id={`cs-understand-${m.id}`}
+        className="lesson-tools journey-anchor"
+      >
+        <summary>Understand the idea · worked lesson & reasoning</summary>
+        <CourseGuide track={m.topic} goal={m.idea} challenge={m.challenge} />
+        <CourseStudy
+          key={`study:${m.id}`}
+          id={m.id}
+          unit={csCourseContent[m.id]}
+          track={m.topic}
+          onExplore={() =>
+            focus.ref.current?.scrollIntoView({
+              block: "start",
+              behavior: "smooth",
+            })
+          }
+        />
+      </details>
+      <details id={`cs-try-${m.id}`} className="lesson-tools journey-anchor">
+        <summary>Change this scenario · examples & model settings</summary>
+        <div className="cs-example-list" aria-label="Worked examples">
+          {examples.map((example, i) => (
+            <button
+              key={example.title}
+              aria-pressed={
+                JSON.stringify(example.scenario) === JSON.stringify(scenario)
+              }
+              onClick={() => {
+                update(example.scenario);
+                setExampleNotice(example.why);
+              }}
+            >
+              <small>EXAMPLE {i + 1}</small>
+              <strong>{example.title}</strong>
+              <span>{example.why}</span>
+            </button>
+          ))}
+        </div>
+        {exampleNotice && <p role="status">{exampleNotice}</p>}
+        <div className="cs-section-head">
+          <span>EXPLORE THE MODEL</span>
+          <button onClick={() => update(initialScenario(m.id))}>
+            Reset this scenario
+          </button>
+        </div>
+        {!architectural && (
+          <LabControls
+            module={m}
+            value={scenario.settings}
+            onChange={(settings) => update({ ...scenario, settings })}
+          />
+        )}
+      </details>
       {!lab.error && frames.length > 1 && (
         <>
           <PredictionCheckpoint
+            learningId={`cs:${m.id}`}
             key={JSON.stringify(scenario)}
             frames={frames}
             step={step}

@@ -11,6 +11,11 @@ import {
 } from "@/lib/product/notebook";
 import { openProblem } from "@/lib/product/lessons";
 import { experiments, reviewDate } from "@/lib/lab/study";
+import {
+  learningEvidence,
+  learningStatus,
+  reviewDue,
+} from "@/lib/product/mastery";
 import { AccountPanel } from "./account";
 export function ProblemNotes({ id }: { id: string }) {
   const [note, setNote] = useState<Note>(emptyNote),
@@ -69,18 +74,16 @@ export function Notebook() {
     return () => window.removeEventListener("trace:notebook", sync);
   }, []);
   void revision;
-  let completed: string[] = [];
-  try {
-    completed = JSON.parse(
-      localStorage.getItem("trace:curriculum:complete") ?? "[]",
-    );
-  } catch {}
+  const completed = problems
+    .filter((p) => learningEvidence(p.id).some((e) => e.kind === "independent"))
+    .map((p) => p.id);
   const items = problems.filter((p) => {
     const n = readNote(p.id);
     return (
       (filter === "all" ||
         (filter === "saved" && n.bookmarked) ||
-        (filter === "revision" && n.revision) ||
+        (filter === "revision" &&
+          (n.revision || reviewDue(learningEvidence(p.id)))) ||
         (filter === "complete" && completed.includes(p.id))) &&
       (path === "all" ||
         (path === "beginner" && p.stage === "Concept") ||
@@ -136,21 +139,28 @@ export function Notebook() {
         <h2>Revision calendar</h2>
         <div className="notebook-list">
           {problems
-            .filter((p) => reviewDate(p.id))
+            .filter(
+              (p) => reviewDate(p.id) || reviewDue(learningEvidence(p.id)),
+            )
             .sort((a, b) => reviewDate(a.id).localeCompare(reviewDate(b.id)))
             .map((p) => (
               <article key={p.id}>
                 <div>
                   <h3>{p.title}</h3>
                   <small className="revision-date">
-                    Revise on {reviewDate(p.id)}
+                    {reviewDue(learningEvidence(p.id))
+                      ? "Due for revision"
+                      : `Revise on ${reviewDate(p.id)}`}
                   </small>
                 </div>
                 <button onClick={() => openProblem(p.id)}>Revise →</button>
               </article>
             ))}
         </div>
-        <p>Schedule revision dates from a problem’s study workspace.</p>
+        <p>
+          Revision includes your scheduled dates and reminders from recorded
+          practice.
+        </p>
       </section>
       <section className="product-card">
         <div className="product-actions">
@@ -159,7 +169,7 @@ export function Notebook() {
             <select value={filter} onChange={(e) => setFilter(e.target.value)}>
               <option value="saved">Bookmarks</option>
               <option value="revision">Revision list</option>
-              <option value="complete">Understood</option>
+              <option value="complete">Solved independently</option>
               <option value="all">All problems</option>
             </select>
           </label>
@@ -181,7 +191,7 @@ export function Notebook() {
           </label>
         </div>
         <p>
-          {completed.length} / 100 marked understood · {items.length} shown
+          {completed.length} / 100 solved independently · {items.length} shown
         </p>
         <div className="notebook-list">
           {items.map((p) => {
@@ -193,6 +203,11 @@ export function Notebook() {
                     {patterns[p.group - 1]} · {p.stage}
                   </small>
                   <h3>{p.title}</h3>
+                  <small>
+                    {reviewDue(learningEvidence(p.id))
+                      ? "Due for revision"
+                      : learningStatus(learningEvidence(p.id))}
+                  </small>
                   {n.notes && <p>{n.notes.slice(0, 200)}</p>}
                 </div>
                 <button onClick={() => openProblem(p.id)}>Open →</button>

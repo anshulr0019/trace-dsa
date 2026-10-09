@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { lessons } from "@/lib/curriculum/learning";
-import { display, type ExecutionFrame } from "@/components/curriculum/scene";
+import { display } from "@/lib/curriculum/display";
+import type { ExecutionFrame } from "@/components/curriculum/scene";
 import type { SharedLesson } from "@/lib/product/lessons";
 import { lessonURL } from "@/lib/product/lessons";
 export function nextPrediction(

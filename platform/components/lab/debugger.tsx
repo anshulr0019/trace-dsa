@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { display, type ExecutionFrame } from "@/components/curriculum/scene";
+import { display } from "@/lib/curriculum/display";
+import type { ExecutionFrame } from "@/components/curriculum/scene";
 import { nextDebugStep, watchValue } from "@/lib/lab/debug";
 export function VisualDebugger({
   frames,
