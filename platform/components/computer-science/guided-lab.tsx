@@ -15,6 +15,8 @@ import {
   simulateArchitecture,
   type Architecture,
 } from "@/lib/computer-science/architecture";
+import { csCourseContent } from "@/lib/learning/cs-course-content";
+import { CourseStudy } from "../learning/course-study";
 import { CourseGuide } from "../learning/course-guide";
 import { EvidenceBoard } from "../learning/evidence-board";
 import { frameChanges } from "@/lib/learning/evidence";
@@ -71,6 +73,18 @@ export function GuidedLab({
   return (
     <section className="cs-lab">
       <CourseGuide track={m.topic} goal={m.idea} challenge={m.challenge} />
+      <CourseStudy
+        key={m.id}
+        id={m.id}
+        unit={csCourseContent[m.id]}
+        track={m.topic}
+        onExplore={() =>
+          focus.ref.current?.scrollIntoView({
+            block: "start",
+            behavior: "smooth",
+          })
+        }
+      />
       <div className="cs-example-list" aria-label="Worked examples">
         {examples.map((example, i) => (
           <button

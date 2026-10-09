@@ -9,6 +9,8 @@ import {
 } from "@/lib/computer-science/catalog";
 import { defaultSettings, type Settings } from "@/lib/computer-science/models";
 import { validArchitecture } from "@/lib/computer-science/architecture";
+import { TrackProject } from "../learning/track-project";
+import { CourseSources } from "../learning/course-study";
 import { GuidedLab, type Scenario } from "./guided-lab";
 import { InterviewPractice, type InterviewDraft } from "./interview";
 import { initialScenario } from "@/lib/computer-science/examples";
@@ -232,6 +234,12 @@ export default function ComputerScience() {
       )}
       {topic && topic !== "interviews" && !m && (
         <>
+          <TrackProject
+            key={topic}
+            track={topic}
+            onOpen={(id) => navigate(topic, id)}
+          />
+          <CourseSources track={topic} />
           <section className="cs-track-progress">
             <div>
               <small>YOUR LEARNING PATH</small>

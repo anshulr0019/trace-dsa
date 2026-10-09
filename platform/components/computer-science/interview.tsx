@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { TrackProject } from "../learning/track-project";
+import { CourseSources } from "../learning/course-study";
 import { CourseGuide } from "../learning/course-guide";
 import { interviewQuestions, topics } from "@/lib/computer-science/catalog";
 export type InterviewDraft = { text: string; checks: number[] };
@@ -67,6 +69,8 @@ export function InterviewPractice({
   ];
   return (
     <section className="cs-interview">
+      <TrackProject track="interviews" />
+      <CourseSources track="interviews" />
       <div className="cs-controls">
         <label>
           Topic

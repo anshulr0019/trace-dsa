@@ -7,6 +7,8 @@ import {
 import { foundationRun } from "@/lib/foundations/adapter";
 import type { Language } from "@/lib/curriculum/playground";
 import { executeInBrowser } from "@/lib/curriculum/runtime-client";
+import { foundationCourseContent } from "@/lib/learning/foundation-course-content";
+import { CourseStudy } from "./learning/course-study";
 import { CourseGuide } from "./learning/course-guide";
 import { usePlaybackFocus } from "./experience/use-playback-focus";
 import {
@@ -1109,6 +1111,18 @@ export default function Studio() {
                       track="dsa"
                       goal={lesson.intuition}
                       challenge={lesson.invariant}
+                    />
+                    <CourseStudy
+                      key={lesson.id}
+                      id={`foundation:${lesson.id}`}
+                      unit={foundationCourseContent[lesson.id]}
+                      track="dsa"
+                      onExplore={() =>
+                        foundationFocus.ref.current?.scrollIntoView({
+                          block: "start",
+                          behavior: "smooth",
+                        })
+                      }
                     />
                     <div
                       ref={foundationFocus.ref}
