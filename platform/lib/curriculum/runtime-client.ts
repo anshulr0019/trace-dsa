@@ -50,7 +50,9 @@ export async function runtimeCapabilities(
 function executeBrowser(
   payload: Submission,
   signal?: AbortSignal,
+  onStage?: (stage: "loading" | "executing") => void,
 ): Promise<PlaybackRun> {
+  onStage?.("loading");
   signal?.throwIfAborted();
   if (!browserLanguages.includes(payload.language as Language))
     return Promise.reject(Error("This language cannot run in the browser."));
@@ -90,6 +92,7 @@ function executeBrowser(
     );
     worker.onmessage = ({ data }) => {
       if (data.type === "ready") {
+        onStage?.("executing");
         clearTimeout(timer);
         const timeoutMs = Number(data.timeoutMs) || 6000;
         timer = setTimeout(
@@ -117,17 +120,24 @@ function executeBrowser(
 export function executeInBrowser(
   payload: Submission,
   signal?: AbortSignal,
+  onStage?: (stage: "loading" | "executing") => void,
 ): Promise<PlaybackRun> {
-  return observeRun(() => executeBrowser(payload, signal), payload, "browser");
+  return observeRun(
+    () => executeBrowser(payload, signal, onStage),
+    payload,
+    "browser",
+  );
 }
 
 export async function executeSubmission(
   payload: Submission,
   capabilities: RuntimeCapabilities,
   signal?: AbortSignal,
+  onStage?: (stage: "loading" | "executing") => void,
 ): Promise<PlaybackRun> {
   if (!capabilities.server || payload.language === "java")
-    return executeInBrowser(payload, signal);
+    return executeInBrowser(payload, signal, onStage);
+  onStage?.("executing");
   return observeRun(
     async () => {
       const response = await fetch("/api/local-runtime", {

@@ -1,5 +1,5 @@
 "use client";
-import {usePlaybackFocus} from "../experience/use-playback-focus";
+import { usePlaybackFocus } from "../experience/use-playback-focus";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -55,8 +55,12 @@ import { readSharedLesson, type SharedLesson } from "@/lib/product/lessons";
 import { Workbench } from "../experience/workbench";
 import { RoadmapDock } from "./roadmap-dock";
 import { RoadmapInsights } from "./roadmap-insights";
-import {TrackProject} from "../learning/track-project";
-import {ProblemSolvingClinic} from "../learning/problem-solving-clinic";
+import { LessonJourney, MasteryPanel } from "../learning/lesson-journey";
+import { HandsOn } from "../learning/hands-on";
+import { RuntimeStatus } from "../learning/runtime-status";
+import { recordLearning } from "@/lib/product/mastery";
+import { TrackProject } from "../learning/track-project";
+import { ProblemSolvingClinic } from "../learning/problem-solving-clinic";
 import { CourseGuide } from "../learning/course-guide";
 import { EvidenceBoard } from "../learning/evidence-board";
 import { recordChanges } from "@/lib/learning/evidence";
@@ -140,11 +144,21 @@ function ProblemStudio({
     [speed, setSpeed] = useState(1),
     [running, setRunning] = useState(false),
     [error, setError] = useState("");
+  const [runtimeStage, setRuntimeStage] = useState("loading");
   const { step, setStep, playing, setPlaying } = useFramePlayback(
     result?.frames.length ?? 0,
     speed,
   );
-  const {ref: playbackRef,focused,focusRequest,focus:focusPlayback,setFocused}=usePlaybackFocus(playing,p.id);
+  const {
+    ref: playbackRef,
+    focused,
+    focusRequest,
+    focus: focusPlayback,
+    setFocused,
+  } = usePlaybackFocus(playing, p.id);
+  useEffect(() => {
+    if (playing) recordLearning(p.id, "watched", "Played an execution trace");
+  }, [playing, p.id]);
   const [experience, setExperience] = useState<"learn" | "practice">("learn");
   const [snapshot, setSnapshot] = useState({
       code: "",
@@ -416,6 +430,7 @@ function ProblemStudio({
     inFlight.current = true;
     controller.current = new AbortController();
     setRunning(true);
+    setRuntimeStage("loading");
     setPlaying(false);
     setError("");
     setResult(null);
@@ -431,6 +446,9 @@ function ProblemStudio({
         },
         runtime,
         controller.current.signal,
+        (stage) => {
+          if (id === request.current) setRuntimeStage(stage);
+        },
       );
       if (id !== request.current) return;
       setResult(value);
@@ -692,6 +710,53 @@ function ProblemStudio({
           </div>
         )}
       </div>
+      <LessonJourney
+        disabled={running}
+        onStep={(stage) => {
+          setPlaying(false);
+          if (stage !== "Watch") setFocused(false);
+          if (stage === "Solve") {
+            switchExperience("practice");
+            window.scrollTo({ top: 0, behavior: "instant" });
+            return;
+          }
+          switchExperience("learn");
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              if (stage === "Watch") {
+                focusPlayback();
+                return;
+              }
+              const id =
+                stage === "Understand"
+                  ? "problem-understand"
+                  : stage === "Try"
+                    ? "problem-try"
+                    : `review-${p.id}`;
+              if (stage === "Understand") {
+                const details = document.getElementById(
+                  id,
+                ) as HTMLDetailsElement | null;
+                if (details) details.open = true;
+              }
+              document
+                .getElementById(id)
+                ?.scrollIntoView({ block: "start", behavior: "instant" });
+            }),
+          );
+        }}
+      />
+      {experience === "learn" && (
+        <section className="launch-card">
+          <small>START WITH THE IDEA</small>
+          <p>{lessons[p.id].idea}</p>
+          <p>
+            <strong>Watch for:</strong>{" "}
+            {p.caveat ||
+              "Explain which decision changes the state, and why that decision is safe."}
+          </p>
+        </section>
+      )}
       <AssignmentPanel
         problemId={p.id}
         language={language}
@@ -804,7 +869,14 @@ function ProblemStudio({
             {focused && (
               <div className="focus-toolbar">
                 <span>Playback view</span>
-                <button onClick={() => { setPlaying(false); setFocused(false); }}>Full layout</button>
+                <button
+                  onClick={() => {
+                    setPlaying(false);
+                    setFocused(false);
+                  }}
+                >
+                  Full layout
+                </button>
               </div>
             )}
             <Workbench
@@ -830,19 +902,14 @@ function ProblemStudio({
                         the current version.
                       </div>
                     )}
-                    {running && (
-                      <div className="trace-notice" role="status">
-                        {language === "cpp"
-                          ? "Loading C++ compiler & compiling… First run downloads about 28 MB."
-                          : language === "java"
-                            ? "Loading Java & compiling… First use downloads the compiler and JVM; this can take a minute."
-                            : runtime?.server
-                              ? "Preparing playback…"
-                              : language === "python"
-                                ? "Loading Python & running… First run may take a moment."
-                                : "Running JavaScript…"}
-                      </div>
-                    )}
+                    <RuntimeStatus
+                      busy={running}
+                      stage={runtimeStage}
+                      error={error || result?.error || undefined}
+                      onRetry={() => void run(true)}
+                      onCancel={stop}
+                      onHelp={() => setPanel("help")}
+                    />
                     {error && (
                       <pre className="runtime-error" role="alert">
                         {error}
@@ -1337,6 +1404,42 @@ function ProblemStudio({
               </small>
             </section>
           )}
+          <section id="problem-try" className="journey-anchor">
+            <h2>Make the next move</h2>
+            <p>
+              Practice a small visual example, or predict the next state from
+              this problem’s actual execution.
+            </p>
+            <button
+              className="button secondary"
+              onClick={() => {
+                setPredict(true);
+                predicted.current.clear();
+                setQuestion(null);
+                focusPlayback();
+                void run(true);
+              }}
+            >
+              Predict this problem’s next state →
+            </button>
+            {[1, 2, 8, 9, 14].includes(p.group) && (
+              <HandsOn
+                initial={
+                  p.group === 1
+                    ? "window"
+                    : p.group === 2
+                      ? "pointers"
+                      : p.group === 14
+                        ? "grid"
+                        : "binary"
+                }
+              />
+            )}
+          </section>
+          <MasteryPanel
+            id={p.id}
+            onPractice={() => switchExperience("practice")}
+          />
           <ProblemNotes id={p.id} />
           <a
             className="feedback-link"
@@ -1346,7 +1449,10 @@ function ProblemStudio({
           >
             Report an issue or suggest an improvement ↗
           </a>
-          <details className="studio-learning">
+          <details
+            id="problem-understand"
+            className="studio-learning journey-anchor"
+          >
             <summary>
               Problem details & walkthrough · 5 explained examples
             </summary>{" "}
@@ -1364,10 +1470,26 @@ function ProblemStudio({
                     : "Automatic steps show state before a statement. Explicit checkpoints show state when called. Unknown custom types remain labeled rather than guessed."}
               </small>
             </div>
-            <TrackProject track="dsa"/>
-            <ProblemSolvingClinic key={`clinic:${p.id}`} problem={p}/>
-            <CourseGuide track="dsa" goal={p.goal} challenge={p.caveat ? `Test this constraint: ${p.caveat}` : undefined}/>
-            {result&&step>0&&<details className="learning-state-review"><summary>Inspect before → after at step {step+1}</summary><EvidenceBoard changes={recordChanges(result.frames[step-1].vars,result.frames[step].vars)}/></details>}
+            <TrackProject track="dsa" />
+            <ProblemSolvingClinic key={`clinic:${p.id}`} problem={p} />
+            <CourseGuide
+              track="dsa"
+              goal={p.goal}
+              challenge={
+                p.caveat ? `Test this constraint: ${p.caveat}` : undefined
+              }
+            />
+            {result && step > 0 && (
+              <details className="learning-state-review">
+                <summary>Inspect before → after at step {step + 1}</summary>
+                <EvidenceBoard
+                  changes={recordChanges(
+                    result.frames[step - 1].vars,
+                    result.frames[step].vars,
+                  )}
+                />
+              </details>
+            )}
             <ConceptIntro key={p.id} id={p.id} />
             <LearningGuide
               key={selectedExample}

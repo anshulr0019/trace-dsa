@@ -25,6 +25,7 @@ export function ProblemSolvingClinic({ problem: p }: { problem: Problem }) {
     if (ready)
       try {
         localStorage.setItem(key, notes);
+        window.dispatchEvent(new Event("trace:notebook"));
       } catch {}
   }, [key, notes, ready]);
   return (

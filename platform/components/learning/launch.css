@@ -1,0 +1,288 @@
+.lesson-journey {
+  display: flex;
+  gap: 8px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+.lesson-journey button {
+  flex: 1;
+  min-width: 100px;
+  border: 1px solid #344a3b;
+  background: #142019;
+  color: #bed0c1;
+  padding: 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  justify-content: center;
+}
+.lesson-journey button span {
+  color: #789383;
+  font: 11px monospace;
+}
+.lesson-journey button[aria-pressed="true"] {
+  border-color: #b5e5b9;
+  background: #233a2c;
+  color: #e6f7e9;
+}
+.launch-card {
+  border: 1px solid #334a3c;
+  background: linear-gradient(125deg, #16251d, #111a17);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 22px 0;
+  min-width: 0;
+}
+.launch-card h2,
+.launch-card h3 {
+  margin: 8px 0 12px;
+}
+.launch-card p {
+  color: #aebdb4;
+  line-height: 1.7;
+  max-width: 78ch;
+}
+.launch-card small,
+.launch-hero small {
+  color: #adddb1;
+  letter-spacing: 1.4px;
+  font-size: 11px;
+}
+.launch-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.launch-actions button,
+.launch-actions a,
+.launch-card button {
+  padding: 10px 16px;
+  border: 1px solid #486c53;
+  border-radius: 9px;
+  background: #253d2d;
+  color: #dcf3e2;
+  cursor: pointer;
+  text-decoration: none;
+}
+.launch-card button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.launch-actions a:first-child {
+  background: #b9e9be;
+  color: #11291b;
+}
+.launch-hero {
+  padding: 34px 0 20px;
+}
+.launch-hero h1 {
+  font-size: clamp(34px, 4vw, 60px);
+  letter-spacing: -1.8px;
+  max-width: 17ch;
+  line-height: 1.12;
+  margin: 16px 0;
+}
+.launch-hero > p {
+  max-width: 65ch;
+  font-size: 17px;
+  line-height: 1.7;
+  color: #a9bbb1;
+}
+.launch-benefits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.launch-benefits .launch-card {
+  margin: 0;
+}
+.launch-demo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+}
+.launch-cells {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 24px 0;
+}
+.launch-cells button {
+  min-width: 50px;
+  min-height: 60px;
+  display: grid;
+  place-items: center;
+  background: #18251f;
+  border: 1px solid #385943;
+  border-radius: 9px;
+  color: #e5ede7;
+  font-size: 19px;
+}
+.launch-cells button.active {
+  background: #365734;
+  border-color: #b9eb9d;
+}
+.launch-cells button.discarded {
+  opacity: 0.35;
+}
+.launch-cells small {
+  font-size: 10px;
+  color: #8aa090;
+  letter-spacing: 0;
+}
+.launch-card textarea {
+  display: block;
+  width: 100%;
+  border: 1px solid #3b5143;
+  background: #0f1914;
+  color: #d5e5d8;
+  border-radius: 8px;
+  padding: 12px;
+  line-height: 1.7;
+  margin-top: 8px;
+  font-family: monospace;
+}
+.launch-card label {
+  display: block;
+  color: #b0c4b5;
+  margin: 12px 0;
+}
+.launch-card pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+  color: #cbe5d1;
+}
+.evidence-history {
+  padding-left: 20px;
+}
+.evidence-history li {
+  padding: 6px;
+}
+.evidence-history span {
+  display: block;
+  color: #8ca494;
+  font-size: 12px;
+}
+.launch-table {
+  overflow: auto;
+  margin: 14px 0;
+}
+.launch-table table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.launch-table th,
+.launch-table td {
+  border-bottom: 1px solid #334a3c;
+  text-align: left;
+  padding: 10px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.launch-table th {
+  color: #b4ddb9;
+}
+.launch-feedback {
+  padding: 12px 16px;
+  border-left: 3px solid #b6e7bc;
+  background: #1c3024;
+  margin: 14px 0;
+  line-height: 1.7;
+}
+.launch-support {
+  margin: 30px 0;
+  color: #8fa297;
+  font-size: 13px;
+}
+.launch-support a {
+  color: #b0dcb8;
+}
+.project-sandbox {
+  border-top: 1px solid #344b3b;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+.project-sandbox .cs-flow {
+  height: 260px;
+}
+.project-sandbox .cs-scene {
+  max-height: 400px;
+  overflow: auto;
+}
+.runtime-recovery {
+  padding: 12px;
+  border: 1px solid #715646;
+  border-radius: 8px;
+  margin: 10px;
+  color: #eed2b3;
+}
+.runtime-recovery button {
+  border: 1px solid #6f6950;
+  background: #322c23;
+  padding: 6px 10px;
+  margin: 6px;
+  color: #efdec7;
+  border-radius: 6px;
+}
+.runtime-recovery summary {
+  cursor: pointer;
+}
+.journey-anchor {
+  scroll-margin-top: 85px;
+}
+.runtime-progress {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+.runtime-progress span {
+  font-size: 11px;
+  border: 1px solid #354c3c;
+  border-radius: 20px;
+  padding: 4px 9px;
+}
+.runtime-progress .current {
+  border-color: #b3dcaa;
+  background: #243d2b;
+}
+.runtime-progress .done {
+  color: #9acaab;
+}
+@media (max-width: 760px) {
+  .launch-demo,
+  .launch-benefits {
+    grid-template-columns: 1fr;
+  }
+  .launch-card {
+    padding: 18px;
+  }
+  .lesson-journey {
+    gap: 5px;
+  }
+  .lesson-journey button {
+    min-width: 90px;
+    padding: 9px;
+    font-size: 12px;
+  }
+  .launch-hero {
+    padding-top: 20px;
+  }
+  .launch-cells button {
+    min-width: 38px;
+  }
+  .launch-actions button,
+  .launch-actions a {
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .launch-card * {
+    scroll-behavior: auto;
+  }
+}

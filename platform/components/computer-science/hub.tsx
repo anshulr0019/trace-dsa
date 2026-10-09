@@ -10,6 +10,8 @@ import {
 import { defaultSettings, type Settings } from "@/lib/computer-science/models";
 import { validArchitecture } from "@/lib/computer-science/architecture";
 import { TrackProject } from "../learning/track-project";
+import { MasteryPanel } from "../learning/lesson-journey";
+import { recordLearning } from "@/lib/product/mastery";
 import { CourseSources } from "../learning/course-study";
 import { GuidedLab, type Scenario } from "./guided-lab";
 import { InterviewPractice, type InterviewDraft } from "./interview";
@@ -115,10 +117,21 @@ export default function ComputerScience() {
     }
     setReady(true);
   }, []);
+  useEffect(() => {
+    const restore = () => {
+      try {
+        setStudy(readStudy(localStorage.getItem(storageKey)));
+        setStatus("Restored saved study work.");
+      } catch {}
+    };
+    window.addEventListener("trace:restore", restore);
+    return () => window.removeEventListener("trace:restore", restore);
+  }, []);
   const save = (next: Study) => {
     setStudy(next);
     try {
       localStorage.setItem(storageKey, JSON.stringify(next));
+      window.dispatchEvent(new Event("trace:notebook"));
       setStatus("Saved on this browser");
     } catch {
       setStatus(
@@ -406,7 +419,15 @@ export default function ComputerScience() {
               </fieldset>
               <button
                 disabled={choice === null}
-                onClick={() => setChecked(true)}
+                onClick={() => {
+                  setChecked(true);
+                  if (choice === m.quiz.answer)
+                    recordLearning(
+                      `cs:${m.id}`,
+                      "assisted",
+                      "Passed the guided lesson quiz after exploring its explanation",
+                    );
+                }}
               >
                 Check answer
               </button>
@@ -438,6 +459,7 @@ export default function ComputerScience() {
               />
             </label>
           </div>
+          <MasteryPanel id={`cs:${m.id}`} />
           <div className="cs-section-head">
             <label className="cs-toggle">
               <input

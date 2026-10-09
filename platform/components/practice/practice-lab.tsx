@@ -34,6 +34,8 @@ import { Editor } from "../curriculum/editor";
 import { TracePlayer } from "./trace-player";
 import "./practice.css";
 import { executeInBrowser } from "@/lib/curriculum/runtime-client";
+import { RuntimeStatus } from "../learning/runtime-status";
+import { recordLearning } from "@/lib/product/mastery";
 import { browserPractice } from "@/lib/practice/browser-practice";
 
 const historyKey = (id: string) => `trace:practice:attempts:${id}`;
@@ -130,6 +132,12 @@ export function PracticeLab({
   const progress = confidence(attempts),
     reduced = useReducedMotion();
   function record(a: Attempt) {
+    if (a.total > 0 && a.passed === a.total && a.level !== "guided")
+      recordLearning(
+        problem.id,
+        a.assisted ? "assisted" : "independent",
+        `${a.passed}/${a.total} practice cases passed · ${a.language}`,
+      );
     setAttempts((old) => {
       const next = [...old, a].slice(-30);
       try {
@@ -419,7 +427,7 @@ function PracticeSession({
   }
   function record(
     g: { score: number; passed: number; total: number },
-    assisted = draft.assisted,
+    assisted = draft.assisted || draft.hints > 0,
   ) {
     onAttempt({
       id: crypto.randomUUID(),
@@ -432,10 +440,14 @@ function PracticeSession({
       explanation: draft.explanation,
     });
   }
+  const lastAction = useRef<
+    "predict" | "grade" | "review" | "optimize" | "trace"
+  >("grade");
   async function request(
     action: "predict" | "grade" | "review" | "optimize" | "trace",
   ) {
     if (inFlight.current || !ready) return;
+    lastAction.current = action;
     if (
       level === "challenge" &&
       action === "grade" &&
@@ -524,7 +536,7 @@ function PracticeSession({
                         answer: parsed,
                         explanation: draft.explanation,
                         level,
-                        assisted: draft.assisted,
+                        assisted: draft.assisted || draft.hints > 0,
                       },
                 ),
               },
@@ -901,6 +913,13 @@ function PracticeSession({
           {error}
         </p>
       )}
+      <RuntimeStatus
+        busy={false}
+        stage="executing"
+        error={error || undefined}
+        onRetry={() => void request(lastAction.current)}
+        onCancel={cancel}
+      />
       {capabilities.checked &&
         !capabilities.execution &&
         level !== "guided" && (

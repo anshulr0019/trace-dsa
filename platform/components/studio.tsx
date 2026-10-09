@@ -8,6 +8,11 @@ import { foundationRun } from "@/lib/foundations/adapter";
 import type { Language } from "@/lib/curriculum/playground";
 import { executeInBrowser } from "@/lib/curriculum/runtime-client";
 import { foundationCourseContent } from "@/lib/learning/foundation-course-content";
+import { LaunchHome } from "./learning/launch-home";
+import { LessonJourney, MasteryPanel } from "./learning/lesson-journey";
+import { RuntimeStatus } from "./learning/runtime-status";
+import { HandsOn } from "./learning/hands-on";
+import { recordLearning } from "@/lib/product/mastery";
 import { CourseStudy } from "./learning/course-study";
 import { CourseGuide } from "./learning/course-guide";
 import { usePlaybackFocus } from "./experience/use-playback-focus";
@@ -313,6 +318,16 @@ export default function Studio() {
     `${lesson.id}:${view}:${tab}`,
   );
   const [running, setRunning] = useState(false);
+  const [foundationRuntimeStage, setFoundationRuntimeStage] =
+    useState("loading");
+  useEffect(() => {
+    if (playing && view === "studio")
+      recordLearning(
+        `foundation:${lesson.id}`,
+        "watched",
+        "Played the foundation trace",
+      );
+  }, [playing, view, lesson.id]);
   const [inputError, setInputError] = useState("");
   const [notice, setNotice] = useState("");
   const [guide, setGuide] = useState(false);
@@ -320,6 +335,10 @@ export default function Studio() {
   const [about, setAbout] = useState(false);
   const [saved, setSaved] = useState<Saved>(emptySaved);
   const [storageReady, setStorageReady] = useState(false);
+  const foundationInputDrafts = useRef<
+    Record<string, { nums: number[]; parameter: number }>
+  >({});
+  const [restoreGeneration, setRestoreGeneration] = useState(0);
   const [question, setQuestion] = useState(0);
   const [choice, setChoice] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
@@ -339,6 +358,7 @@ export default function Studio() {
       setCheckpoint(null);
       answeredSteps.current.clear();
       setRunning(true);
+      setFoundationRuntimeStage("loading");
       setInputError("");
       setExecutedCode(source);
       pendingStep.current = seek;
@@ -373,6 +393,9 @@ export default function Studio() {
             automatic: true,
           },
           controller.signal,
+          (stage) => {
+            if (id === requestId.current) setFoundationRuntimeStage(stage);
+          },
         )
           .then((value) => {
             if (id === requestId.current)
@@ -415,16 +438,26 @@ export default function Studio() {
   const changeLesson = useCallback(
     (l: Lesson, execute = true) => {
       setLesson(l);
-      setNums(l.input);
-      setParameter(l.target);
-      setRaw(l.input.join(", "));
-      setParamRaw(String(l.target));
+      let values = l.input,
+        parameter = l.target;
+      try {
+        const v = foundationInputDrafts.current[l.id];
+        if (v) {
+          const valid = validateInput(l, v.nums.join(","), String(v.parameter));
+          values = valid.nums;
+          parameter = valid.parameter;
+        }
+      } catch {}
+      setNums(values);
+      setParameter(parameter);
+      setRaw(values.join(", "));
+      setParamRaw(String(parameter));
       const source =
         languageDrafts.current[l.id]?.[languageRef.current] ??
-        foundationSource(l, l.input.length, languageRef.current);
+        foundationSource(l, values.length, languageRef.current);
       setCode(source);
       setCustom(
-        source !== foundationSource(l, l.input.length, languageRef.current),
+        source !== foundationSource(l, values.length, languageRef.current),
       );
       setEditing(false);
       setView("studio");
@@ -433,7 +466,7 @@ export default function Studio() {
       setQuestion(0);
       setChoice(null);
       setChecked(false);
-      if (execute) runTrace(l, l.input, l.target, source);
+      if (execute) runTrace(l, values, parameter, source);
       else setExecutedCode(source);
       setSaved((s) => ({ ...s, lastLesson: l.id }));
       window.history.replaceState(
@@ -491,6 +524,15 @@ export default function Studio() {
                 [lang.id]: value,
               };
           }
+    } catch {}
+    try {
+      const inputs = JSON.parse(
+        localStorage.getItem("trace:foundation-inputs") ?? "{}",
+      );
+      foundationInputDrafts.current =
+        inputs && typeof inputs === "object" && !Array.isArray(inputs)
+          ? inputs
+          : {};
     } catch {}
     let stored = emptySaved;
     try {
@@ -691,8 +733,20 @@ export default function Studio() {
           "trace:foundation-drafts",
           JSON.stringify(languageDrafts.current),
         );
+        window.dispatchEvent(new Event("trace:notebook"));
       } catch {}
   }, [lesson.id, foundationLanguage, code, storageReady]);
+  useEffect(() => {
+    if (!storageReady) return;
+    foundationInputDrafts.current[lesson.id] = { nums, parameter };
+    try {
+      localStorage.setItem(
+        "trace:foundation-inputs",
+        JSON.stringify(foundationInputDrafts.current),
+      );
+      window.dispatchEvent(new Event("trace:notebook"));
+    } catch {}
+  }, [lesson.id, nums, parameter, storageReady]);
   const changeFoundationLanguage = (next: Language) => {
     languageDrafts.current[lesson.id] = {
       ...languageDrafts.current[lesson.id],
@@ -815,6 +869,12 @@ export default function Studio() {
     URL.revokeObjectURL(url);
   };
   const checkAnswer = () => {
+    if (choice === lesson.questions[question].answer)
+      recordLearning(
+        `foundation:${lesson.id}`,
+        "assisted",
+        "Passed a guided understanding question",
+      );
     if (choice === null) return;
     setChecked(true);
     const correct = choice === lesson.questions[question].answer;
@@ -842,6 +902,54 @@ export default function Studio() {
   );
   useEffect(() => {
     const restore = () => {
+      setPlaying(false);
+      foundationAbort.current?.abort();
+      requestId.current++;
+      setRunning(false);
+      try {
+        const drafts = JSON.parse(
+          localStorage.getItem("trace:foundation-drafts") ?? "{}",
+        );
+        languageDrafts.current = drafts;
+        const restored = drafts[lesson.id]?.[foundationLanguage];
+        if (typeof restored === "string") {
+          setCode(restored);
+          setCustom(true);
+          const inputs = JSON.parse(
+            localStorage.getItem("trace:foundation-inputs") ?? "{}",
+          );
+          foundationInputDrafts.current = inputs;
+          const savedInput = inputs[lesson.id];
+          const restoredInput = savedInput
+            ? validateInput(
+                lesson,
+                savedInput.nums.join(","),
+                String(savedInput.parameter),
+              )
+            : { nums, parameter };
+          setNums(restoredInput.nums);
+          setParameter(restoredInput.parameter);
+          setRaw(restoredInput.nums.join(", "));
+          setParamRaw(String(restoredInput.parameter));
+          setExecutedCode("");
+          setRun({
+            frames: [
+              {
+                line: 0,
+                vars: lessonInputs(
+                  lesson,
+                  restoredInput.nums,
+                  restoredInput.parameter,
+                ),
+                comparisons: 0,
+                message: "Draft restored. Press Run code to visualize it.",
+              },
+            ],
+            finished: false,
+          });
+        }
+      } catch {}
+      setRestoreGeneration((n) => n + 1);
       try {
         const value = JSON.parse(
           localStorage.getItem("trace-progress-v1") ?? "null",
@@ -856,7 +964,7 @@ export default function Studio() {
     };
     window.addEventListener("trace:restore", restore);
     return () => window.removeEventListener("trace:restore", restore);
-  }, []);
+  }, [lesson, foundationLanguage, setPlaying, nums, parameter]);
   const activeQuestion = lesson.questions[question];
   return (
     <AccountProvider>
@@ -929,6 +1037,7 @@ export default function Studio() {
           </header>
           <main
             id="main-content"
+            key={restoreGeneration}
             className={`workspace ${view === "studio" && tab === "learn" ? "has-playback" : ""}`}
           >
             {view === "cs" ? (
@@ -952,77 +1061,7 @@ export default function Studio() {
               />
             ) : view === "home" ? (
               <>
-                <div className="product-intro">
-                  <h1>Make computer science visible.</h1>
-                  <p>
-                    Explore algorithms in four languages, predict what happens
-                    next, and explore systems, databases, networks, and more.
-                  </p>
-                  <GuidedTour />
-                  <div className="product-actions">
-                    <button
-                      onClick={() => {
-                        setView("cs");
-                        window.history.replaceState(null, "", "?view=cs");
-                      }}
-                    >
-                      Explore computer science →
-                    </button>
-                    <button
-                      onClick={() => {
-                        setView("curriculum");
-                        window.history.replaceState(
-                          null,
-                          "",
-                          "?view=curriculum",
-                        );
-                      }}
-                    >
-                      Explore the roadmap →
-                    </button>
-                    <button
-                      onClick={() => {
-                        setView("teacher");
-                        window.history.replaceState(null, "", "?view=teacher");
-                      }}
-                    >
-                      Create a lesson →
-                    </button>
-                  </div>
-                  <div className="showcase-links">
-                    {[
-                      ["maximum-average-subarray", "Sliding window"],
-                      ["binary-search-standard", "Binary search"],
-                      ["maximum-depth", "Tree recursion"],
-                    ].map(([id, label]) => (
-                      <a key={id} href={`/?view=curriculum&problem=${id}`}>
-                        {label} ↗
-                      </a>
-                    ))}
-                  </div>
-                </div>
-                <button
-                  className="curriculum-launch"
-                  onClick={() => {
-                    setView("curriculum");
-                    window.history.replaceState(null, "", "?view=curriculum");
-                  }}
-                >
-                  <span>
-                    Explore your complete 100-problem roadmap
-                    <small>
-                      25 patterns · Python, C++, Java & JavaScript · Live
-                      execution
-                    </small>
-                  </span>
-                  <ArrowRight size={18} />
-                </button>
-                <Overview
-                  onLesson={changeLesson}
-                  onLibrary={() => setView("library")}
-                  lastLesson={saved.lastLesson}
-                  completed={saved.mastered.length}
-                />
+                <LaunchHome />
               </>
             ) : view === "studio" ? (
               <>
@@ -1067,6 +1106,41 @@ export default function Studio() {
                     </button>
                   </div>
                 </div>
+                <LessonJourney
+                  disabled={running}
+                  onStep={(stage) => {
+                    setPlaying(false);
+                    if (stage === "Solve") {
+                      setTab("practice");
+                      return;
+                    }
+                    setTab("learn");
+                    requestAnimationFrame(() =>
+                      requestAnimationFrame(() => {
+                        if (stage === "Watch") {
+                          foundationFocus.focus();
+                          recordLearning(
+                            `foundation:${lesson.id}`,
+                            "watched",
+                            "Opened foundation visualization",
+                          );
+                        } else
+                          document
+                            .getElementById(
+                              stage === "Understand"
+                                ? "foundation-understand"
+                                : stage === "Try"
+                                  ? "foundation-try"
+                                  : `review-foundation:${lesson.id}`,
+                            )
+                            ?.scrollIntoView({
+                              block: "start",
+                              behavior: "instant",
+                            });
+                      }),
+                    );
+                  }}
+                />
                 <Tabs
                   value={tab}
                   onValueChange={(v) => {
@@ -1111,6 +1185,10 @@ export default function Studio() {
                       track="dsa"
                       goal={lesson.intuition}
                       challenge={lesson.invariant}
+                    />
+                    <div
+                      id="foundation-understand"
+                      className="journey-anchor"
                     />
                     <CourseStudy
                       key={lesson.id}
@@ -1218,6 +1296,23 @@ export default function Studio() {
                                 <RotateCcw size={16} />
                               </button>
                             </form>
+                            <RuntimeStatus
+                              busy={running}
+                              stage={foundationRuntimeStage}
+                              error={run.error || undefined}
+                              onRetry={runEdits}
+                              onCancel={() => {
+                                foundationAbort.current?.abort();
+                                requestId.current++;
+                                worker.current?.terminate();
+                                worker.current = null;
+                                if (timeout.current)
+                                  clearTimeout(timeout.current);
+                                setRunning(false);
+                                setPlaying(false);
+                              }}
+                              onHelp={() => setGuide(true)}
+                            />
                             {inputError && (
                               <div className="inline-error" role="alert">
                                 {inputError}
@@ -1371,6 +1466,27 @@ export default function Studio() {
                         <ArrowRight size={15} />
                       </button>
                     </div>
+                    <div id="foundation-try" className="journey-anchor">
+                      <HandsOn
+                        key={lesson.id}
+                        initial={
+                          lesson.id === "bubble-sort" ||
+                          lesson.id === "insertion-sort"
+                            ? "bubble"
+                            : lesson.id === "prefix-sum"
+                              ? "prefix"
+                              : lesson.id === "two-sum"
+                                ? "pointers"
+                                : lesson.id === "sliding-window"
+                                  ? "window"
+                                  : "binary"
+                        }
+                      />
+                    </div>
+                    <MasteryPanel
+                      id={`foundation:${lesson.id}`}
+                      onPractice={() => setTab("practice")}
+                    />
                   </TabsContent>
                   <TabsContent value="compare">
                     <ComparisonLab

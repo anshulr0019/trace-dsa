@@ -66,6 +66,7 @@ export function CourseStudy({
     if (!ready) return;
     try {
       localStorage.setItem(storage, JSON.stringify({ answer, checks }));
+      window.dispatchEvent(new Event("trace:notebook"));
       setSaved(true);
     } catch {
       setSaved(false);

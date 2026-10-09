@@ -1,7 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import type { LearningTrack } from "@/lib/learning/references";
 import { trackProjects } from "@/lib/learning/projects";
+const ProjectSandbox = lazy(() =>
+  import("./project-sandbox").then((m) => ({ default: m.ProjectSandbox })),
+);
 import { CourseSources } from "./course-study";
 import "./course-content.css";
 export function TrackProject({
@@ -14,6 +17,7 @@ export function TrackProject({
   const p = trackProjects[track],
     storage = `trace:capstone:${track}`;
   const [step, setStep] = useState(0),
+    [open, setOpen] = useState(false),
     [notes, setNotes] = useState<string[]>(["", "", ""]),
     [checks, setChecks] = useState<number[]>([]),
     [ready, setReady] = useState(false),
@@ -47,6 +51,7 @@ export function TrackProject({
     if (!ready) return;
     try {
       localStorage.setItem(storage, JSON.stringify({ notes, checks }));
+      window.dispatchEvent(new Event("trace:notebook"));
       setStatus("Saved on this browser");
     } catch {
       setStatus(
@@ -77,7 +82,10 @@ export function TrackProject({
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   return (
-    <details className="course-clinic course-project">
+    <details
+      className="course-clinic course-project"
+      onToggle={(e) => setOpen(e.currentTarget.open)}
+    >
       <summary>Track project · {p.title}</summary>
       <section className="course-study">
         <header>
@@ -100,6 +108,21 @@ export function TrackProject({
           ))}
         </nav>
         <div className="course-study-body">
+          {open && (
+            <Suspense fallback={<p role="status">Preparing project tools…</p>}>
+              <ProjectSandbox
+                track={track}
+                labIds={p.labIds}
+                onEvidence={(text) =>
+                  setNotes((all) =>
+                    all.map((v, i) =>
+                      i === step ? (v + text).slice(-10000) : v,
+                    ),
+                  )
+                }
+              />
+            </Suspense>
+          )}
           <h3>{p.milestones[step].title}</h3>
           <p>{p.milestones[step].task}</p>
           <label className="course-response">

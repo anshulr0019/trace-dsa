@@ -1,4 +1,9 @@
 import { problemById } from "../curriculum/catalog";
+import { lessons as foundationLessons, validateInput } from "../lessons";
+import { modules } from "../computer-science/catalog";
+import { validArchitecture } from "../computer-science/architecture";
+export const notebookEntry =
+  /^(trace:note:|trace:problem:|trace:practice:|trace:study:|trace:course-study:|trace:capstone:|trace:solving-plan:|trace:mastery:|trace:manipulate:|trace:sql-draft$|trace:sql-context$|trace:foundation-drafts$|trace:foundation-inputs$|trace-computer-science-v1$|trace:curriculum:complete$|trace:language$|trace-progress-v1$)/;
 export type Note = {
   bookmarked: boolean;
   revision: boolean;
@@ -36,12 +41,7 @@ export function notebookSnapshot() {
   const data: Record<string, string> = {};
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)!;
-    if (
-      /^(trace:note:|trace:problem:|trace:practice:|trace:study:|trace:curriculum:complete$|trace:language$|trace-progress-v1$)/.test(
-        key,
-      )
-    )
-      data[key] = localStorage.getItem(key)!;
+    if (notebookEntry.test(key)) data[key] = localStorage.getItem(key)!;
   }
   return data;
 }
@@ -54,15 +54,17 @@ export function restoreNotebook(data: Record<string, string>) {
   )
     throw Error("Invalid notebook backup.");
   const entries = Object.entries(data).filter(([key]) =>
-    /^(trace:note:|trace:problem:|trace:practice:|trace:study:|trace:curriculum:complete$|trace:language$|trace-progress-v1$)/.test(
-      key,
-    ),
+    notebookEntry.test(key),
   );
   for (const [key, value] of entries) {
     if (typeof value !== "string" || value.length > 1500000)
       throw Error("Invalid notebook values.");
     const languages = ["python", "cpp", "java", "javascript"],
       levels = ["guided", "independent", "challenge"];
+    if (key.startsWith("trace:solving-plan:") || key === "trace:sql-draft") {
+      if (value.length > 6000) throw Error("Saved response is too long.");
+      continue;
+    }
     if (key === "trace:language") {
       if (!languages.includes(value)) throw Error("Invalid saved language.");
       continue;
@@ -72,7 +74,129 @@ export function restoreNotebook(data: Record<string, string>) {
       continue;
     }
     const parsed = JSON.parse(value);
-    if (key === "trace-progress-v1") {
+    const strings = (v: unknown, max: number) =>
+      Array.isArray(v) &&
+      v.every((x) => typeof x === "string" && x.length <= max);
+    const checks = (v: unknown, max: number) =>
+      Array.isArray(v) &&
+      v.every((x) => Number.isInteger(x) && x >= 0 && x < max);
+    if (key === "trace:sql-context") {
+      if (
+        !parsed ||
+        !Number.isInteger(parsed.task) ||
+        parsed.task < 0 ||
+        parsed.task > 2 ||
+        typeof parsed.support !== "boolean"
+      )
+        throw Error("Invalid SQL session.");
+    } else if (key.startsWith("trace:course-study:")) {
+      if (
+        !parsed ||
+        typeof parsed.answer !== "string" ||
+        parsed.answer.length > 6000 ||
+        !checks(parsed.checks, 3)
+      )
+        throw Error("Invalid lesson response.");
+    } else if (key.startsWith("trace:capstone:")) {
+      if (
+        !parsed ||
+        !strings(parsed.notes, 10000) ||
+        parsed.notes.length !== 3 ||
+        !checks(parsed.checks, 4)
+      )
+        throw Error("Invalid project notes.");
+    } else if (key === "trace:foundation-inputs") {
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+        throw Error("Invalid foundation inputs.");
+      for (const [id, v] of Object.entries(parsed) as [string, any][]) {
+        const lesson = foundationLessons.find((l) => l.id === id);
+        if (
+          !lesson ||
+          !v ||
+          !Array.isArray(v.nums) ||
+          !Number.isFinite(v.parameter)
+        )
+          throw Error("Invalid foundation input.");
+        validateInput(lesson, v.nums.join(","), String(v.parameter));
+      }
+    } else if (key === "trace:foundation-drafts") {
+      if (
+        !parsed ||
+        typeof parsed !== "object" ||
+        Array.isArray(parsed) ||
+        Object.values(parsed).some(
+          (v) =>
+            !v ||
+            typeof v !== "object" ||
+            Array.isArray(v) ||
+            Object.entries(v).some(
+              ([l, code]) =>
+                !languages.includes(l) ||
+                typeof code !== "string" ||
+                code.length > 60000,
+            ),
+        )
+      )
+        throw Error("Invalid foundation drafts.");
+    } else if (key === "trace-computer-science-v1") {
+      if (
+        !parsed ||
+        !strings(parsed.completed, 100) ||
+        parsed.completed.some(
+          (id: string) => !modules.some((m) => m.id === id),
+        ) ||
+        !parsed.notes ||
+        typeof parsed.notes !== "object" ||
+        Object.values(parsed.notes).some(
+          (v) => typeof v !== "string" || v.length > 10000,
+        ) ||
+        !parsed.scenarios ||
+        typeof parsed.scenarios !== "object" ||
+        Object.values(parsed.scenarios).some(
+          (v: any) =>
+            !v ||
+            !validArchitecture(v.architecture) ||
+            !v.settings ||
+            typeof v.settings !== "object",
+        ) ||
+        !parsed.drafts ||
+        typeof parsed.drafts !== "object" ||
+        Object.values(parsed.drafts).some(
+          (v: any) =>
+            !v ||
+            typeof v.text !== "string" ||
+            v.text.length > 20000 ||
+            !checks(v.checks, 4),
+        )
+      )
+        throw Error("Invalid computer science study work.");
+    } else if (key.startsWith("trace:mastery:")) {
+      if (
+        !Array.isArray(parsed) ||
+        parsed.length > 40 ||
+        parsed.some(
+          (v) =>
+            !v ||
+            !["watched", "assisted", "independent", "self-review"].includes(
+              v.kind,
+            ) ||
+            typeof v.at !== "string" ||
+            !Number.isFinite(Date.parse(v.at)) ||
+            typeof v.detail !== "string" ||
+            v.detail.length > 200,
+        )
+      )
+        throw Error("Invalid learning evidence.");
+    } else if (key.startsWith("trace:manipulate:")) {
+      if (
+        !parsed ||
+        !Array.isArray(parsed.answers) ||
+        parsed.answers.length > 20 ||
+        parsed.answers.some((x: unknown) => !Number.isInteger(x)) ||
+        !Number.isInteger(parsed.step)
+      )
+        throw Error("Invalid visual exercise.");
+    } else if (key === "trace-progress-v1") {
       const ids = [
         "two-sum",
         "binary-search",

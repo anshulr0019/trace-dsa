@@ -8,6 +8,7 @@ import {
   openProblem,
   type SharedLesson,
 } from "@/lib/product/lessons";
+import { ClassOverview } from "./class-overview";
 import { cloud, result } from "@/lib/product/cloud";
 import { useAccount, AccountPanel } from "./account";
 import {
@@ -176,6 +177,40 @@ export function TeacherWorkspace() {
         Build an example, share a lesson, and give your class something concrete
         to explain.
       </p>
+      <details className="product-card">
+        <summary>Preview a sample class overview</summary>
+        <p>
+          Example data. Sign in and configure class services to collect real
+          submissions.
+        </p>
+        <ClassOverview
+          assignments={[
+            { id: "sample-a", title: "Explain a sliding window", due_at: null },
+            { id: "sample-b", title: "Justify binary search", due_at: null },
+          ]}
+          enrollment={[
+            { user_id: "sample-1", joined_at: "2026-10-01" },
+            { user_id: "sample-2", joined_at: "2026-10-01" },
+          ]}
+          submissions={[
+            {
+              id: "sample-submission",
+              assignment_id: "sample-a",
+              user_id: "sample-1",
+              display_name: "Sample learner",
+              score: 62,
+              reflection: "I moved the window.",
+              language: "java",
+              updated_at: "2026-10-01",
+            },
+          ]}
+          onReview={() =>
+            setMessage(
+              "Sample review: ask the learner to explain why removing the outgoing value preserves a fixed-size window.",
+            )
+          }
+        />
+      </details>
       <section className="product-card">
         <h2>Create a shareable lesson</h2>
         <div className="product-form-grid">
@@ -485,6 +520,19 @@ export function TeacherWorkspace() {
                 </div>
                 {owner && (
                   <>
+                    <ClassOverview
+                      assignments={assignments}
+                      submissions={submissions}
+                      enrollment={enrollment}
+                      onReview={(id) =>
+                        document
+                          .getElementById(`submission-${id}`)
+                          ?.scrollIntoView({
+                            block: "start",
+                            behavior: "instant",
+                          })
+                      }
+                    />
                     <h3>Student reflections & progress</h3>
                     <p>
                       {members} enrolled students · {assignments.length}{" "}
@@ -504,7 +552,11 @@ export function TeacherWorkspace() {
                     </p>
                     <div className="notebook-list">
                       {submissions.map((s) => (
-                        <article key={s.id}>
+                        <article
+                          id={`submission-${s.id}`}
+                          className="journey-anchor"
+                          key={s.id}
+                        >
                           <div>
                             <h3>{s.display_name}</h3>
                             <small>

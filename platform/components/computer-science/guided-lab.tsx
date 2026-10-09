@@ -16,6 +16,8 @@ import {
   type Architecture,
 } from "@/lib/computer-science/architecture";
 import { csCourseContent } from "@/lib/learning/cs-course-content";
+import { LessonJourney } from "../learning/lesson-journey";
+import { recordLearning } from "@/lib/product/mastery";
 import { CourseStudy } from "../learning/course-study";
 import { CourseGuide } from "../learning/course-guide";
 import { EvidenceBoard } from "../learning/evidence-board";
@@ -57,6 +59,10 @@ export function GuidedLab({
   );
   const focus = usePlaybackFocus(playing, m.id);
   useEffect(() => {
+    if (playing)
+      recordLearning(`cs:${m.id}`, "watched", "Played the guided lab");
+  }, [playing, m.id]);
+  useEffect(() => {
     setFocusPanel("visual");
   }, [focus.focusRequest]);
   const current = frames[Math.min(step, frames.length - 1)];
@@ -72,6 +78,36 @@ export function GuidedLab({
   };
   return (
     <section className="cs-lab">
+      <LessonJourney
+        onStep={(stage) => {
+          setPlaying(false);
+          focus.setFocused(false);
+          if (stage === "Watch") {
+            focus.focus();
+            return;
+          }
+          const target =
+            stage === "Understand"
+              ? `cs-understand-${m.id}`
+              : stage === "Try"
+                ? `cs-try-${m.id}`
+                : stage === "Review"
+                  ? `review-cs:${m.id}`
+                  : undefined;
+          if (stage === "Solve") {
+            document
+              .querySelector(".cs-study-grid")
+              ?.scrollIntoView({ block: "start", behavior: "instant" });
+            return;
+          }
+          requestAnimationFrame(() =>
+            document
+              .getElementById(target!)
+              ?.scrollIntoView({ block: "start", behavior: "instant" }),
+          );
+        }}
+      />
+      <div id={`cs-understand-${m.id}`} className="journey-anchor" />
       <CourseGuide track={m.topic} goal={m.idea} challenge={m.challenge} />
       <CourseStudy
         key={`study:${m.id}`}
@@ -85,6 +121,7 @@ export function GuidedLab({
           })
         }
       />
+      <div id={`cs-try-${m.id}`} className="journey-anchor" />
       <div className="cs-example-list" aria-label="Worked examples">
         {examples.map((example, i) => (
           <button
@@ -330,7 +367,9 @@ export function GuidedLab({
           ? "Close experiment comparison"
           : "Compare examples side by side"}
       </button>
-      {compare && <ExperimentComparison key={`experiment:${m.id}`} module={m} />}
+      {compare && (
+        <ExperimentComparison key={`experiment:${m.id}`} module={m} />
+      )}
       <div className="cs-insights">
         <article>
           <small>THE IDEA</small>
