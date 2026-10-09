@@ -1365,7 +1365,7 @@ function ProblemStudio({
               </small>
             </div>
             <TrackProject track="dsa"/>
-            <ProblemSolvingClinic key={p.id} problem={p}/>
+            <ProblemSolvingClinic key={`clinic:${p.id}`} problem={p}/>
             <CourseGuide track="dsa" goal={p.goal} challenge={p.caveat ? `Test this constraint: ${p.caveat}` : undefined}/>
             {result&&step>0&&<details className="learning-state-review"><summary>Inspect before → after at step {step+1}</summary><EvidenceBoard changes={recordChanges(result.frames[step-1].vars,result.frames[step].vars)}/></details>}
             <ConceptIntro key={p.id} id={p.id} />

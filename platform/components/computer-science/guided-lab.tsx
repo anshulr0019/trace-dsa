@@ -74,7 +74,7 @@ export function GuidedLab({
     <section className="cs-lab">
       <CourseGuide track={m.topic} goal={m.idea} challenge={m.challenge} />
       <CourseStudy
-        key={m.id}
+        key={`study:${m.id}`}
         id={m.id}
         unit={csCourseContent[m.id]}
         track={m.topic}
@@ -330,7 +330,7 @@ export function GuidedLab({
           ? "Close experiment comparison"
           : "Compare examples side by side"}
       </button>
-      {compare && <ExperimentComparison key={m.id} module={m} />}
+      {compare && <ExperimentComparison key={`experiment:${m.id}`} module={m} />}
       <div className="cs-insights">
         <article>
           <small>THE IDEA</small>
