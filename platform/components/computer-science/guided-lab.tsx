@@ -1,6 +1,9 @@
 "use client";
+import { useTraceReducedMotion } from "@/components/experience/use-preferences";
+import { readPreferences } from "@/lib/experience/preferences";
+import { usePreferences } from "@/components/experience/use-preferences";
 import { useEffect, useMemo, useState } from "react";
-import { MotionConfig, useReducedMotion } from "motion/react";
+import { MotionConfig } from "motion/react";
 import { PLAYBACK_SPEEDS, stageTransition } from "@/lib/playback-motion";
 import { useFramePlayback } from "../curriculum/use-frame-playback";
 import { usePlaybackFocus } from "../experience/use-playback-focus";
@@ -39,8 +42,8 @@ export function GuidedLab({
 }) {
   const [journey, setJourney] = useState<JourneyStep>("Watch");
   const [compare, setCompare] = useState(false);
-  const [speed, setSpeed] = useState(1);
-  const reduced = useReducedMotion();
+  const [speed, setSpeed] = useState(() => readPreferences().speed);
+  const reduced = useTraceReducedMotion();
   const [focusPanel, setFocusPanel] = useState("visual");
   const examples = useMemo(() => examplesFor(m), [m]);
   const [exampleNotice, setExampleNotice] = useState("");
@@ -54,6 +57,8 @@ export function GuidedLab({
     [scenario.architecture],
   );
   const frames = architectural ? architecture.frames : lab.frames;
+  const playbackPreferences = usePreferences();
+  useEffect(() => { setSpeed(playbackPreferences.speed); }, [playbackPreferences.speed]);
   const { step, setStep, playing, setPlaying } = useFramePlayback(
     frames.length,
     speed,
@@ -163,7 +168,7 @@ export function GuidedLab({
             )}
             <MotionConfig
               transition={stageTransition(speed, !!reduced)}
-              reducedMotion="user"
+              reducedMotion={readPreferences().reducedMotion === "reduce" ? "always" : "user"}
             >
               <div className={`cs-lab-grid ${architectural ? "cs-wide" : ""}`}>
                 <div className="cs-stage">

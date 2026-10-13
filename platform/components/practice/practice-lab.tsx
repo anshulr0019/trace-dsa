@@ -1,6 +1,8 @@
 "use client";
+import { useTraceReducedMotion } from "@/components/experience/use-preferences";
+import { usePreferences } from "../experience/use-preferences";
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowRight,
   Check,
@@ -130,7 +132,7 @@ export function PracticeLab({
     } catch {}
   }
   const progress = confidence(attempts),
-    reduced = useReducedMotion();
+    reduced = useTraceReducedMotion();
   function record(a: Attempt) {
     if (a.total > 0 && a.passed === a.total && a.level !== "guided")
       recordLearning(
@@ -320,6 +322,19 @@ function PracticeSession({
   onAttempt: (a: Attempt) => void;
   onNextLevel: () => void;
 }) {
+  const preferences = usePreferences();
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    setElapsed(0);
+  }, [p.id, language, level]);
+  useEffect(() => {
+    if (!preferences.practiceTimer) return;
+    const id = setInterval(() => {
+      if (!document.hidden && !document.querySelector('[role="dialog"]'))
+        setElapsed((n) => n + 1);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [preferences.practiceTimer]);
   const cases = practiceCases(p),
     guide = lessons[p.id],
     key = `trace:practice:draft:${p.id}:${language}:${level}`;
@@ -351,7 +366,7 @@ function PracticeSession({
     sequence = useRef(0),
     inFlight = useRef(false);
   const selected = cases[draft.caseIndex] ?? cases[0],
-    reduced = useReducedMotion();
+    reduced = useTraceReducedMotion();
   useEffect(() => {
     try {
       const v = JSON.parse(localStorage.getItem(key) ?? "null");
@@ -589,6 +604,7 @@ function PracticeSession({
           setReview(v.review);
         } else {
           setProposal(v);
+          setDraft((d) => ({ ...d, assisted: true }));
           setGrade(v.originalGrade);
           setReview(v.review ?? null);
         }
@@ -629,6 +645,12 @@ function PracticeSession({
                 ? "Assisted practice"
                 : "Independent attempt"}
           </span>
+          {preferences.practiceTimer && (
+            <span className="practice-timer" aria-label="Elapsed practice time">
+              {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}{" "}
+              elapsed
+            </span>
+          )}
           <span className="practice-autosave">
             {ready ? "Draft saved in this browser" : "Loading your draft…"}
           </span>
@@ -881,6 +903,21 @@ function PracticeSession({
           )}
         </section>
       </div>
+      {level !== "guided" &&
+        !grade &&
+        preferences.solutionReveal === "on-demand" && (
+          <div className="practice-actions">
+            <button
+              disabled={!!busy || !ready || !capabilities.execution}
+              onClick={() => void request("optimize")}
+            >
+              Compare a proven approach
+            </button>
+            <small>
+              Revealing the reference gives you support for this practice.
+            </small>
+          </div>
+        )}
       {busy && (
         <div className="practice-busy" role="status">
           <span className="practice-spinner" />

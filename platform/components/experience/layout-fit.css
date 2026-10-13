@@ -1,0 +1,304 @@
+/* Drawings fit their available panel; content determines the panel height. */
+.fit-content {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+.fit-content-inner {
+  width: max-content;
+  max-width: none;
+  flex: none;
+}
+.foundation-fit {
+  padding: 12px 16px 0;
+}
+.viz-matrix-fit {
+  padding: 4px 0 10px;
+}
+.roadmap-foundation .responsive-array,
+.responsive-array {
+  padding: 8px 6px 0;
+  overflow: visible;
+  min-width: 0;
+}
+.responsive-array .motion-canvas {
+  min-width: 0;
+  max-width: 100%;
+}
+.responsive-array .moving-pointer {
+  font-size: 10px;
+}
+.responsive-array .motion-tile > span {
+  font-size: 16px;
+  max-width: 100%;
+}
+.responsive-array .motion-tiles {
+  height: auto;
+}
+.responsive-array .roadmap-cell-cue {
+  top: 80px;
+}
+.roadmap-array .stage-topline {
+  padding: 8px 6px;
+}
+.roadmap-foundation #visual-workbench .resizable-workbench,
+.roadmap-foundation #visual-workbench.playback-focused .resizable-workbench {
+  height: auto !important;
+  min-height: 0;
+  align-items: stretch;
+}
+.roadmap-foundation #visual-workbench .trace-visual-panel,
+.roadmap-foundation #visual-workbench.playback-focused .trace-visual-panel {
+  height: auto;
+  min-height: 0;
+}
+.roadmap-foundation #visual-workbench .trace-visual-body,
+.roadmap-foundation #visual-workbench.playback-focused .trace-visual-body {
+  flex: 1 0 auto;
+  min-height: 0;
+  overflow: visible;
+}
+.roadmap-foundation #visual-workbench .trace-visual-body > .live-scene,
+.roadmap-foundation
+  #visual-workbench.playback-focused
+  .trace-visual-body
+  > .live-scene,
+.practice-trace > .live-scene {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+.roadmap-foundation #visual-workbench .trace-code-panel {
+  height: 100%;
+  min-height: 420px;
+}
+.roadmap-foundation #visual-workbench .trace-code-panel > .curriculum-editor {
+  flex: 1;
+  height: 0;
+  min-height: 260px;
+}
+.roadmap-foundation #visual-workbench .step-story {
+  flex: none;
+  min-height: 0;
+}
+.roadmap-foundation #visual-workbench .scalar-state {
+  max-height: none;
+  overflow: visible;
+  flex-wrap: wrap;
+}
+.concept-stage .viz-dp-strip {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+.concept-stage .viz-dp-card {
+  flex: 1 1 82px;
+}
+.concept-stage .viz-bars {
+  gap: 5px;
+}
+.concept-stage .viz-bars > button {
+  min-width: 0;
+}
+.concept-stage .viz-bars > button > span {
+  overflow-wrap: anywhere;
+}
+.roadmap-foundation .network-scroll svg {
+  min-width: 0 !important;
+  width: 100%;
+}
+.stage-readout,
+.scalar-state > div,
+.viz-stats > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.stage-readout {
+  flex-wrap: wrap;
+  height: auto;
+}
+/* Keep all six foundation links visible on normal laptop heights. */
+@media (min-width: 768px) and (max-height: 950px) {
+  .studio-sidebar .brand {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .studio-sidebar .side-nav {
+    padding: 0 12px 8px;
+  }
+  .studio-sidebar .side-nav [data-sidebar="menu-button"] {
+    height: 34px;
+    padding: 6px 10px;
+  }
+  .studio-sidebar .sidebar-section-label {
+    padding: 12px 10px 5px;
+  }
+  .studio-sidebar .sidebar-resources {
+    margin-top: 4px;
+  }
+  .studio-sidebar .sidebar-resources summary {
+    padding: 7px 10px;
+  }
+  .studio-sidebar .side-section {
+    padding: 12px;
+  }
+  .studio-sidebar .side-section h3 {
+    margin-top: 6px;
+  }
+  .studio-sidebar .side-progress {
+    margin: 8px 0 10px;
+  }
+  .studio-sidebar .lesson-menu {
+    gap: 2px !important;
+  }
+  .studio-sidebar .lesson-menu .lesson-nav {
+    height: 32px !important;
+    padding: 5px 8px !important;
+  }
+  .studio-sidebar [data-sidebar="footer"] {
+    padding: 10px 16px;
+  }
+}
+@media (max-width: 1000px) {
+  .roadmap-foundation #visual-workbench .trace-code-panel {
+    height: auto;
+  }
+  .roadmap-foundation #visual-workbench .trace-code-panel > .curriculum-editor {
+    height: 360px;
+    flex: none;
+  }
+  .stage-topline {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+.main-shell .live-scene {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+@media (min-width: 768px) and (max-height: 950px) {
+  .studio-sidebar .side-nav [data-sidebar="menu-button"],
+  .studio-sidebar .lesson-menu .lesson-nav {
+    min-height: 0 !important;
+  }
+}
+.roadmap-foundation
+  #visual-workbench
+  .resizable-workbench
+  > [data-slot="resizable-panel"] {
+  display: flex;
+  flex-direction: column;
+}
+.roadmap-foundation #visual-workbench .resizable-workbench .trace-visual-panel,
+.roadmap-foundation #visual-workbench .resizable-workbench .trace-code-panel {
+  flex: 1;
+  width: 100%;
+}
+.roadmap-foundation #visual-workbench .trace-code-panel > .readable-code {
+  height: 0;
+  flex: 1;
+  min-height: 240px;
+}
+.trace-code-panel > .readable-code .readable-code-line {
+  min-width: 0;
+}
+.trace-code-panel > .readable-code .readable-code-line code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+@media (max-width: 1000px) {
+  .roadmap-foundation #visual-workbench .trace-code-panel > .readable-code {
+    height: 360px;
+    flex: none;
+  }
+}
+.roadmap-foundation
+  #visual-workbench
+  .resizable-workbench
+  > [data-slot="resizable-panel"]
+  > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: visible !important;
+}
+.roadmap-foundation #visual-workbench .resizable-workbench .trace-code-panel {
+  height: auto;
+}
+@media (min-width: 1001px) {
+  .roadmap-foundation #visual-workbench .trace-code-panel > .readable-code,
+  .roadmap-foundation #visual-workbench .trace-code-panel > .curriculum-editor {
+    flex: 1 1 240px;
+  }
+}
+/* The same content-first rule applies to foundations and computer-science labs. */
+.foundation-playback-surface .resizable-workbench,
+.foundation-playback-surface.is-playback-focused .resizable-workbench {
+  height: auto !important;
+  min-height: 0;
+}
+.foundation-playback-surface
+  .resizable-workbench
+  > [data-slot="resizable-panel"]
+  > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: visible !important;
+}
+.foundation-playback-surface .visual-panel,
+.foundation-playback-surface.is-playback-focused .visual-panel {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+.foundation-playback-surface .motion-canvas.tall-canvas {
+  min-height: 235px;
+}
+.foundation-playback-surface .code-panel {
+  flex: 1;
+  min-height: 0;
+}
+.foundation-playback-surface .code-panel .readable-code {
+  flex: 1 1 240px;
+  height: 0;
+  min-height: 240px;
+}
+.cs-hub .cs-playback-surface.is-playback-focused .cs-lab-grid {
+  height: auto;
+}
+.cs-hub .cs-playback-surface .cs-scene,
+.cs-hub .cs-playback-surface.is-playback-focused .cs-scene {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+@media (min-width: 768px) and (max-height: 800px) {
+  .studio-sidebar .side-nav [data-sidebar="menu-button"] {
+    height: 29px;
+  }
+  .studio-sidebar .sidebar-section-label {
+    padding-top: 8px;
+  }
+  .studio-sidebar .side-section {
+    padding: 9px 12px;
+  }
+  .studio-sidebar .side-progress {
+    margin: 6px 0;
+  }
+  .studio-sidebar .lesson-menu .lesson-nav {
+    height: 28px !important;
+  }
+  .studio-sidebar .brand {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .studio-sidebar [data-sidebar="footer"] {
+    padding: 8px 12px;
+  }
+}

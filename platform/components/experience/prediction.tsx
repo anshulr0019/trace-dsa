@@ -1,6 +1,7 @@
 "use client";
+import { useTraceReducedMotion } from "@/components/experience/use-preferences";
 import { useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Brain, ArrowRight, Check, X } from "lucide-react";
 import type { Frame } from "@/lib/trace/interpreter";
 import type { Lesson } from "@/lib/lessons";
@@ -30,7 +31,7 @@ export function predictionAt(frames:Frame[], step:number, lesson:Lesson):Predict
   return null;
 }
 export function PredictionCard({question,onContinue}: {question:Prediction;onContinue:()=>void}) {
-  const [choice,setChoice]=useState<number|null>(null);const reduced=useReducedMotion();
+  const [choice,setChoice]=useState<number|null>(null);const reduced=useTraceReducedMotion();
   return <motion.div className="prediction-card" role="region" aria-label="Prediction checkpoint" initial={{opacity:0,y:reduced?0:10}} animate={{opacity:1,y:0}}>
     <div className="prediction-label"><Brain size={17}/> YOUR TURN <span>Playback paused</span></div>
     <h3>{question.prompt}</h3><div className="prediction-options">{question.options.map((o,i)=><button key={o} disabled={choice!==null} className={choice===null?"":i===question.answer?"correct":choice===i?"incorrect":""} onClick={()=>setChoice(i)}>{o}{choice!==null&&i===question.answer&&<Check size={15}/>}</button>)}</div>

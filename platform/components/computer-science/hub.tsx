@@ -1,4 +1,5 @@
 "use client";
+import { PatternArt } from "../experience/pattern-art";
 import { useEffect, useState } from "react";
 import {
   topics,
@@ -218,6 +219,18 @@ export default function ComputerScience() {
                   onClick={() => navigate(t.id)}
                 >
                   <small>{t.symbol} / EXPLORE</small>
+                  <PatternArt
+                    kind={
+                      t.id === "databases"
+                        ? "grid"
+                        : t.id === "system-design" || t.id === "networks"
+                          ? "systems"
+                          : t.id === "oop"
+                            ? "tree"
+                            : "array"
+                    }
+                    variant={Number(t.symbol)}
+                  />
                   <h2>{t.title}</h2>
                   <p>{t.subtitle}</p>
                   <footer>

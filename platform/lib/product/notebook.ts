@@ -1,9 +1,14 @@
+import { validLibraryDraft } from "../languages/storage";
+import {
+  clearSessionPreferences,
+  validPreferences,
+} from "../experience/preferences";
 import { problemById } from "../curriculum/catalog";
 import { lessons as foundationLessons, validateInput } from "../lessons";
 import { modules } from "../computer-science/catalog";
 import { validArchitecture } from "../computer-science/architecture";
 export const notebookEntry =
-  /^(trace:note:|trace:problem:|trace:practice:|trace:study:|trace:course-study:|trace:capstone:|trace:solving-plan:|trace:mastery:|trace:manipulate:|trace:sql-draft$|trace:sql-context$|trace:foundation-drafts$|trace:foundation-inputs$|trace-computer-science-v1$|trace:curriculum:complete$|trace:language$|trace-progress-v1$)/;
+  /^(trace:language-study:|trace:note:|trace:problem:|trace:practice:|trace:study:|trace:course-study:|trace:capstone:|trace:solving-plan:|trace:mastery:|trace:manipulate:|trace:sql-draft$|trace:sql-context$|trace:foundation-drafts$|trace:foundation-inputs$|trace-computer-science-v1$|trace:curriculum:complete$|trace:language$|trace:preferences$|trace:theme$|trace-progress-v1$)/;
 export type Note = {
   bookmarked: boolean;
   revision: boolean;
@@ -45,6 +50,30 @@ export function notebookSnapshot() {
   }
   return data;
 }
+export function clearLearningProgress() {
+  const keys = Object.keys(notebookSnapshot()).filter((key) =>
+    /^(trace-progress-v1$|trace:mastery:|trace:curriculum:complete$|trace:practice:attempts:)/.test(
+      key,
+    ),
+  );
+  const csKey = "trace-computer-science-v1";
+  const saved = localStorage.getItem(csKey);
+  let clearedStudy: string | undefined;
+  if (saved) {
+    // Preserve notes, architecture scenarios, and drafts in this combined record.
+    try {
+      const study = JSON.parse(saved);
+      if (study && typeof study === "object" && !Array.isArray(study))
+        clearedStudy = JSON.stringify({ ...study, completed: [] });
+    } catch {
+      // An unreadable record may still contain saved work; leave it intact.
+    }
+  }
+  if (clearedStudy) localStorage.setItem(csKey, clearedStudy);
+  keys.forEach((key) => localStorage.removeItem(key));
+  window.dispatchEvent(new Event("trace:restore"));
+  window.dispatchEvent(new Event("trace:notebook"));
+}
 export function restoreNotebook(data: Record<string, string>) {
   if (
     !data ||
@@ -65,6 +94,16 @@ export function restoreNotebook(data: Record<string, string>) {
       if (value.length > 6000) throw Error("Saved response is too long.");
       continue;
     }
+    if (key === "trace:preferences") {
+      if (!validPreferences(JSON.parse(value)))
+        throw Error("Invalid saved preferences.");
+      continue;
+    }
+    if (key === "trace:theme") {
+      if (!["dark", "light", "system"].includes(value))
+        throw Error("Invalid saved theme.");
+      continue;
+    }
     if (key === "trace:language") {
       if (!languages.includes(value)) throw Error("Invalid saved language.");
       continue;
@@ -74,6 +113,11 @@ export function restoreNotebook(data: Record<string, string>) {
       continue;
     }
     const parsed = JSON.parse(value);
+    if (key.startsWith("trace:language-study:")) {
+      if (!validLibraryDraft(key.slice("trace:language-study:".length), parsed))
+        throw Error("Invalid saved language-library draft.");
+      continue;
+    }
     const strings = (v: unknown, max: number) =>
       Array.isArray(v) &&
       v.every((x) => typeof x === "string" && x.length <= max);
@@ -349,6 +393,7 @@ export function restoreNotebook(data: Record<string, string>) {
     }
     throw Error("Not enough browser storage to restore this notebook.");
   }
+  clearSessionPreferences();
   window.dispatchEvent(new Event("trace:notebook"));
   window.dispatchEvent(new Event("trace:restore"));
 }

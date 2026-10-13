@@ -1,4 +1,7 @@
-"use client";
+import { LibraryHelp } from "../languages/library-help";
+("use client");
+import { readPreferences } from "@/lib/experience/preferences";
+import { usePreferences } from "@/components/experience/use-preferences";
 import { usePlaybackFocus } from "../experience/use-playback-focus";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
@@ -10,6 +13,8 @@ import {
   Pause,
   RotateCcw,
   Search,
+  List,
+  Route,
   SkipBack,
   SkipForward,
   Terminal,
@@ -55,6 +60,13 @@ import { readSharedLesson, type SharedLesson } from "@/lib/product/lessons";
 import { Workbench } from "../experience/workbench";
 import { RoadmapDock } from "./roadmap-dock";
 import { RoadmapInsights } from "./roadmap-insights";
+import {
+  NextPattern,
+  RoadmapJourney,
+  RoadmapMilestones,
+  roadmapStatus,
+} from "./roadmap-journey";
+import { PatternArt } from "../experience/pattern-art";
 import {
   LessonJourney,
   MasteryPanel,
@@ -133,9 +145,11 @@ function ProblemStudio({
   const [codeRequest, setCodeRequest] = useState(0);
   const published = usePublishedLesson(p.id);
   const [shared, setShared] = useState<SharedLesson | null>(null),
-    [beginner, setBeginner] = useState(false),
+    [beginner, setBeginner] = useState(() => readPreferences().beginner),
     [presenting, setPresenting] = useState(false),
-    [predict, setPredict] = useState(false),
+    [predict, setPredict] = useState(
+      () => readPreferences().predict || readPreferences().pauseAtDecisions,
+    ),
     [question, setQuestion] = useState<ReturnType<typeof nextPrediction>>(null);
   const [breakpoints, setBreakpoints] = useState<number[]>([]);
   const [watches, setWatches] = useState<string[]>([]);
@@ -158,14 +172,29 @@ function ProblemStudio({
     [code, setCode] = useState(sourceFor(p, "python")),
     [input, setInput] = useState(formatInput(p.input));
   const [result, setResult] = useState<Run | null>(null),
-    [speed, setSpeed] = useState(1),
+    [speed, setSpeed] = useState(() => readPreferences().speed),
     [running, setRunning] = useState(false),
     [error, setError] = useState("");
   const [runtimeStage, setRuntimeStage] = useState("loading");
+  const playbackPreferences = usePreferences();
+  useEffect(() => {
+    setSpeed(playbackPreferences.speed);
+  }, [playbackPreferences.speed]);
   const { step, setStep, playing, setPlaying } = useFramePlayback(
     result?.frames.length ?? 0,
     speed,
   );
+  useEffect(() => {
+    setBeginner(playbackPreferences.beginner);
+    if (playbackPreferences.beginner) setSpeed(0.5);
+  }, [playbackPreferences.beginner]);
+  useEffect(() => {
+    setPredict(
+      playbackPreferences.predict || playbackPreferences.pauseAtDecisions,
+    );
+    setQuestion(null);
+    predicted.current.clear();
+  }, [playbackPreferences.predict, playbackPreferences.pauseAtDecisions]);
   const {
     ref: playbackRef,
     focused,
@@ -273,7 +302,7 @@ function ProblemStudio({
     controller = useRef<AbortController | null>(null);
   useEffect(() => {
     try {
-      const preferred = localStorage.getItem("trace:language");
+      const preferred = readPreferences().language;
       if (languages.some((l) => l.id === preferred)) {
         setLanguage(preferred as Language);
         setCode(sourceFor(p, preferred as Language));
@@ -447,7 +476,7 @@ function ProblemStudio({
     }
     if (autoplay) {
       setJourney("Watch");
-      focusPlayback();
+      if (playbackPreferences.autoFocus) focusPlayback();
     }
     predicted.current.clear();
     lastBreakpoint.current = -1;
@@ -504,11 +533,11 @@ function ProblemStudio({
     if (question) {
       setQuestion(null);
       setStep((n) => n + 1);
-      focusPlayback();
+      if (playbackPreferences.autoFocus) focusPlayback();
       setPlaying(true);
       return;
     }
-    focusPlayback();
+    if (playbackPreferences.autoFocus) focusPlayback();
     if (step === (result?.frames.length ?? 0) - 1) {
       lastBreakpoint.current = -1;
       setStep(0);
@@ -756,6 +785,7 @@ function ProblemStudio({
               {mode === "guided" ? "Guided solution" : "Your code"} ·{" "}
               {languages.find((l) => l.id === language)?.label}
             </span>
+            <LibraryHelp language={language} />
             <a href="#lesson-tools">Options & tools ↓</a>
           </div>
           <div
@@ -770,6 +800,7 @@ function ProblemStudio({
                   onClick={() => {
                     setPlaying(false);
                     setFocused(false);
+                    window.dispatchEvent(new Event("trace:exit-focus"));
                   }}
                 >
                   Full layout
@@ -1639,6 +1670,8 @@ export function Curriculum({
     [tier, setTier] = useState(0),
     [stage, setStage] = useState("all"),
     [completed, setCompleted] = useState<string[]>([]);
+  const [roadmapView, setRoadmapView] = useState<"journey" | "list">("journey");
+  const [statusFilter, setStatusFilter] = useState("all");
   useEffect(() => {
     const sync = () => {
       const id = new URLSearchParams(location.search).get("problem");
@@ -1691,6 +1724,7 @@ export function Curriculum({
     (p) =>
       (!tier || p.tier === tier) &&
       (stage === "all" || p.stage === stage) &&
+      (statusFilter === "all" || roadmapStatus(p) === statusFilter) &&
       `${p.title} ${patterns[p.group - 1]} ${p.scene}`
         .toLowerCase()
         .includes(query.toLowerCase()),
@@ -1721,6 +1755,8 @@ export function Curriculum({
           </div>
         </div>
       </div>
+      <NextPattern onSelect={select} />
+      <RoadmapMilestones tier={tier} onTier={setTier} />
       <div className="curriculum-search">
         <label>
           <Search size={16} />
@@ -1742,78 +1778,106 @@ export function Curriculum({
           ))}
         </select>
       </div>
-      <div className="tier-filter">
-        <button
-          className={tier === 0 ? "selected" : ""}
-          onClick={() => setTier(0)}
+      <div className="roadmap-view-controls">
+        <div
+          className="roadmap-view-toggle"
+          role="group"
+          aria-label="Roadmap view"
         >
-          All tiers <span>100</span>
-        </button>
-        {tiers.map((t, i) => (
           <button
-            title={t}
-            key={t}
-            className={tier === i + 1 ? "selected" : ""}
-            onClick={() => setTier(i + 1)}
+            aria-pressed={roadmapView === "journey"}
+            onClick={() => setRoadmapView("journey")}
           >
-            Tier {i + 1}
-            <span>{[28, 24, 20, 28][i]}</span>
+            <Route size={14} /> Guided journey
           </button>
-        ))}
+          <button
+            aria-pressed={roadmapView === "list"}
+            onClick={() => setRoadmapView("list")}
+          >
+            <List size={14} /> All problems
+          </button>
+        </div>
+        <label>
+          Show progress
+          <select
+            aria-label="Filter by learning progress"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All learning states</option>
+            {[
+              "Not started",
+              "Explored",
+              "Practised",
+              "Solved independently",
+              "Due for revision",
+            ].map((value) => (
+              <option key={value}>{value}</option>
+            ))}
+          </select>
+        </label>
       </div>
+      {!!tier && (
+        <button className="roadmap-show-all" onClick={() => setTier(0)}>
+          Show all milestones <ArrowRight size={12} />
+        </button>
+      )}
       <p className="curriculum-summary">
         {filtered.length} problems · Concept → Direct → Disguised → Edge-case
         trap · Existing lessons are linked
       </p>
-      {tiers.map((t, i) => {
-        const items = filtered.filter((p) => p.tier === i + 1);
-        if (!items.length) return null;
-        return (
-          <div key={t} className="curriculum-tier">
-            <h2>
-              <span>0{i + 1}</span>
-              {t}
-            </h2>
-            {patterns.map((pattern, g) => {
-              const group = items.filter((p) => p.group === g + 1);
-              if (!group.length) return null;
-              return (
-                <div className="pattern-group" key={pattern}>
-                  <div className="pattern-label">
-                    <span>{String(g + 1).padStart(2, "0")}</span>
-                    <h3>{pattern}</h3>
+      {roadmapView === "journey" ? (
+        <RoadmapJourney filtered={filtered} onSelect={select} />
+      ) : (
+        tiers.map((t, i) => {
+          const items = filtered.filter((p) => p.tier === i + 1);
+          if (!items.length) return null;
+          return (
+            <div key={t} className="curriculum-tier">
+              <h2>
+                <span>0{i + 1}</span>
+                {t}
+              </h2>
+              {patterns.map((pattern, g) => {
+                const group = items.filter((p) => p.group === g + 1);
+                if (!group.length) return null;
+                return (
+                  <div className="pattern-group" key={pattern}>
+                    <div className="pattern-label">
+                      <span>{String(g + 1).padStart(2, "0")}</span>
+                      <h3>{pattern}</h3>
+                    </div>
+                    <div className="problem-grid">
+                      {group.map((p) => (
+                        <button
+                          key={p.id}
+                          onClick={() => select(p.id)}
+                          className={`problem-card ${completed.includes(p.id) ? "done" : ""}`}
+                        >
+                          <span className="problem-stage">
+                            {p.stage}
+                            {completed.includes(p.id) ? (
+                              <Check size={13} />
+                            ) : (
+                              <ArrowRight size={13} />
+                            )}
+                          </span>
+                          <PatternArt kind={p.scene} variant={p.group} />
+                          <strong>{p.title}</strong>
+                          <span className="problem-card-bottom">
+                            {roadmapStatus(p)}
+                            <span>Explore ↗</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="problem-grid">
-                    {group.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => select(p.id)}
-                        className={`problem-card ${completed.includes(p.id) ? "done" : ""}`}
-                      >
-                        <span className="problem-stage">
-                          {p.stage}
-                          {completed.includes(p.id) ? (
-                            <Check size={13} />
-                          ) : (
-                            <ArrowRight size={13} />
-                          )}
-                        </span>
-                        <strong>{p.title}</strong>
-                        <span className="problem-card-bottom">
-                          {p.existing
-                            ? "Existing lesson linked"
-                            : learningStatus(learningEvidence(p.id))}
-                          <span>Explore ↗</span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
+                );
+              })}
+            </div>
+          );
+        })
+      )}
       {!filtered.length && (
         <p className="trace-empty">
           No matching problems. Try a broader search or another tier.

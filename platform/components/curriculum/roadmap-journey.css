@@ -1,0 +1,447 @@
+.curriculum .curriculum-heading h1 {
+  font-weight: 500;
+  letter-spacing: -0.045em;
+}
+.curriculum .curriculum-heading p {
+  color: var(--trace-color-a7b9ac, #a7b9ac);
+}
+.roadmap-next {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 25px;
+  border: 1px solid var(--trace-color-c3f59325, #c3f59325);
+  border-radius: 13px;
+  margin: 28px 0 24px;
+  background: linear-gradient(110deg, var(--trace-color-1d2b23, #1d2b23), var(--trace-color-131e22, #131e22));
+}
+.roadmap-next-symbol {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: var(--trace-color-c3f5930c, #c3f5930c);
+  border: 1px solid var(--trace-color-c3f59320, #c3f59320);
+  border-radius: 12px;
+  color: var(--trace-color-c3f593, #c3f593);
+}
+.roadmap-next > div:nth-child(2) {
+  max-width: 62ch;
+}
+.roadmap-next h2 {
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  margin: 8px 0;
+}
+.roadmap-next p {
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--trace-color-9eb4a4, #9eb4a4);
+}
+.roadmap-next > button {
+  margin-left: auto;
+  flex: none;
+  font-size: 11px;
+}
+.roadmap-milestones {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.roadmap-milestones > button {
+  text-align: left;
+  display: flex;
+  gap: 11px;
+  align-items: start;
+  padding: 15px;
+  border: 1px solid var(--trace-color-ffffff12, #ffffff12);
+  background: var(--trace-color-141e21, #141e21);
+  border-radius: 10px;
+}
+.roadmap-milestones > button[aria-pressed="true"] {
+  border-color: var(--trace-color-c3f59345, #c3f59345);
+  background: var(--trace-color-c3f5930a, #c3f5930a);
+}
+.milestone-number {
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  flex: none;
+  font: 9px var(--font-mono);
+  color: var(--trace-color-acd291, #acd291);
+  border: 1px solid var(--trace-color-c3f59330, #c3f59330);
+  border-radius: 6px;
+}
+.roadmap-milestones > button > span:last-child {
+  width: 100%;
+  min-width: 0;
+}
+.roadmap-milestones strong {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--trace-color-ccdbcf, #ccdbcf);
+  line-height: 1.5;
+  min-height: 32px;
+}
+.roadmap-milestones small {
+  display: block;
+  color: var(--trace-color-869f8f, #869f8f);
+  font-size: 9px;
+  margin: 7px 0 10px;
+}
+.milestone-track {
+  display: block;
+  height: 3px;
+  background: var(--trace-color-ffffff0c, #ffffff0c);
+  border-radius: 3px;
+}
+.milestone-track i {
+  display: block;
+  height: 100%;
+  background: var(--trace-color-bfe597, #bfe597);
+  border-radius: 3px;
+}
+.roadmap-view-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+.roadmap-view-toggle {
+  display: flex;
+  border: 1px solid var(--trace-color-ffffff14, #ffffff14);
+  border-radius: 8px;
+  padding: 4px;
+  background: var(--trace-color-11191c, #11191c);
+}
+.roadmap-view-toggle > button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--trace-color-8ea696, #8ea696);
+  font-size: 11px;
+  padding: 7px 11px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+}
+.roadmap-view-toggle > button[aria-pressed="true"] {
+  color: var(--trace-color-d9ebcd, #d9ebcd);
+  background: var(--trace-color-c3f59310, #c3f59310);
+}
+.roadmap-view-controls label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--trace-color-8ca48f, #8ca48f);
+  font-size: 10px;
+}
+.roadmap-view-controls select {
+  background: var(--trace-color-162024, #162024);
+  color: var(--trace-color-cbdace, #cbdace);
+  border: 1px solid var(--trace-color-ffffff18, #ffffff18);
+  padding: 8px;
+  border-radius: 7px;
+  font-size: 11px;
+}
+.curriculum .curriculum-search input {
+  color: var(--trace-color-dce8df, #dce8df);
+}
+.curriculum .curriculum-search input::placeholder {
+  color: var(--trace-color-7e9488, #7e9488);
+}
+.curriculum .curriculum-search label,
+.curriculum .curriculum-search > select {
+  background: var(--trace-color-151f23, #151f23);
+  border-color: var(--trace-color-ffffff18, #ffffff18);
+}
+.curriculum .curriculum-summary {
+  color: var(--trace-color-8fa796, #8fa796);
+  margin-bottom: 24px;
+}
+.roadmap-show-all {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  margin: 0 0 15px;
+  border: 0;
+  background: transparent;
+  color: var(--trace-color-c0dfa6, #c0dfa6);
+  font-size: 11px;
+}
+.journey-tier {
+  margin: 34px 0 44px;
+}
+.journey-tier-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.journey-tier-title > span {
+  font: 14px var(--font-mono);
+  color: var(--trace-color-bce198, #bce198);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--trace-color-ffffff18, #ffffff18);
+  border-radius: 8px;
+}
+.journey-tier-title h2 {
+  font-size: 23px;
+  letter-spacing: -0.035em;
+  font-weight: 500;
+  margin-top: 4px;
+}
+.journey-tier-title .premium-eyebrow {
+  font-size: 8px;
+  color: var(--trace-color-7b9684, #7b9684);
+}
+.journey-tier-title > svg {
+  margin-left: auto;
+  color: var(--trace-color-617e68, #617e68);
+}
+.journey-pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+}
+.journey-pattern {
+  border: 1px solid var(--trace-color-ffffff13, #ffffff13);
+  border-radius: 14px;
+  padding: 22px;
+  background: var(--trace-color-141e22, #141e22);
+  transition: border-color 0.2s;
+}
+.journey-pattern:hover {
+  border-color: var(--trace-color-c3f59335, #c3f59335);
+}
+.journey-pattern-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.journey-pattern-heading .premium-eyebrow {
+  font-size: 8px;
+  color: var(--trace-color-819e88, #819e88);
+}
+.journey-pattern-heading > span:last-child {
+  font: 9px var(--font-mono);
+  color: var(--trace-color-8ca584, #8ca584);
+}
+.journey-pattern-intro {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+  min-height: 130px;
+}
+.journey-pattern-intro > div {
+  flex: 1;
+  min-width: 0;
+}
+.journey-pattern-intro h3 {
+  font-size: 23px;
+  letter-spacing: -0.04em;
+  font-weight: 500;
+}
+.journey-pattern-intro p {
+  color: var(--trace-color-9bb0a1, #9bb0a1);
+  font-size: 11px;
+  line-height: 1.8;
+  margin-top: 9px;
+  max-width: 42ch;
+}
+.journey-pattern-intro .pattern-art {
+  width: 130px;
+  height: 90px;
+  flex: none;
+}
+.journey-pattern-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  padding-top: 15px;
+  border-top: 1px solid var(--trace-color-ffffff0d, #ffffff0d);
+}
+.journey-pattern-steps button {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 7px;
+  position: relative;
+  text-align: left;
+  color: var(--trace-color-b5c8b8, #b5c8b8);
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 8px 4px;
+  border-radius: 5px;
+}
+.journey-pattern-steps button:hover {
+  background: var(--trace-color-c3f59306, #c3f59306);
+  border-color: var(--trace-color-c3f59325, #c3f59325);
+}
+.journey-pattern-steps button > span {
+  color: var(--trace-color-506b5a, #506b5a);
+  height: 19px;
+}
+.journey-pattern-steps button > span.is-started {
+  color: var(--trace-color-9ac482, #9ac482);
+}
+.journey-pattern-steps button > span.is-solved {
+  color: var(--trace-color-c3f593, #c3f593);
+}
+.journey-pattern-steps strong {
+  font-size: 9px;
+  font-weight: 500;
+}
+.journey-pattern-steps small {
+  font-size: 8px;
+  color: var(--trace-color-7c9985, #7c9985);
+}
+.journey-pattern-start {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0 0;
+  margin-top: 12px;
+  color: var(--trace-color-b9d99f, #b9d99f);
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+}
+.journey-pattern-start:hover {
+  color: var(--trace-color-d3f6b3, #d3f6b3);
+}
+.curriculum .problem-card {
+  background: var(--trace-color-151f22, #151f22);
+  border-color: var(--trace-color-ffffff14, #ffffff14);
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+.curriculum .problem-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--trace-color-c3f59355, #c3f59355);
+}
+.curriculum .problem-card .pattern-art {
+  height: 65px;
+}
+.curriculum .problem-card strong {
+  font-size: 14px;
+}
+.curriculum .problem-card-bottom {
+  color: var(--trace-color-8da68f, #8da68f);
+}
+@media (max-width: 1200px) {
+  .roadmap-milestones strong {
+    font-size: 10px;
+  }
+  .roadmap-milestones > button {
+    padding: 12px;
+    gap: 7px;
+  }
+  .journey-pattern-intro .pattern-art {
+    width: 100px;
+  }
+  .journey-pattern-intro h3 {
+    font-size: 21px;
+  }
+}
+@media (max-width: 1000px) {
+  .roadmap-milestones {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .roadmap-milestones strong {
+    min-height: 0;
+  }
+  .roadmap-next {
+    flex-wrap: wrap;
+  }
+  .roadmap-next > button {
+    margin-left: 74px;
+  }
+  .journey-pattern-intro .pattern-art {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .roadmap-next {
+    padding: 20px;
+    gap: 14px;
+  }
+  .roadmap-next-symbol {
+    width: 36px;
+    height: 36px;
+  }
+  .roadmap-next > div:nth-child(2) {
+    width: calc(100% - 50px);
+  }
+  .roadmap-next .premium-eyebrow {
+    font-size: 7px;
+  }
+  .roadmap-next h2 {
+    font-size: 19px;
+  }
+  .roadmap-next > button {
+    margin-left: 50px;
+    font-size: 10px;
+  }
+  .roadmap-milestones {
+    gap: 8px;
+  }
+  .roadmap-milestones > button {
+    padding: 12px;
+  }
+  .roadmap-milestones small {
+    font-size: 8px;
+  }
+  .roadmap-view-controls {
+    align-items: start;
+  }
+  .roadmap-view-controls label {
+    flex-wrap: wrap;
+  }
+  .journey-pattern-grid {
+    grid-template-columns: 1fr;
+  }
+  .journey-pattern {
+    padding: 20px;
+  }
+  .journey-pattern-intro .pattern-art {
+    display: block;
+    width: 90px;
+  }
+  .journey-pattern-intro h3 {
+    font-size: 22px;
+  }
+  .journey-pattern-steps strong {
+    font-size: 9px;
+  }
+  .journey-pattern-steps small {
+    font-size: 8px;
+  }
+  .journey-tier-title h2 {
+    font-size: 21px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .journey-pattern,
+  .curriculum .problem-card {
+    transition: none;
+  }
+  .curriculum .problem-card:hover {
+    transform: none;
+  }
+}

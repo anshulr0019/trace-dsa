@@ -1,6 +1,9 @@
 "use client";
-import { useMemo, useState } from "react";
-import { MotionConfig, useReducedMotion } from "motion/react";
+import { useTraceReducedMotion } from "@/components/experience/use-preferences";
+import { readPreferences } from "@/lib/experience/preferences";
+import { usePreferences } from "@/components/experience/use-preferences";
+import { useEffect, useMemo, useState } from "react";
+import { MotionConfig } from "motion/react";
 import type { Module } from "@/lib/computer-science/catalog";
 import { examplesFor } from "@/lib/computer-science/examples";
 import { buildLab } from "@/lib/computer-science/models";
@@ -15,7 +18,7 @@ export function ExperimentComparison({ module: m }: { module: Module }) {
   const examples = useMemo(() => examplesFor(m), [m]);
   const [left, setLeft] = useState(0),
     [right, setRight] = useState(1),
-    [speed, setSpeed] = useState(1);
+    [speed, setSpeed] = useState(() => readPreferences().speed);
   const runs = useMemo(
     () =>
       [left, right].map((i) => {
@@ -34,10 +37,14 @@ export function ExperimentComparison({ module: m }: { module: Module }) {
       }),
     [m, examples, left, right],
   );
+  const playbackPreferences = usePreferences();
+  useEffect(() => {
+    setSpeed(playbackPreferences.speed);
+  }, [playbackPreferences.speed]);
   const count = Math.max(...runs.map((r) => r.frames.length));
   const { step, playing, setStep, setPlaying } = useFramePlayback(count, speed),
     focus = usePlaybackFocus(playing, m.id),
-    reduced = useReducedMotion();
+    reduced = useTraceReducedMotion();
   const change = (side: number, value: number) => {
     setPlaying(false);
     setStep(0);
@@ -100,7 +107,9 @@ export function ExperimentComparison({ module: m }: { module: Module }) {
       )}
       <MotionConfig
         transition={stageTransition(speed, !!reduced)}
-        reducedMotion="user"
+        reducedMotion={
+          readPreferences().reducedMotion === "reduce" ? "always" : "user"
+        }
       >
         <div className="learning-comparison-grid">
           {runs.map((run, i) => {

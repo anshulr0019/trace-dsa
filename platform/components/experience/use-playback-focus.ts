@@ -1,8 +1,10 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import "./playback-focus.css";
+import { usePreferences } from "./use-preferences";
 /** Enter once per Play/resume, after layout settles. Never chase the user on each frame. */
 export function usePlaybackFocus(playing: boolean, identity: unknown) {
+  const preferences = usePreferences();
   const ref = useRef<HTMLDivElement>(null);
   const [focused, setFocused] = useState(false),
     [focusRequest, setFocusRequest] = useState(0);
@@ -14,8 +16,20 @@ export function usePlaybackFocus(playing: boolean, identity: unknown) {
     setFocused(false);
   }, [identity]);
   useEffect(() => {
-    if (playing) focus();
-  }, [playing, focus, identity]);
+    if (playing && preferences.autoFocus) focus();
+  }, [playing, focus, identity, preferences.autoFocus]);
+  useEffect(() => {
+    const enter = () => {
+      if (ref.current) focus();
+    };
+    const exit = () => setFocused(false);
+    window.addEventListener("trace:focus", enter);
+    window.addEventListener("trace:unfocus", exit);
+    return () => {
+      window.removeEventListener("trace:focus", enter);
+      window.removeEventListener("trace:unfocus", exit);
+    };
+  }, [focus]);
   useEffect(() => {
     if (!focusRequest || !focused) return;
     let second = 0;

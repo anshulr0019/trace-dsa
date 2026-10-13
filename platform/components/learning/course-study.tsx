@@ -1,6 +1,7 @@
 "use client";
+import { useTraceReducedMotion } from "@/components/experience/use-preferences";
 import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { CourseUnit } from "@/lib/learning/cs-course-content";
 import type { LearningTrack } from "@/lib/learning/references";
 import { courseBenchmarks } from "@/lib/learning/benchmarks";
@@ -42,7 +43,7 @@ export function CourseStudy({
     [ready, setReady] = useState(false),
     [saved, setSaved] = useState(false),
     [checks, setChecks] = useState<number[]>([]);
-  const reduced = useReducedMotion(),
+  const reduced = useTraceReducedMotion(),
     storage = `trace:course-study:${id}`;
   useEffect(() => {
     try {

@@ -19,6 +19,16 @@ Open `http://localhost:5173/?view=curriculum`. The bundled Sites runtime uses Re
 
 Browser practice checks use the same eight-case grading rules and store attempts on this device. They are educational feedback, not trusted account grades. AI review continues to require a connected service.
 
+## Visual learning experience
+
+The public homepage introduces Trace with a playable binary-search experiment. Learners can make decisions, inspect and edit values, drag the midpoint to propose a candidate, replay or scrub the search, and compare inspected-value counts with linear search. Missing targets, duplicates, and empty arrays are included. Opening the full foundation lesson carries the demo's exact input into the real code runner; existing code drafts are retained.
+
+Home shows a resume dashboard once learning activity exists on this device. Progress and revision suggestions use recorded evidence. The algorithm roadmap offers a guided pattern journey, milestone progress, visual previews, a searchable list, and learning-state filters. Computer science tracks use the same diagram vocabulary.
+
+Use Cmd/Ctrl+K or the search button to find a foundation, algorithm problem, or computer science lab. Focus mode expands the lesson and hides navigation; Escape or Exit focus restores it. Playback controls sit below the stage rather than covering explanations. Foundation array cells support validated edits that restart actual execution, and changed scalar variables are highlighted. Narrow screens retain separate visualization, code, and explanation tabs; motion respects the reduced-motion preference.
+
+Verify the new search model with `node --import tsx --test tests/search-explorer.test.ts`, in addition to the existing validation commands below.
+
 ## Practice and feedback
 
 The roadmap uses concept-specific animated stages throughout all 100 problems, with foundation-style alignment, clickable cell/node inspection, grid and graph traversal, backtracking and labelled DP dependencies. See [Visualization coverage and state conventions](docs/VISUALIZATIONS.md).
@@ -119,3 +129,17 @@ Java code and input execute on the user's device; no execution service receives 
 Regenerate formatted examples with `node scripts/format-java-references.mjs`.
 Check all 500 learning examples with a local JDK using
 `TRACE_JAVA=/path/to/java node --import tsx scripts/test-java.mjs`.
+
+### Workspace settings
+
+The Settings panel provides appearance and text size, reduced motion, default language and starting page, playback speed and focus, algorithm prediction checkpoints, pointer labels, step explanations, editor font/tab size and wrapping, line numbers, execution highlighting, practice hints, an active-session timer, and reference-reveal preferences. Lesson controls remain available for the current session. Saved drafts and explicit language links take precedence over default language.
+
+Preferences are saved locally and included in notebook backups. The Data & privacy section exports/imports the existing version-1 notebook format, confirms restores and resets, and can clear progress separately from code and notes. Backups are validated before any entries are written and exclude authentication storage.
+
+### Languages & libraries
+
+Open **Learn → Languages & libraries** for C++17 STL, Python standard-library essentials, Java 8 collections, and JavaScript built-ins/DSA utilities. Each of the four tracks contains 12 lessons with Understand → Watch → Try → Solve → Review, editable browser execution, recorded state playback, output predictions, six-case exercises, references, and linked roadmap problems. The supported scope is language tools for DSA, rather than complete language courses.
+
+Library operations are illustrated through actual input/checkpoint/output values. The UI does not claim to animate unrecorded library internals. Example and exercise drafts are separate, support usage persists, and validated notebook backups include language work. The global lesson search indexes API names; **Library help** provides references inside foundation and roadmap workspaces.
+
+Reference execution verification: `TRACE_LIBRARY_JAVA_HOME=/path/to/jdk node --import tsx scripts/verify-library-lessons.ts` checks 288 outputs across all 48 lessons and compiles Java examples for Java 8. Browser runtime validation bounds the JSON inputs before execution.

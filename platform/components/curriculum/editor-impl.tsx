@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "../experience/use-preferences";
 import { useEffect, useRef } from "react";
 import {
   EditorView,
@@ -9,7 +10,12 @@ import {
   gutter,
   GutterMarker,
 } from "@codemirror/view";
-import { EditorState, StateEffect, StateField } from "@codemirror/state";
+import {
+  EditorState,
+  StateEffect,
+  StateField,
+  Compartment,
+} from "@codemirror/state";
 import {
   defaultKeymap,
   history,
@@ -20,6 +26,7 @@ import {
   syntaxHighlighting,
   HighlightStyle,
   bracketMatching,
+  indentUnit,
 } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
 import { python } from "@codemirror/lang-python";
@@ -36,14 +43,17 @@ const breakpointField = StateField.define<number[]>({
 });
 const markLine = StateEffect.define<number>();
 const codeColors = HighlightStyle.define([
-  { tag: tags.keyword, color: "#c5b4ee" },
-  { tag: tags.string, color: "#dbc58f" },
-  { tag: tags.number, color: "#a9d5ea" },
-  { tag: tags.comment, color: "#89a093" },
-  { tag: tags.typeName, color: "#a7d8b8" },
-  { tag: tags.function(tags.variableName), color: "#b7d7ef" },
-  { tag: tags.operator, color: "#bdd2c4" },
-  { tag: tags.meta, color: "#a7c7bb" },
+  { tag: tags.keyword, color: "var(--trace-color-c5b4ee, #c5b4ee)" },
+  { tag: tags.string, color: "var(--trace-color-dbc58f, #dbc58f)" },
+  { tag: tags.number, color: "var(--trace-color-a9d5ea, #a9d5ea)" },
+  { tag: tags.comment, color: "var(--trace-color-89a093, #89a093)" },
+  { tag: tags.typeName, color: "var(--trace-color-a7d8b8, #a7d8b8)" },
+  {
+    tag: tags.function(tags.variableName),
+    color: "var(--trace-color-b7d7ef, #b7d7ef)",
+  },
+  { tag: tags.operator, color: "var(--trace-color-bdd2c4, #bdd2c4)" },
+  { tag: tags.meta, color: "var(--trace-color-a7c7bb, #a7c7bb)" },
 ]);
 const executionLine = StateField.define({
   create: () => Decoration.none,
@@ -83,6 +93,15 @@ export function Editor({
   breakpoints?: number[];
   onBreakpoint?: (line: number) => void;
 }) {
+  const preferences = usePreferences();
+  const editorPreferences = useRef(new Compartment());
+  const extensions = () => [
+    EditorState.tabSize.of(preferences.tabSize),
+    indentUnit.of(" ".repeat(preferences.tabSize)),
+    ...(preferences.wordWrap ? [EditorView.lineWrapping] : []),
+    ...(preferences.lineNumbers ? [lineNumbers()] : []),
+    ...(preferences.highlightLine ? [highlightActiveLine()] : []),
+  ];
   const host = useRef<HTMLDivElement>(null),
     editor = useRef<EditorView | null>(null);
   const change = useRef(onChange),
@@ -126,7 +145,7 @@ export function Editor({
         extensions: [
           EditorState.readOnly.of(readOnly),
           EditorView.editable.of(!readOnly),
-          lineNumbers(),
+          editorPreferences.current.of(extensions()),
           ...(onBreakpoint
             ? [
                 breakpointField,
@@ -149,7 +168,7 @@ export function Editor({
               ]
             : []),
           history(),
-          highlightActiveLine(),
+
           bracketMatching(),
           executionLine,
           syntaxHighlighting(codeColors),
@@ -179,28 +198,34 @@ export function Editor({
             {
               "&": {
                 height: "100%",
-                fontSize: "12px",
-                backgroundColor: "#111819",
-                color: "#d6e3dc",
+                fontSize: "var(--trace-editor-size, 13px)",
+                backgroundColor: "var(--trace-color-111819, #111819)",
+                color: "var(--trace-color-d6e3dc, #d6e3dc)",
               },
               ".cm-scroller": {
                 fontFamily: "var(--font-mono, monospace)",
                 overflow: "auto",
               },
               ".cm-gutters": {
-                backgroundColor: "#111819",
-                color: "#657b70",
+                backgroundColor: "var(--trace-color-111819, #111819)",
+                color: "var(--trace-color-657b70, #657b70)",
                 border: "none",
               },
-              ".cm-content": { padding: "16px 0", caretColor: "#a3e8bf" },
+              ".cm-content": {
+                padding: "16px 0",
+                caretColor: "var(--trace-color-a3e8bf, #a3e8bf)",
+              },
               ".cm-line": { padding: "0 14px" },
-              ".cm-activeLine": { backgroundColor: "#ffffff05" },
+              ".cm-activeLine": {
+                backgroundColor: "var(--trace-color-ffffff05, #ffffff05)",
+              },
               ".execution-line": {
-                backgroundColor: "#9cddae18",
-                boxShadow: "inset 2px 0 #a3e8bf",
+                backgroundColor: "var(--trace-color-9cddae18, #9cddae18)",
+                boxShadow: "inset 2px 0 var(--trace-color-a3e8bf, #a3e8bf)",
               },
               ".cm-selectionBackground": {
-                backgroundColor: "#456e55 !important",
+                backgroundColor:
+                  "var(--trace-color-456e55, #456e55) !important",
               },
             },
             { dark: true },
@@ -220,6 +245,18 @@ export function Editor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language, readOnly]);
   useEffect(() => {
+    editor.current?.dispatch({
+      effects: editorPreferences.current.reconfigure(extensions()),
+    });
+  }, [
+    preferences.tabSize,
+    preferences.wordWrap,
+    preferences.lineNumbers,
+    preferences.highlightLine,
+    language,
+    readOnly,
+  ]);
+  useEffect(() => {
     const view = editor.current;
     if (view && view.state.doc.toString() !== value)
       view.dispatch({
@@ -229,7 +266,9 @@ export function Editor({
   useEffect(() => {
     const view = editor.current;
     if (!view) return;
-    const effects: StateEffect<unknown>[] = [markLine.of(line)];
+    const effects: StateEffect<unknown>[] = [
+      markLine.of(preferences.highlightLine ? line : 0),
+    ];
     if (line > 0 && line <= view.state.doc.lines)
       effects.push(
         EditorView.scrollIntoView(view.state.doc.line(line).from, {
@@ -237,7 +276,7 @@ export function Editor({
         }),
       );
     view.dispatch({ effects });
-  }, [line]);
+  }, [line, preferences.highlightLine]);
   useEffect(() => {
     const view = editor.current;
     if (view && onBreakpoint)

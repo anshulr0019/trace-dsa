@@ -1,6 +1,7 @@
 "use client";
+import { useTraceReducedMotion } from "@/components/experience/use-preferences";
 import { useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import "./launch.css";
 export function HandsOn({
   initial = "binary",
@@ -23,7 +24,7 @@ export function HandsOn({
     [message, setMessage] = useState(
       "Choose the next action and explain it before checking.",
     );
-  const reduced = useReducedMotion(),
+  const reduced = useTraceReducedMotion(),
     values = [2, 4, 7, 9, 11, 14, 18, 21],
     mid = Math.floor((left + right) / 2),
     windowValues = [2, 1, 5, 1, 3],

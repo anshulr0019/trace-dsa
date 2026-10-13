@@ -1,7 +1,8 @@
 "use client";
+import { useTraceReducedMotion } from "@/components/experience/use-preferences";
 import {usePlaybackFocus} from "./use-playback-focus";
 import { useMemo } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { ArrowRight, ArrowUpRight, Play, Pause, RotateCcw, SkipForward, Code2, MousePointer2, GitCompareArrows } from "lucide-react";
 import { lessons, lessonInputs, type Lesson } from "@/lib/lessons";
 import { runCode } from "@/lib/trace/interpreter";
@@ -10,7 +11,7 @@ import { MotionStage } from "./motion-stage";
 import { LessonPreview } from "./lesson-preview";
 export function Overview({onLesson,onLibrary,lastLesson,completed}: {onLesson:(l:Lesson)=>void;onLibrary:()=>void;lastLesson:string;completed:number}) {
   const lesson=lessons[0], run=useMemo(()=>runCode(lesson.code,lessonInputs(lesson,lesson.input,lesson.target)),[lesson]);
-  const playback=usePlayback(run.frames.length,1), reduced=useReducedMotion();
+  const playback=usePlayback(run.frames.length,1), reduced=useTraceReducedMotion();
   const focus=usePlaybackFocus(playback.playing,lesson.id);
   return <motion.div className="overview" initial={{opacity:0,y:reduced?0:12}} animate={{opacity:1,y:0}} transition={{duration:.35}}>
     <div className="overview-intro"><div className="eyebrow mint"><span className="chapter-line"/> THE ALGORITHM, UNFOLDED</div><div className="overview-heading"><h1>Understand<br/>every <em>move.</em></h1><div><p>Make the abstract click. Follow real code, move through its decisions, and build an intuition that stays.</p><button className="button overview-cta" onClick={()=>onLesson(lessons.find(l=>l.id===lastLesson)??lesson)}>Continue learning<ArrowRight size={17}/></button></div></div></div>

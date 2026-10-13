@@ -1,6 +1,7 @@
 "use client";
+import { useTraceReducedMotion } from "@/components/experience/use-preferences";
 import { lazy, Suspense, useMemo, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { Problem } from "@/lib/curriculum/catalog";
 import type { PlaybackRun } from "@/lib/curriculum/execution";
 import {
@@ -28,7 +29,7 @@ export function WindowExercise({
   const [left, setLeft] = useState(0),
     [answer, setAnswer] = useState(""),
     [checked, setChecked] = useState(false);
-  const reduced = useReducedMotion();
+  const reduced = useTraceReducedMotion();
   const total = nums
     .slice(left, left + k)
     .reduce((sum, value) => sum + value, 0);

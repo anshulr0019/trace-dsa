@@ -1,5 +1,6 @@
 "use client";
-import { motion, useReducedMotion } from "motion/react";
+import { useTraceReducedMotion } from "@/components/experience/use-preferences";
+import { motion } from "motion/react";
 import { stageTransition } from "@/lib/playback-motion";
 import { useId } from "react";
 import type { DiagramNode, Frame } from "@/lib/computer-science/models";
@@ -23,7 +24,7 @@ export function FlowDiagram({
   playing?: boolean;
 }) {
   const marker = useId().replace(/:/g, ""),
-    reduced = useReducedMotion();
+    reduced = useTraceReducedMotion();
   return (
     <svg
       className={`cs-flow ${playing ? "cs-flow-playing" : ""}`}
@@ -120,7 +121,7 @@ export function StateScene({
   speed?: number;
   playing?: boolean;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = useTraceReducedMotion();
   return (
     <div className="cs-scene">
       {nodes.length > 0 && (

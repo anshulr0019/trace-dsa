@@ -2,11 +2,11 @@
 .learning-checkpoint,
 .learning-experiment,
 .learning-state-review {
-  border: 1px solid #34463c;
-  background: #111b19;
+  border: 1px solid var(--trace-color-34463c, #34463c);
+  background: var(--trace-color-111b19, #111b19);
   border-radius: 14px;
   margin: 18px 0;
-  color: #dce7df;
+  color: var(--trace-color-dce7df, #dce7df);
   overflow: hidden;
 }
 .learning-guide summary,
@@ -17,7 +17,7 @@
 }
 .learning-guide summary span {
   font-weight: 400;
-  color: #a4b5ac;
+  color: var(--trace-color-a4b5ac, #a4b5ac);
   font-size: 12px;
   margin-left: 14px;
 }
@@ -29,7 +29,7 @@
 }
 .learning-route article {
   padding: 16px;
-  border-left: 2px solid #83ad69;
+  border-left: 2px solid var(--trace-color-83ad69, #83ad69);
   min-width: 0;
 }
 .learning-route small,
@@ -37,7 +37,7 @@
   font:
     11px ui-monospace,
     monospace;
-  color: #b6e391;
+  color: var(--trace-color-b6e391, #b6e391);
   letter-spacing: 0.08em;
 }
 .learning-route h3 {
@@ -48,23 +48,23 @@
 .learning-guide footer p {
   font-size: 13px;
   line-height: 1.7;
-  color: #b3c4ba;
+  color: var(--trace-color-b3c4ba, #b3c4ba);
   margin: 8px 0;
 }
 .learning-guide footer {
-  border-top: 1px solid #34463c;
+  border-top: 1px solid var(--trace-color-34463c, #34463c);
   padding: 14px 20px;
   margin-top: 16px;
 }
 .learning-guide footer a {
-  color: #b8ef90;
+  color: var(--trace-color-b8ef90, #b8ef90);
   font-size: 13px;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 .learning-guide footer small {
   display: block;
-  color: #9aaba1;
+  color: var(--trace-color-9aaba1, #9aaba1);
   font-size: 11px;
   margin-top: 8px;
 }
@@ -75,8 +75,8 @@
   padding: 14px;
 }
 .learning-change {
-  background: #17241e;
-  border: 1px solid #354b3d;
+  background: var(--trace-color-17241e, #17241e);
+  border: 1px solid var(--trace-color-354b3d, #354b3d);
   border-radius: 9px;
   padding: 12px;
   min-width: 0;
@@ -84,7 +84,7 @@
 .learning-change > strong {
   display: block;
   font-size: 12px;
-  color: #b8c9be;
+  color: var(--trace-color-b8c9be, #b8c9be);
   margin-bottom: 8px;
 }
 .learning-change > div {
@@ -99,13 +99,13 @@
   font-size: 12px;
   max-height: 140px;
   overflow: auto;
-  color: #c0cfc5;
+  color: var(--trace-color-c0cfc5, #c0cfc5);
 }
 .learning-change code:last-child {
-  color: #cef5ab;
+  color: var(--trace-color-cef5ab, #cef5ab);
 }
 .learning-change span {
-  color: #9dcc7d;
+  color: var(--trace-color-9dcc7d, #9dcc7d);
 }
 .learning-checkpoint {
   padding: 18px;
@@ -119,12 +119,12 @@
   font-size: 13px;
   line-height: 1.6;
   margin: 6px 0;
-  color: #b3c4ba;
+  color: var(--trace-color-b3c4ba, #b3c4ba);
 }
 .learning-question {
   flex-basis: 100%;
   padding-top: 14px;
-  border-top: 1px solid #34463c;
+  border-top: 1px solid var(--trace-color-34463c, #34463c);
 }
 .learning-question form {
   display: flex;
@@ -139,19 +139,19 @@
   flex-direction: column;
   gap: 6px;
   font-size: 12px;
-  color: #b3c4ba;
+  color: var(--trace-color-b3c4ba, #b3c4ba);
 }
 .learning-question input,
 .learning-pair-select select,
 .learning-transport select {
-  border: 1px solid #526d5b;
-  background: #0e1713;
-  color: #e3eedb;
+  border: 1px solid var(--trace-color-526d5b, #526d5b);
+  background: var(--trace-color-0e1713, #0e1713);
+  color: var(--trace-color-e3eedb, #e3eedb);
   padding: 10px;
   border-radius: 7px;
 }
 .learning-question input:focus-visible {
-  outline: 2px solid #b8ef90;
+  outline: 2px solid var(--trace-color-b8ef90, #b8ef90);
   outline-offset: 3px;
 }
 .learning-experiment {
@@ -164,7 +164,7 @@
 }
 .learning-experiment p {
   font-size: 13px;
-  color: #b3c4ba;
+  color: var(--trace-color-b3c4ba, #b3c4ba);
   line-height: 1.6;
 }
 .learning-pair-select {
@@ -185,7 +185,7 @@
 }
 .learning-comparison-grid > article {
   min-width: 0;
-  border: 1px solid #34463c;
+  border: 1px solid var(--trace-color-34463c, #34463c);
   border-radius: 12px;
   overflow: hidden;
   display: flex;
@@ -193,13 +193,13 @@
 }
 .learning-comparison-grid header {
   padding: 15px;
-  border-bottom: 1px solid #34463c;
+  border-bottom: 1px solid var(--trace-color-34463c, #34463c);
 }
 .learning-comparison-grid header small {
   font:
     11px ui-monospace,
     monospace;
-  color: #b6e391;
+  color: var(--trace-color-b6e391, #b6e391);
 }
 .learning-comparison-grid h4 {
   margin: 7px 0;
@@ -225,8 +225,8 @@
 }
 .learning-comparison-caption {
   padding: 16px;
-  background: #1b2b21;
-  border-top: 1px solid #34463c;
+  background: var(--trace-color-1b2b21, #1b2b21);
+  border-top: 1px solid var(--trace-color-34463c, #34463c);
 }
 .learning-comparison-caption strong {
   font-size: 14px;
@@ -249,13 +249,13 @@
   text-align: left !important;
 }
 .learning-reasoning button[aria-pressed="true"] {
-  border-color: #b8ef90;
-  background: #253c2a;
+  border-color: var(--trace-color-b8ef90, #b8ef90);
+  background: var(--trace-color-253c2a, #253c2a);
 }
 .learning-reasoning span {
   display: block;
   font-size: 11px;
-  color: #aec29e;
+  color: var(--trace-color-aec29e, #aec29e);
   margin-bottom: 6px;
 }
 @media (max-width: 800px) {
@@ -291,17 +291,17 @@
   font:
     12px ui-monospace,
     monospace;
-  color: #9bae9f;
+  color: var(--trace-color-9bae9f, #9bae9f);
 }
 .cs-hub .cs-cells .cs-change-label {
   font-size: 10px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #c8ef9f;
+  color: var(--trace-color-c8ef9f, #c8ef9f);
 }
 .cs-hub .cs-cells .cs-cell-changed {
-  border-color: #aecb88;
-  box-shadow: inset 0 0 0 1px #aecb8822;
+  border-color: var(--trace-color-aecb88, #aecb88);
+  box-shadow: inset 0 0 0 1px var(--trace-color-aecb8822, #aecb8822);
 }
 @media (min-width: 1001px) and (min-height: 650px) {
   .learning-experiment-focused {
@@ -354,10 +354,10 @@
   margin-left: auto;
   min-width: 100px;
   padding: 5px 7px;
-  border: 1px solid #405647;
+  border: 1px solid var(--trace-color-405647, #405647);
   border-radius: 6px;
-  background: #132018;
-  color: #dbeed1;
+  background: var(--trace-color-132018, #132018);
+  color: var(--trace-color-dbeed1, #dbeed1);
   font-size: 12px;
 }
 .foundation-playback-surface .file-tab {
@@ -365,7 +365,7 @@
   flex-wrap: wrap;
 }
 .foundation-playback-surface .file-tab select:focus-visible {
-  outline: 2px solid #b8ef90;
+  outline: 2px solid var(--trace-color-b8ef90, #b8ef90);
   outline-offset: 2px;
 }
 .cs-hub .learning-comparison-grid .cs-cells {
@@ -405,8 +405,8 @@
   position: sticky;
   bottom: 12px;
   z-index: 4;
-  background: #17261efa;
-  border: 1px solid #415b48;
+  background: var(--trace-color-17261efa, #17261efa);
+  border: 1px solid var(--trace-color-415b48, #415b48);
   border-radius: 10px;
   padding: 8px;
 }

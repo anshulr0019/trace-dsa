@@ -1,4 +1,5 @@
-"use client";
+import { libraryLessons, libraryURL } from "@/lib/languages/catalog";
+("use client");
 import { useEffect, useState } from "react";
 import {
   learningEvidence,
@@ -188,7 +189,12 @@ export function LearningBadge({
     </button>
   );
 }
-const learningTargets = [
+export const learningTargets = [
+  ...libraryLessons.map((l) => ({
+    id: `library:${l.id}`,
+    title: `${l.title} · ${l.language === "cpp" ? "C++" : l.language}`,
+    url: libraryURL(l.language, l.topic),
+  })),
   ...problems.map((p) => ({
     id: p.id,
     title: p.title,
@@ -220,31 +226,38 @@ export function RevisionRecommendations() {
     return () => window.removeEventListener("trace:notebook", update);
   }, []);
   void revision;
-  const due = learningTargets
-    .filter((p) => reviewDue(learningEvidence(p.id)))
-    .slice(0, 3);
-  const started = learningTargets
-    .filter((p) => {
-      const r = learningEvidence(p.id);
-      return r.length && !r.some((e) => e.kind === "independent");
-    })
+  const activity = learningTargets
+    .map((p) => ({ ...p, rows: learningEvidence(p.id) }))
+    .filter((p) => p.rows.length)
+    .sort(
+      (a, b) => Date.parse(b.rows.at(-1)!.at) - Date.parse(a.rows.at(-1)!.at),
+    );
+  const due = activity.filter((p) => reviewDue(p.rows)).slice(0, 3);
+  const started = activity
+    .filter((p) => !p.rows.some((e) => e.kind === "independent"))
     .slice(0, 3);
   const picks = due.length ? due : started;
   if (!picks.length) return null;
   return (
-    <section className="launch-card">
+    <section className="launch-card revision-recommendations">
       <small>YOUR NEXT SESSION</small>
       <h2>
         {due.length ? "Ready for revision" : "Turn exploration into practice"}
       </h2>
       <p>
-        These suggestions use your recorded activity. Revisit supported work
-        after two days and independent work after seven.
+        {due.length
+          ? "Revisit an idea after a little time away. A fresh case helps you check what stayed with you."
+          : "You have explored the idea. Try a fresh case and make the next decision yourself."}
       </p>
       <div className="launch-actions">
         {picks.map((p) => (
-          <a key={p.id} href={p.url}>
-            {p.title} →
+          <a className="revision-card-link" key={p.id} href={p.url}>
+            <strong>{p.title} →</strong>
+            <small>
+              {due.length
+                ? "Due from your recorded activity"
+                : `${learningStatus(p.rows)} · continue with practice`}
+            </small>
           </a>
         ))}
       </div>

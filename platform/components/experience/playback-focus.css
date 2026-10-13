@@ -12,14 +12,14 @@
   min-height: 34px;
   margin-bottom: 8px;
   font-size: 12px;
-  color: #a5bbaa;
+  color: var(--trace-color-a5bbaa, #a5bbaa);
 }
 .playback-focus-toolbar button {
   padding: 5px 12px;
-  border: 1px solid #526d5b;
-  background: #1a2921;
+  border: 1px solid var(--trace-color-526d5b, #526d5b);
+  background: var(--trace-color-1a2921, #1a2921);
   border-radius: 7px;
-  color: #d6e9dc;
+  color: var(--trace-color-d6e9dc, #d6e9dc);
 }
 .playback-surface.is-playback-focused .step-narrative {
   height: auto;

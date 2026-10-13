@@ -1,5 +1,5 @@
 "use client";
-import {stepDuration} from "@/lib/playback-motion";
+import { stepDuration } from "@/lib/playback-motion";
 import {
   useCallback,
   useEffect,
@@ -28,6 +28,11 @@ export function useFramePlayback(count: number, speed: number) {
     },
     [count],
   );
+  useEffect(() => {
+    const pause = () => setPlaying(false);
+    window.addEventListener("trace:pause", pause);
+    return () => window.removeEventListener("trace:pause", pause);
+  }, []);
   useEffect(() => {
     if (!playing) return;
     if (count < 2 || step >= count - 1) {

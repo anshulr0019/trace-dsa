@@ -1,9 +1,10 @@
 "use client";
-import { motion, useReducedMotion } from "motion/react";
+import { useTraceReducedMotion } from "@/components/experience/use-preferences";
+import { motion } from "motion/react";
 import type { Evidence } from "@/lib/learning/evidence";
 import "./learning.css";
 export function EvidenceBoard({ changes }: { changes: Evidence[] }) {
-  const reduced = useReducedMotion();
+  const reduced = useTraceReducedMotion();
   return (
     <div className="learning-evidence" aria-label="Recorded state changes">
       {changes.length === 0 ? (

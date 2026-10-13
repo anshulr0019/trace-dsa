@@ -1,6 +1,8 @@
 "use client";
+import { readPreferences } from "@/lib/experience/preferences";
+import { useTraceReducedMotion } from "@/components/experience/use-preferences";
 import {stageTransition} from "@/lib/playback-motion";
-import {motion,AnimatePresence,useReducedMotion,MotionConfig} from "motion/react";
+import { motion, AnimatePresence, MotionConfig } from "motion/react";
 import {ArrayStage} from "./array-stage";
 import {ConceptStage} from "./visuals/concept-stage";
 import type {ConceptCue} from "@/lib/curriculum/concept-cues";
@@ -25,7 +27,7 @@ function Matrix({name,values,state,previous}:{name:string;values:unknown[][];sta
 }
 type Node={id:string;label:string;x:number;y:number};
 function Network({nodes,edges,state}:{nodes:Node[];edges:{from:string;to:string;label?:string}[];state:Record<string,unknown>}){
- const reduced=useReducedMotion();
+ const reduced=useTraceReducedMotion();
  const duration=useContext(SceneTiming);
  const height=Math.max(220,...nodes.map(n=>n.y+55));
  return <div className="network-scroll"><svg role="img" aria-label="Live node and edge diagram" viewBox={`0 0 700 ${height}`} style={{minWidth:Math.min(700,Math.max(400,nodes.length*35))}}><defs><marker id="curr-arrow" viewBox="0 0 10 10" refX="55" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#657e71"/></marker></defs><AnimatePresence>{edges.map((edge,i)=>{
@@ -69,11 +71,11 @@ function Heap({name,values,state}:{name:string;values:unknown[];state:Record<str
 }
 type SceneProps={cue?:ConceptCue;problem:Problem;frame?:ExecutionFrame;previous?:ExecutionFrame;input:Record<string,unknown>;language?:string;speed?:number;source?:string;binding?:{name:string;kind:string;marker:string}};
 export function Scene(props:SceneProps){
- const reduced=useReducedMotion(),transition=stageTransition(props.speed,!!reduced),duration=transition.duration;
- return <SceneTiming.Provider value={duration}><MotionConfig reducedMotion="user" transition={transition}>{props.binding ? <SceneContent {...props}/> : <ConceptStage {...props}/>}</MotionConfig></SceneTiming.Provider>;
+ const reduced=useTraceReducedMotion(),transition=stageTransition(props.speed,!!reduced),duration=transition.duration;
+ return <SceneTiming.Provider value={duration}><MotionConfig reducedMotion={readPreferences().reducedMotion === "reduce" ? "always" : "user"} transition={transition}>{props.binding ? <SceneContent {...props}/> : <ConceptStage {...props}/>}</MotionConfig></SceneTiming.Provider>;
 }
 function SceneContent({problem,frame,previous,input,language="python",binding,cue}:SceneProps){
- const reduced=useReducedMotion();
+ const reduced=useTraceReducedMotion();
  if(binding){
   const value=frame?.vars[binding.name]??input[binding.name];
   if(value===undefined)return <div className="trace-empty">{binding.name} has not been recorded at this step.</div>;

@@ -1,9 +1,9 @@
 .cs-hub {
-  --cs-bg: #111c1d;
-  --cs-border: #2a3938;
-  --cs-text: #e1e9e4;
-  --cs-muted: #a1b1aa;
-  --cs-green: #c1f390;
+  --cs-bg: var(--trace-color-111c1d, #111c1d);
+  --cs-border: var(--trace-color-2a3938, #2a3938);
+  --cs-text: var(--trace-color-e1e9e4, #e1e9e4);
+  --cs-muted: var(--trace-color-a1b1aa, #a1b1aa);
+  --cs-green: var(--trace-color-c1f390, #c1f390);
   color: var(--cs-text);
   max-width: 1600px;
   margin: auto;
@@ -20,7 +20,7 @@
 }
 .cs-hub button {
   border: 1px solid var(--cs-border);
-  background: #192522;
+  background: var(--trace-color-192522, #192522);
   color: var(--cs-text);
   padding: 10px 15px;
   border-radius: 9px;
@@ -30,8 +30,8 @@
     border-color 0.2s;
 }
 .cs-hub button:hover {
-  background: #25362b;
-  border-color: #8da779;
+  background: var(--trace-color-25362b, #25362b);
+  border-color: var(--trace-color-8da779, #8da779);
 }
 .cs-hub button:disabled {
   opacity: 0.45;
@@ -47,8 +47,8 @@
   display: block;
   max-width: 100%;
   width: 100%;
-  background: #0c1517;
-  border: 1px solid #3a4a46;
+  background: var(--trace-color-0c1517, #0c1517);
+  border: 1px solid var(--trace-color-3a4a46, #3a4a46);
   border-radius: 8px;
   color: var(--cs-text);
   padding: 10px;
@@ -91,7 +91,7 @@
 .cs-section-head > span {
   font-size: 11px;
   letter-spacing: 1.4px;
-  color: #b8d8a4;
+  color: var(--trace-color-b8d8a4, #b8d8a4);
 }
 .cs-breadcrumb {
   display: flex;
@@ -132,7 +132,7 @@
 .cs-hub .cs-topic-card {
   text-align: left;
   padding: 26px;
-  background: linear-gradient(145deg, #1c2925, #10191c);
+  background: linear-gradient(145deg, var(--trace-color-1c2925, #1c2925), var(--trace-color-10191c, #10191c));
   display: flex;
   flex-direction: column;
   min-height: 230px;
@@ -166,7 +166,7 @@
   gap: 18px;
   flex-wrap: wrap;
   padding: 18px;
-  background: #121d1b;
+  background: var(--trace-color-121d1b, #121d1b);
   border: 1px solid var(--cs-border);
   border-radius: 12px;
   margin: 15px 0;
@@ -219,7 +219,7 @@
 .cs-scene {
   padding: 24px;
   min-height: 220px;
-  background-image: radial-gradient(#52716335 0.8px, transparent 0.8px);
+  background-image: radial-gradient(var(--trace-color-52716335, #52716335) 0.8px, transparent 0.8px);
   background-size: 20px 20px;
 }
 .cs-flow {
@@ -230,10 +230,10 @@
   overflow: visible;
 }
 .cs-flow > path {
-  stroke: #657873;
+  stroke: var(--trace-color-657873, #657873);
   stroke-width: 1.5;
   fill: none;
-  color: #657873;
+  color: var(--trace-color-657873, #657873);
 }
 .cs-flow > path.active {
   stroke: var(--cs-green);
@@ -243,22 +243,22 @@
   animation: cs-flow 1s linear infinite;
 }
 .cs-flow-node rect {
-  fill: #1f3031;
-  stroke: #607b75;
+  fill: var(--trace-color-1f3031, #1f3031);
+  stroke: var(--trace-color-607b75, #607b75);
   stroke-width: 1.2;
 }
 .cs-flow-node text {
-  fill: #e4eee7;
+  fill: var(--trace-color-e4eee7, #e4eee7);
   font-size: 12px;
   font-family: inherit;
 }
 .cs-flow-node.active rect {
-  fill: #345037;
+  fill: var(--trace-color-345037, #345037);
   stroke: var(--cs-green);
   stroke-width: 2;
 }
 .cs-flow-node.selected rect {
-  stroke: #8fc9ff;
+  stroke: var(--trace-color-8fc9ff, #8fc9ff);
   stroke-width: 3;
 }
 .cs-flow-node[role="button"] {
@@ -281,8 +281,8 @@
   min-width: 95px;
   max-width: 200px;
   min-height: 90px;
-  border: 1px solid #46615b;
-  background: #1b2a2b;
+  border: 1px solid var(--trace-color-46615b, #46615b);
+  background: var(--trace-color-1b2a2b, #1b2a2b);
   border-radius: 13px;
   padding: 14px;
   overflow-wrap: anywhere;
@@ -294,20 +294,20 @@
 }
 .cs-cells strong {
   font-size: 22px;
-  color: #ecf3ef;
+  color: var(--trace-color-ecf3ef, #ecf3ef);
 }
 .cs-cells .active,
 .cs-cells .done {
-  background: #2b4230;
+  background: var(--trace-color-2b4230, #2b4230);
   border-color: var(--cs-green);
 }
 .cs-cells .waiting {
-  border-color: #e4ba70;
-  background: #342f23;
+  border-color: var(--trace-color-e4ba70, #e4ba70);
+  background: var(--trace-color-342f23, #342f23);
 }
 .cs-cells .error {
-  border-color: #f39992;
-  background: #432b2b;
+  border-color: var(--trace-color-f39992, #f39992);
+  background: var(--trace-color-432b2b, #432b2b);
 }
 .cs-metrics {
   display: flex;
@@ -317,7 +317,7 @@
   margin: 26px 0 5px;
 }
 .cs-metrics > div {
-  border-left: 2px solid #385347;
+  border-left: 2px solid var(--trace-color-385347, #385347);
   padding-left: 14px;
   min-width: 90px;
 }
@@ -328,16 +328,16 @@
 .cs-metrics dd {
   font-size: 22px;
   margin: 7px 0;
-  color: #d5edc5;
+  color: var(--trace-color-d5edc5, #d5edc5);
 }
 .cs-explanation {
   border-top: 1px solid var(--cs-border);
   padding: 22px 26px;
-  background: #1a2a20;
+  background: var(--trace-color-1a2a20, #1a2a20);
   min-height: 158px;
 }
 .cs-explanation p {
-  color: #c3d1c6;
+  color: var(--trace-color-c3d1c6, #c3d1c6);
   max-width: 950px;
 }
 .cs-reference {
@@ -353,7 +353,7 @@
   white-space: pre;
   overflow: auto;
   max-height: 440px;
-  background: #0b1416;
+  background: var(--trace-color-0b1416, #0b1416);
   padding: 16px;
   border-radius: 10px;
   margin: 20px 0;
@@ -365,18 +365,18 @@
   position: sticky;
   bottom: 12px;
   z-index: 4;
-  border: 1px solid #47624d;
-  background: #192a23f5;
+  border: 1px solid var(--trace-color-47624d, #47624d);
+  background: var(--trace-color-192a23f5, #192a23f5);
   backdrop-filter: blur(12px);
   padding: 14px 18px;
   border-radius: 14px;
   margin: 20px 0;
-  box-shadow: 0 10px 24px #0003;
+  box-shadow: 0 10px 24px var(--trace-color-0003, #0003);
 }
 .cs-hub .cs-primary,
 .cs-hub .cs-primary:hover {
   background: var(--cs-green);
-  color: #1c301c;
+  color: var(--trace-color-1c301c, #1c301c);
   border-color: var(--cs-green);
   font-weight: 600;
 }
@@ -430,7 +430,7 @@
   color: var(--cs-green);
 }
 .cs-hub .cs-error {
-  color: #ffb3a8;
+  color: var(--trace-color-ffb3a8, #ffb3a8);
 }
 .cs-table-scroll {
   overflow: auto;
@@ -442,7 +442,7 @@
 }
 .cs-hub td,
 .cs-hub th {
-  border-bottom: 1px solid #33443e;
+  border-bottom: 1px solid var(--trace-color-33443e, #33443e);
   padding: 12px;
   text-align: left;
 }
@@ -471,7 +471,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #29433a;
+  background: var(--trace-color-29433a, #29433a);
   padding: 9px 4px;
   border-radius: 6px;
 }
@@ -481,17 +481,17 @@
 .cs-process small {
   font-size: 10px;
   margin-top: 7px;
-  color: #bbceca;
+  color: var(--trace-color-bbceca, #bbceca);
   letter-spacing: 0;
 }
 .cs-process.p2 {
-  background: #344256;
+  background: var(--trace-color-344256, #344256);
 }
 .cs-process.p3 {
-  background: #4a3c54;
+  background: var(--trace-color-4a3c54, #4a3c54);
 }
 .cs-process.p4 {
-  background: #4c462d;
+  background: var(--trace-color-4c462d, #4c462d);
 }
 .cs-palette {
   display: flex;
@@ -516,7 +516,7 @@
 }
 .cs-hub summary {
   cursor: pointer;
-  color: #c3d5c5;
+  color: var(--trace-color-c3d5c5, #c3d5c5);
   padding: 6px 0;
 }
 .cs-interview-prompt {
@@ -636,7 +636,7 @@
   gap: 10px;
   text-align: left;
   padding: 18px;
-  background: #17251f;
+  background: var(--trace-color-17251f, #17251f);
 }
 .cs-example-list strong {
   font-size: 15px;
@@ -652,10 +652,10 @@
   justify-content: space-between;
   align-items: center;
   gap: 24px;
-  border: 1px solid #416043;
+  border: 1px solid var(--trace-color-416043, #416043);
   border-radius: 16px;
   padding: 26px;
-  background: linear-gradient(110deg, #20372b, #13211f);
+  background: linear-gradient(110deg, var(--trace-color-20372b, #20372b), var(--trace-color-13211f, #13211f));
   margin: 20px 0;
 }
 .cs-track-progress progress {
@@ -719,17 +719,17 @@
 }
 .cs-example-list button[aria-pressed="true"] {
   border-color: var(--cs-green);
-  background: #293d2c;
+  background: var(--trace-color-293d2c, #293d2c);
 }
 .cs-track-progress progress {
   appearance: none;
   border: 0;
   border-radius: 6px;
   overflow: hidden;
-  background: #35443e;
+  background: var(--trace-color-35443e, #35443e);
 }
 .cs-track-progress progress::-webkit-progress-bar {
-  background: #35443e;
+  background: var(--trace-color-35443e, #35443e);
 }
 .cs-track-progress progress::-webkit-progress-value {
   background: var(--cs-green);

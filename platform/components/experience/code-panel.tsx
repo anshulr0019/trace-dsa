@@ -7,6 +7,7 @@ import {
   type SetStateAction,
 } from "react";
 import { Code2, RotateCcw, Play, ChevronRight, Terminal } from "lucide-react";
+import { usePreferences } from "./use-preferences";
 import { ReadableCode } from "../learning/readable-code";
 import type { Frame } from "@/lib/trace/interpreter";
 import { foundationLanguages } from "@/lib/foundations/sources";
@@ -87,12 +88,31 @@ export function CodePanel({
   resetCode: () => void;
   runEdits: () => void;
 }) {
+  const preferences = usePreferences();
   const [algorithm, setAlgorithm] = useState(true);
+  const [changed, setChanged] = useState<Set<string>>(new Set());
+  const previousState = useRef({ lesson: lesson.id, vars: frame.vars });
   const codeRef = useRef<HTMLDivElement | null>(null);
   const selectedLanguage = foundationLanguages.find((l) => l.id === language)!;
   const vars = Object.entries(frame.vars).filter(
     ([name]) => !["nums", "prefix", "result"].includes(name),
   );
+  useEffect(() => {
+    const previous = previousState.current;
+    setChanged(
+      new Set(
+        previous.lesson === lesson.id
+          ? Object.keys(frame.vars).filter(
+              (name) =>
+                name in previous.vars &&
+                JSON.stringify(previous.vars[name]) !==
+                  JSON.stringify(frame.vars[name]),
+            )
+          : [],
+      ),
+    );
+    previousState.current = { lesson: lesson.id, vars: frame.vars };
+  }, [frame, lesson.id]);
   useEffect(() => {
     const parent = codeRef.current;
     const active = parent?.querySelector<HTMLElement>('[data-current="true"]');
@@ -164,6 +184,22 @@ export function CodePanel({
           aria-label={`${selectedLanguage.label} code editor`}
           value={code}
           onChange={(e) => setCode(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Tab") {
+              e.preventDefault();
+              const node = e.currentTarget,
+                start = node.selectionStart,
+                end = node.selectionEnd;
+              const spaces = " ".repeat(preferences.tabSize);
+              setCode(code.slice(0, start) + spaces + code.slice(end));
+              requestAnimationFrame(() =>
+                node.setSelectionRange(
+                  start + spaces.length,
+                  start + spaces.length,
+                ),
+              );
+            }
+          }}
           spellCheck={false}
           maxLength={16000}
         />
@@ -241,7 +277,10 @@ export function CodePanel({
       <div className="variables">
         {vars.length ? (
           vars.map(([name, v]) => (
-            <div className="variable" key={name}>
+            <div
+              className={`variable ${changed.has(name) ? "is-changed" : ""}`}
+              key={name}
+            >
               <span>{name}</span>
               <code className="step-transition" key={format(v, language)}>
                 {format(v, language)}

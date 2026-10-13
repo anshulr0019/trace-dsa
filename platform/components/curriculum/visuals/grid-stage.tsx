@@ -1,4 +1,5 @@
 "use client";
+import { FitContent } from "@/components/experience/fit-content";
 import { useState } from "react";
 import { motion } from "motion/react";
 import {
@@ -112,11 +113,7 @@ export function MatrixCanvas({
           <button onClick={() => setManual(null)}>Follow step</button>
         </div>
       )}
-      <div
-        className="viz-matrix-scroll"
-        tabIndex={0}
-        aria-label={`${name}, ${rows} rows and ${cols} columns`}
-      >
+      <FitContent className="viz-matrix-fit">
         {rows && cols ? (
           <div
             className={`viz-matrix ${chess ? "viz-chess" : ""}`}
@@ -202,7 +199,7 @@ export function MatrixCanvas({
             Empty grid. Explore this boundary input.
           </div>
         )}
-      </div>
+      </FitContent>
       {selected && values[selected[0]] && (
         <Readout>
           <span>

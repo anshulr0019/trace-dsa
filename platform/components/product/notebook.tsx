@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { libraryLessons, libraryURL } from "@/lib/languages/catalog";
+import { libraryDraftKey } from "@/lib/languages/storage";
 import { problems, patterns } from "@/lib/curriculum/catalog";
 import {
   emptyNote,
@@ -99,6 +101,46 @@ export function Notebook() {
         to revisit.
       </p>
       <AccountPanel />
+      <section className="product-card">
+        <h2>Saved language & library work</h2>
+        <p>
+          Your example drafts, exercise solutions, notes, and learning evidence.
+        </p>
+        <div className="notebook-list">
+          {libraryLessons
+            .filter((l) => {
+              const n = readNote(`library:${l.id}`);
+              let draft = false;
+              try {
+                draft = !!localStorage.getItem(libraryDraftKey(l.id));
+              } catch {}
+              return (
+                draft ||
+                n.bookmarked ||
+                !!n.notes ||
+                !!learningEvidence(`library:${l.id}`).length
+              );
+            })
+            .map((l) => (
+              <article key={l.id}>
+                <div>
+                  <small>
+                    {l.language === "cpp" ? "C++" : l.language} · {l.module}
+                  </small>
+                  <h3>{l.title}</h3>
+                  <small>
+                    {learningStatus(learningEvidence(`library:${l.id}`))}
+                  </small>
+                  {readNote(`library:${l.id}`).notes && (
+                    <p>{readNote(`library:${l.id}`).notes.slice(0, 180)}</p>
+                  )}
+                </div>
+                <a href={libraryURL(l.language, l.topic)}>Continue lesson →</a>
+              </article>
+            ))}
+        </div>
+        <a href="/?view=languages">Explore language tracks →</a>
+      </section>
       <section className="product-card">
         <h2>My custom problems</h2>
         <p>

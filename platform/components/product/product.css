@@ -3,7 +3,7 @@
   max-width: 1120px;
   margin: auto;
   padding: 28px 0 100px;
-  color: #dcebe1;
+  color: var(--trace-color-dcebe1, #dcebe1);
 }
 .product-page h1,
 .product-intro h1 {
@@ -16,17 +16,17 @@
 .product-page > p,
 .product-intro > p {
   font-size: 17px;
-  color: #aabfb2;
+  color: var(--trace-color-aabfb2, #aabfb2);
   max-width: 65ch;
   line-height: 1.8;
 }
 .product-card {
   margin: 20px 0;
   padding: 24px;
-  border: 1px solid #ffffff18;
+  border: 1px solid var(--trace-color-ffffff18, #ffffff18);
   border-radius: 14px;
-  background: #131e20;
-  color: #d5e4da;
+  background: var(--trace-color-131e20, #131e20);
+  color: var(--trace-color-d5e4da, #d5e4da);
 }
 .product-card h2 {
   font-size: 22px;
@@ -36,14 +36,14 @@
 .product-card p {
   font-size: 14px;
   line-height: 1.8;
-  color: #adc2b4;
+  color: var(--trace-color-adc2b4, #adc2b4);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .product-card label {
   display: block;
   font-size: 13px;
-  color: #b7cbbf;
+  color: var(--trace-color-b7cbbf, #b7cbbf);
   margin: 14px 0;
 }
 .product-card input,
@@ -53,11 +53,11 @@
   display: block;
   width: 100%;
   margin-top: 7px;
-  border: 1px solid #ffffff24;
+  border: 1px solid var(--trace-color-ffffff24, #ffffff24);
   border-radius: 7px;
-  background: #0e181b;
+  background: var(--trace-color-0e181b, #0e181b);
   padding: 10px 12px;
-  color: #e2eee7;
+  color: var(--trace-color-e2eee7, #e2eee7);
   font-family: inherit;
   font-size: 14px;
   line-height: 1.6;
@@ -77,17 +77,17 @@
 .file-button {
   min-height: 40px;
   padding: 9px 14px;
-  border: 1px solid #63816e;
+  border: 1px solid var(--trace-color-63816e, #63816e);
   border-radius: 7px;
-  background: #233a2c;
-  color: #d4eeca;
+  background: var(--trace-color-233a2c, #233a2c);
+  color: var(--trace-color-d4eeca, #d4eeca);
   font-size: 13px;
   cursor: pointer;
 }
 .product-card button[aria-pressed="true"],
 .product-prediction button[aria-pressed="true"] {
-  background: #c6f39d;
-  color: #203015;
+  background: var(--trace-color-c6f39d, #c6f39d);
+  color: var(--trace-color-203015, #203015);
 }
 .product-card button:disabled {
   opacity: 0.45;
@@ -114,7 +114,7 @@
 }
 .product-actions a,
 .feedback-link {
-  color: #c6f39d;
+  color: var(--trace-color-c6f39d, #c6f39d);
   font-size: 13px;
 }
 .product-form-grid {
@@ -128,7 +128,7 @@
   justify-content: space-between;
   gap: 20px;
   padding: 20px 0;
-  border-top: 1px solid #ffffff12;
+  border-top: 1px solid var(--trace-color-ffffff12, #ffffff12);
 }
 .notebook-list h3 {
   font-size: 17px;
@@ -137,7 +137,7 @@
 .notebook-list small,
 .product-card small {
   font-size: 12px;
-  color: #93aa9b;
+  color: var(--trace-color-93aa9b, #93aa9b);
 }
 .notebook-list article p {
   margin: 6px 0;
@@ -156,11 +156,11 @@
   white-space: pre;
   font: 12px/1.8 monospace;
   padding: 16px;
-  background: #091216;
+  background: var(--trace-color-091216, #091216);
 }
 .lesson-actions > span {
   font-size: 12px;
-  color: #abc0b0;
+  color: var(--trace-color-abc0b0, #abc0b0);
   flex-basis: 100%;
 }
 .lesson-actions input {
@@ -169,7 +169,7 @@
 }
 .learning-preferences {
   font-size: 13px;
-  color: #b0c6b8;
+  color: var(--trace-color-b0c6b8, #b0c6b8);
 }
 .learning-preferences label {
   display: flex;
@@ -177,14 +177,14 @@
   gap: 8px;
 }
 .learning-preferences input {
-  accent-color: #c6f39d;
+  accent-color: var(--trace-color-c6f39d, #c6f39d);
 }
 .learning-preferences > span {
   font-size: 12px;
 }
 .product-prediction {
-  background: #243d2c;
-  border-top: 1px solid #c6f39d33;
+  background: var(--trace-color-243d2c, #243d2c);
+  border-top: 1px solid var(--trace-color-c6f39d33, #c6f39d33);
   padding: 18px;
 }
 .product-prediction h3 {
@@ -204,7 +204,7 @@
   gap: 22px;
   flex-wrap: wrap;
   margin: 24px 0;
-  color: #bcdca6;
+  color: var(--trace-color-bcdca6, #bcdca6);
   font-size: 14px;
 }
 .product-tour {
@@ -212,15 +212,15 @@
 }
 .product-tour > div {
   max-width: 600px;
-  background: #182a20;
+  background: var(--trace-color-182a20, #182a20);
   padding: 20px;
-  border: 1px solid #59744c;
+  border: 1px solid var(--trace-color-59744c, #59744c);
   border-radius: 10px;
   margin-top: 12px;
 }
 .product-tour p {
   line-height: 1.8;
-  color: #b3c9bb;
+  color: var(--trace-color-b3c9bb, #b3c9bb);
 }
 .comparison-grid {
   display: grid;
@@ -230,7 +230,7 @@
 }
 .comparison-grid > section {
   min-width: 0;
-  border: 1px solid #ffffff18;
+  border: 1px solid var(--trace-color-ffffff18, #ffffff18);
   border-radius: 10px;
   overflow: hidden;
   padding: 14px;
@@ -239,7 +239,7 @@
   font-size: 16px;
 }
 .comparison-grid > section > strong {
-  color: #c6f39d;
+  color: var(--trace-color-c6f39d, #c6f39d);
   font: 13px monospace;
 }
 .comparison-grid .live-scene {
@@ -253,13 +253,13 @@
   align-items: end;
   height: 130px;
   gap: 3px;
-  background: #102018;
+  background: var(--trace-color-102018, #102018);
   padding: 10px;
   margin: 16px 0;
 }
 .state-growth span {
   flex: 1;
-  background: #b3e390;
+  background: var(--trace-color-b3e390, #b3e390);
   min-height: 3px;
   border-radius: 3px 3px 0 0;
 }
@@ -287,7 +287,7 @@
 }
 :is(.product-card, .lesson-actions, .product-tour, .product-prediction)
   button:focus-visible {
-  outline: 2px solid #c6f39d;
+  outline: 2px solid var(--trace-color-c6f39d, #c6f39d);
   outline-offset: 4px;
 }
 @media (max-width: 750px) {

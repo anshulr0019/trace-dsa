@@ -9,6 +9,13 @@ import type { Language } from "@/lib/curriculum/playground";
 import { executeInBrowser } from "@/lib/curriculum/runtime-client";
 import { foundationCourseContent } from "@/lib/learning/foundation-course-content";
 import { LaunchHome } from "./learning/launch-home";
+import { LibraryHelp } from "./languages/library-help";
+import { SearchExplorer } from "./learning/search-explorer";
+import { MotionConfig } from "motion/react";
+import { usePreferences } from "./experience/use-preferences";
+import { readPreferences } from "@/lib/experience/preferences";
+import { ThemeSettings } from "./experience/theme-settings";
+import { WorkspaceTools } from "./experience/workspace-tools";
 import {
   LessonJourney,
   MasteryPanel,
@@ -60,6 +67,7 @@ import {
   SkipBack,
   SkipForward,
   Sparkles,
+  Search,
   Target,
   Terminal,
   Trophy,
@@ -109,6 +117,9 @@ import { PlaybackDock } from "./experience/playback-dock";
 import { CodePanel } from "./experience/code-panel";
 import { AccountProvider } from "./product/account";
 import { useOwnerAccess } from "./lab/owner-access";
+const QuickSearch = lazy(() =>
+  import("./experience/quick-search").then((m) => ({ default: m.QuickSearch })),
+);
 const OwnerDashboard = lazy(() =>
   import("./lab/owner-dashboard").then((m) => ({ default: m.OwnerDashboard })),
 );
@@ -124,6 +135,8 @@ const Notebook = lazy(() =>
 );
 import { GuidedTour } from "./product/learning-tools";
 import "./product/product.css";
+import "./experience/premium.css";
+import "./experience/layout-fit.css";
 const Curriculum = lazy(() =>
   import("./curriculum/curriculum").then((m) => ({ default: m.Curriculum })),
 );
@@ -165,6 +178,9 @@ const format = (v: unknown) =>
       : Array.isArray(v)
         ? `[${v.join(", ")}]`
         : String(v);
+const Languages = lazy(() =>
+  import("./languages/languages").then((m) => ({ default: m.Languages })),
+);
 const ComputerScience = lazy(() => import("./computer-science/hub"));
 
 function Navigation({
@@ -201,33 +217,77 @@ function Navigation({
         <div className="side-nav">
           <SidebarMenu>
             {[
-              { id: "home", label: "Overview", Icon: Home },
-              { id: "studio", label: "Learning studio", Icon: FlaskConical },
-              { id: "library", label: "Guided foundations", Icon: BookOpen },
-              { id: "curriculum", label: "100-problem roadmap", Icon: Code2 },
+              { id: "home", label: "Home", Icon: Home },
+              { id: "library", label: "Learn", Icon: BookOpen },
+              { id: "curriculum", label: "Practice", Icon: Target },
+              { id: "studio", label: "Playground", Icon: FlaskConical },
+              { id: "progress", label: "Progress", Icon: Gauge },
+            ].map(({ id, label, Icon }) => (
+              <SidebarMenuItem key={id}>
+                <SidebarMenuButton
+                  isActive={
+                    view === id || (id === "library" && view === "languages")
+                  }
+                  onClick={() => navigate(id)}
+                >
+                  <Icon />
+                  <span>{label}</span>
+                  {view === id && <span className="nav-dot" />}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+            <div className="sidebar-section-label">EXPLORE & KEEP</div>
+            {[
               { id: "cs", label: "Computer science", Icon: Cpu },
-              { id: "progress", label: "My progress", Icon: Gauge },
-              { id: "teacher", label: "Lessons & classes", Icon: BookOpen },
-              { id: "notebook", label: "Student notebook", Icon: BookOpen },
-              { id: "classroom", label: "Live classroom", Icon: FlaskConical },
-              { id: "owner", label: "Workspace checks", Icon: Gauge },
-            ]
-              .filter(
-                (item) =>
-                  item.id !== "owner" || ownerAccess.local || ownerAccess.owner,
-              )
-              .map(({ id, label, Icon }) => (
-                <SidebarMenuItem key={id}>
-                  <SidebarMenuButton
-                    isActive={view === id}
-                    onClick={() => navigate(id)}
-                  >
-                    <Icon />
-                    <span>{label}</span>
-                    {view === id && <span className="nav-dot" />}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              { id: "notebook", label: "My notebook", Icon: BookOpen },
+            ].map(({ id, label, Icon }) => (
+              <SidebarMenuItem key={id}>
+                <SidebarMenuButton
+                  isActive={view === id}
+                  onClick={() => navigate(id)}
+                >
+                  <Icon />
+                  <span>{label}</span>
+                  {view === id && <span className="nav-dot" />}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+            <details
+              className="sidebar-resources"
+              open={
+                ["teacher", "classroom", "owner"].includes(view) || undefined
+              }
+            >
+              <summary>
+                Teaching & workspace <ChevronRight size={13} />
+              </summary>
+              {[
+                { id: "teacher", label: "Lessons & classes", Icon: BookOpen },
+                {
+                  id: "classroom",
+                  label: "Live classroom",
+                  Icon: FlaskConical,
+                },
+                { id: "owner", label: "Workspace checks", Icon: Gauge },
+              ]
+                .filter(
+                  (item) =>
+                    item.id !== "owner" ||
+                    ownerAccess.local ||
+                    ownerAccess.owner,
+                )
+                .map(({ id, label, Icon }) => (
+                  <SidebarMenuItem key={id}>
+                    <SidebarMenuButton
+                      isActive={view === id}
+                      onClick={() => navigate(id)}
+                    >
+                      <Icon />
+                      <span>{label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+            </details>
           </SidebarMenu>
         </div>
         <div className="side-section">
@@ -270,27 +330,13 @@ function Navigation({
             ))}
           </SidebarMenu>
         </div>
-        <div className="sidebar-note">
-          <span className="tiny-symbol">
-            <Lightbulb size={17} />
-          </span>
-          <strong>
-            A little understanding,
-            <br />a lot less memorizing.
-          </strong>
-          <p>
-            Watch it. Question it.
-            <br />
-            Make it your own.
-          </p>
-        </div>
       </SidebarContent>
       <SidebarFooter>
         <div className="learner">
           <div className="avatar">Y</div>
           <div>
             <strong>Your workspace</strong>
-            <span>Progress saved on this browser</span>
+            <span>Saved on this device</span>
           </div>
         </div>
       </SidebarFooter>
@@ -298,11 +344,13 @@ function Navigation({
   );
 }
 export default function Studio() {
+  const preferences = usePreferences();
   const [foundationJourney, setFoundationJourney] =
     useState<JourneyStep>("Watch");
   const [lesson, setLesson] = useState(initial);
   const [view, setView] = useState("home");
   const [csNavigation, setCsNavigation] = useState(0);
+  const [languageNavigation, setLanguageNavigation] = useState(0);
   const [roadmapNavigation, setRoadmapNavigation] = useState(0);
   const [tab, setTab] = useState("learn");
   const [nums, setNums] = useState(initial.input);
@@ -323,8 +371,18 @@ export default function Studio() {
   const [run, setRun] = useState<RunResult>(() =>
     runCode(initial.code, lessonInputs(initial, initial.input, initial.target)),
   );
-  const [speed, setSpeed] = useState("1");
-  const [predicting, setPredicting] = useState(false);
+  const [speed, setSpeed] = useState(() => String(readPreferences().speed));
+  const [predicting, setPredicting] = useState(
+    () => readPreferences().predict || readPreferences().pauseAtDecisions,
+  );
+  useEffect(() => {
+    setSpeed(String(preferences.speed));
+  }, [preferences.speed]);
+  useEffect(() => {
+    setPredicting(preferences.predict || preferences.pauseAtDecisions);
+    setCheckpoint(null);
+    answeredSteps.current.clear();
+  }, [preferences.predict, preferences.pauseAtDecisions]);
   const [checkpoint, setCheckpoint] = useState<Prediction | null>(null);
   const answeredSteps = useRef(new Set<number>());
   const playback = usePlayback(run.frames.length, Number(speed), (cursor) => {
@@ -358,6 +416,17 @@ export default function Studio() {
   const [guide, setGuide] = useState(false);
   const [hint, setHint] = useState(0);
   const [about, setAbout] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, []);
   const [saved, setSaved] = useState<Saved>(emptySaved);
   const [storageReady, setStorageReady] = useState(false);
   const foundationInputDrafts = useRef<
@@ -461,7 +530,13 @@ export default function Studio() {
     [],
   );
   const changeLesson = useCallback(
-    (l: Lesson, execute = true) => {
+    (
+      l: Lesson,
+      execute = true,
+      language: Language = readPreferences().language,
+    ) => {
+      languageRef.current = language;
+      setFoundationLanguage(language);
       setFoundationJourney("Watch");
       setLesson(l);
       let values = l.input,
@@ -530,7 +605,7 @@ export default function Studio() {
     try {
       const requested =
         new URLSearchParams(location.search).get("language") ??
-        localStorage.getItem("trace:language");
+        readPreferences().language;
       if (isFoundationLanguage(requested)) {
         languageRef.current = requested;
         setFoundationLanguage(requested);
@@ -651,11 +726,12 @@ export default function Studio() {
         const hasLesson = new URLSearchParams(window.location.search).has(
           "lesson",
         );
-        if (l) changeLesson(l, hasLesson);
+        if (l) changeLesson(l, hasLesson, languageRef.current);
         if (!hasLesson) {
           setView(
             [
               "library",
+              "languages",
               "progress",
               "home",
               "curriculum",
@@ -666,13 +742,14 @@ export default function Studio() {
               "cs",
             ].includes(requestedView ?? "")
               ? requestedView!
-              : "home",
+              : readPreferences().startPage,
           );
           window.history.replaceState(
             null,
             "",
             [
               "curriculum",
+              "languages",
               "teacher",
               "notebook",
               "classroom",
@@ -682,7 +759,9 @@ export default function Studio() {
               ? initialSearch + initialHash
               : requestedView
                 ? `?view=${requestedView}`
-                : "/",
+                : readPreferences().startPage === "home"
+                  ? "/"
+                  : `/?view=${readPreferences().startPage}`,
           );
         }
       }
@@ -726,6 +805,11 @@ export default function Studio() {
         el.closest(
           'input,textarea,button,[role="slider"],[role="tab"],[role="dialog"],[role="combobox"]',
         ) ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        e.shiftKey ||
+        searchOpen ||
         view !== "studio" ||
         tab !== "learn" ||
         guide ||
@@ -747,7 +831,7 @@ export default function Studio() {
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [step, seek, view, tab, guide, about, running]);
+  }, [step, seek, view, tab, guide, about, running, searchOpen]);
   useEffect(() => {
     languageDrafts.current[lesson.id] = {
       ...languageDrafts.current[lesson.id],
@@ -986,1016 +1070,1345 @@ export default function Studio() {
           typeof value.attempts === "number"
         )
           setSaved(value);
+        else setSaved(emptySaved);
       } catch {}
     };
     window.addEventListener("trace:restore", restore);
     return () => window.removeEventListener("trace:restore", restore);
   }, [lesson, foundationLanguage, setPlaying, nums, parameter]);
+  function navigateURL(path: string) {
+    const url = new URL(path, location.origin);
+    setPlaying(false);
+    const nextLesson = lessons.find(
+      (l) => l.id === url.searchParams.get("lesson"),
+    );
+    if (nextLesson) {
+      window.history.pushState(null, "", url.pathname + url.search);
+      const requestedLanguage = url.searchParams.get("language");
+      changeLesson(
+        nextLesson,
+        true,
+        isFoundationLanguage(requestedLanguage)
+          ? requestedLanguage
+          : readPreferences().language,
+      );
+    } else {
+      const nextView = url.searchParams.get("view") ?? "home";
+      setView(nextView);
+      window.history.pushState(null, "", url.pathname + url.search + url.hash);
+      if (nextView === "cs") setCsNavigation((n) => n + 1);
+      if (nextView === "languages") setLanguageNavigation((n) => n + 1);
+      if (nextView === "curriculum") setRoadmapNavigation((n) => n + 1);
+    }
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+  function startBinarySearch(
+    values = [2, 4, 7, 9, 11, 14, 18, 21],
+    nextTarget = 14,
+  ) {
+    const binary = lessons.find((l) => l.id === "binary-search")!;
+    window.history.pushState(null, "", "/?lesson=binary-search");
+    changeLesson(binary, false);
+    setNums(values);
+    setParameter(nextTarget);
+    setRaw(values.join(", "));
+    setParamRaw(String(nextTarget));
+    const source =
+      languageDrafts.current[binary.id]?.[languageRef.current] ??
+      foundationSource(binary, values.length, languageRef.current);
+    setCode(source);
+    setCustom(
+      source !== foundationSource(binary, values.length, languageRef.current),
+    );
+    runTrace(binary, values, nextTarget, source);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+  useEffect(() => {
+    const back = () => {
+      const params = new URLSearchParams(location.search);
+      const nextLesson = lessons.find((l) => l.id === params.get("lesson"));
+      setPlaying(false);
+      if (nextLesson) {
+        const requestedLanguage = params.get("language");
+        changeLesson(
+          nextLesson,
+          true,
+          isFoundationLanguage(requestedLanguage)
+            ? requestedLanguage
+            : readPreferences().language,
+        );
+      } else {
+        const nextView = params.get("view") ?? "home";
+        setView(
+          [
+            "home",
+            "library",
+            "languages",
+            "curriculum",
+            "cs",
+            "progress",
+            "notebook",
+            "teacher",
+            "classroom",
+            "owner",
+          ].includes(nextView)
+            ? nextView
+            : "home",
+        );
+        if (nextView === "cs") setCsNavigation((n) => n + 1);
+        if (nextView === "languages") setLanguageNavigation((n) => n + 1);
+        if (nextView === "curriculum") setRoadmapNavigation((n) => n + 1);
+      }
+    };
+    window.addEventListener("popstate", back);
+    return () => window.removeEventListener("popstate", back);
+  }, [changeLesson, setPlaying]);
+  useEffect(() => {
+    if (searchOpen) setPlaying(false);
+  }, [searchOpen, setPlaying]);
+  const navigateView = (v: string) =>
+    navigateURL(
+      v === "studio"
+        ? `/?lesson=${lesson.id}`
+        : v === "home"
+          ? "/"
+          : `/?view=${v}`,
+    );
   const activeQuestion = lesson.questions[question];
   return (
-    <AccountProvider>
-      <SidebarProvider style={{ "--sidebar-width": "238px" } as CSSProperties}>
-        <Navigation
-          lesson={lesson}
-          onLesson={changeLesson}
-          view={view}
-          setView={(v) => {
-            setPlaying(false);
-            setView(v);
-            if (v === "cs") {
-              setCsNavigation((n) => n + 1);
-              window.scrollTo({ top: 0, behavior: "instant" });
-            }
-            if (v === "curriculum") {
-              setRoadmapNavigation((n) => n + 1);
-              window.scrollTo({ top: 0, behavior: "instant" });
-            }
-            window.history.replaceState(
-              null,
-              "",
-              v === "studio" ? `?lesson=${lesson.id}` : `?view=${v}`,
-            );
-          }}
-          saved={saved}
-        />
-        <div className="main-shell">
-          <header className="topbar">
-            <div className="breadcrumb">
-              <SidebarTrigger className="mobile-menu navigation-toggle" />
-              <span>Workspace</span>
-              <ChevronRight size={14} />
-              <strong>
-                {view === "studio"
-                  ? "Learning studio"
-                  : view === "library"
-                    ? "Guided foundations"
-                    : view === "home"
-                      ? "Overview"
-                      : view === "cs"
-                        ? "Computer science"
-                        : view === "curriculum"
-                          ? "100-problem roadmap"
-                          : view === "teacher"
-                            ? "Lessons & classes"
-                            : view === "owner"
-                              ? "Workspace checks"
-                              : view === "classroom"
-                                ? "Live classroom"
-                                : view === "notebook"
-                                  ? "Student notebook"
-                                  : "My progress"}
-              </strong>
-            </div>
-            <div className="top-actions">
-              <span className="local-status">
-                <span />
-                Local learning workspace
-              </span>
-              <button
-                className="icon-button"
-                onClick={() => setAbout(true)}
-                aria-label="About this workspace"
-              >
-                <Cpu size={18} />
-              </button>
-              <span className="avatar small">Y</span>
-            </div>
-          </header>
-          <main
-            id="main-content"
-            key={restoreGeneration}
-            className={`workspace ${view === "studio" && tab === "learn" ? "has-playback" : ""}`}
-          >
-            <Suspense
-              fallback={
-                <p className="workspace-loading" role="status">
-                  Opening your workspace…
-                </p>
-              }
+    <MotionConfig
+      reducedMotion={preferences.reducedMotion === "reduce" ? "always" : "user"}
+    >
+      <AccountProvider>
+        <SidebarProvider
+          style={{ "--sidebar-width": "238px" } as CSSProperties}
+        >
+          {view !== "home" && (
+            <Navigation
+              lesson={lesson}
+              onLesson={(l) => navigateURL(`/?lesson=${l.id}`)}
+              view={view}
+              setView={navigateView}
+              saved={saved}
+            />
+          )}
+          <div className={`main-shell ${view === "home" ? "home-shell" : ""}`}>
+            {view === "home" ? (
+              <header className="public-topbar">
+                <a className="brand" href="/" aria-label="Trace home">
+                  <span className="brand-mark">
+                    <Layers3 size={20} />
+                  </span>
+                  trace<span className="brand-dot">.</span>
+                </a>
+                <nav aria-label="Explore Trace">
+                  <button onClick={() => navigateView("library")}>Learn</button>
+                  <button onClick={() => navigateView("curriculum")}>
+                    Practice
+                  </button>
+                  <button onClick={() => navigateView("cs")}>
+                    Computer science
+                  </button>
+                </nav>
+                <div>
+                  <ThemeSettings onNavigate={navigateURL} />
+                  <button
+                    className="public-search"
+                    onClick={() => setSearchOpen(true)}
+                    aria-label="Find a lesson or workspace"
+                  >
+                    <Search size={17} />
+                    <kbd>⌘ / Ctrl K</kbd>
+                  </button>
+                  <button
+                    className="premium-button"
+                    onClick={() => startBinarySearch()}
+                  >
+                    Open studio <ArrowUpRight size={15} />
+                  </button>
+                </div>
+              </header>
+            ) : (
+              <header className="topbar">
+                <div className="breadcrumb">
+                  <SidebarTrigger className="mobile-menu navigation-toggle" />
+                  <span>Workspace</span>
+                  <ChevronRight size={14} />
+                  <strong>
+                    {view === "studio"
+                      ? "Learning studio"
+                      : view === "languages"
+                        ? "Languages & libraries"
+                        : view === "library"
+                          ? "Guided foundations"
+                          : view === "home"
+                            ? "Overview"
+                            : view === "cs"
+                              ? "Computer science"
+                              : view === "curriculum"
+                                ? "100-problem roadmap"
+                                : view === "teacher"
+                                  ? "Lessons & classes"
+                                  : view === "owner"
+                                    ? "Workspace checks"
+                                    : view === "classroom"
+                                      ? "Live classroom"
+                                      : view === "notebook"
+                                        ? "Student notebook"
+                                        : "My progress"}
+                  </strong>
+                </div>
+                <div className="top-actions">
+                  <ThemeSettings onNavigate={navigateURL} />
+                  <WorkspaceTools
+                    onSearch={() => setSearchOpen(true)}
+                    view={view}
+                  />
+                  <span className="local-status">
+                    <span />
+                    Saved on this device
+                  </span>
+                  <button
+                    className="icon-button"
+                    onClick={() => setAbout(true)}
+                    aria-label="About this workspace"
+                  >
+                    <Cpu size={18} />
+                  </button>
+                  <span className="avatar small">Y</span>
+                </div>
+              </header>
+            )}
+            <main
+              id="main-content"
+              key={restoreGeneration}
+              className={`workspace ${view === "home" ? "home-workspace" : ""} ${view === "studio" && tab === "learn" ? "has-playback" : ""}`}
             >
-              {view === "cs" ? (
-                <Suspense fallback={<p>Loading computer science labs…</p>}>
-                  <ComputerScience key={csNavigation} />
-                </Suspense>
-              ) : view === "owner" ? (
-                <OwnerDashboard />
-              ) : view === "classroom" ? (
-                <Classroom />
-              ) : view === "teacher" ? (
-                <TeacherWorkspace />
-              ) : view === "notebook" ? (
-                <Notebook />
-              ) : view === "curriculum" ? (
-                <Curriculum
-                  navigationRequest={roadmapNavigation}
-                  onExisting={(id) =>
-                    changeLesson(lessons.find((l) => l.id === id)!)
-                  }
-                />
-              ) : view === "home" ? (
-                <>
-                  <LaunchHome />
-                </>
-              ) : view === "studio" ? (
-                <>
-                  <div className="lesson-heading">
-                    <div>
-                      <div className="eyebrow mint">
-                        <span className="chapter-line" /> FOUNDATIONS /{" "}
-                        {lesson.category.toUpperCase()}
+              <Suspense
+                fallback={
+                  <div
+                    className="workspace-skeleton"
+                    role="status"
+                    aria-label="Opening your workspace"
+                  >
+                    <span />
+                    <div />
+                    <p>Opening your workspace…</p>
+                  </div>
+                }
+              >
+                {view === "cs" ? (
+                  <Suspense fallback={<p>Loading computer science labs…</p>}>
+                    <ComputerScience key={csNavigation} />
+                  </Suspense>
+                ) : view === "owner" ? (
+                  <OwnerDashboard />
+                ) : view === "classroom" ? (
+                  <Classroom />
+                ) : view === "teacher" ? (
+                  <TeacherWorkspace />
+                ) : view === "notebook" ? (
+                  <Notebook />
+                ) : view === "languages" ? (
+                  <Languages
+                    key={languageNavigation}
+                    onNavigate={navigateURL}
+                  />
+                ) : view === "curriculum" ? (
+                  <Curriculum
+                    navigationRequest={roadmapNavigation}
+                    onExisting={(id) =>
+                      changeLesson(lessons.find((l) => l.id === id)!)
+                    }
+                  />
+                ) : view === "home" ? (
+                  <>
+                    <LaunchHome
+                      onStart={() => startBinarySearch()}
+                      onDemo={startBinarySearch}
+                      onNavigate={navigateView}
+                    />
+                  </>
+                ) : view === "studio" ? (
+                  <>
+                    <div className="lesson-heading">
+                      <div>
+                        <div className="eyebrow mint">
+                          <span className="chapter-line" /> FOUNDATIONS /{" "}
+                          {lesson.category.toUpperCase()}
+                        </div>
+                        <h1>{lesson.title}</h1>
+                        <p>{lesson.description}</p>
+                        <div className="lesson-meta">
+                          <span className="difficulty">Foundational</span>
+                          <span>
+                            <BookOpen size={13} />
+                            {lesson.duration}
+                          </span>
+                          <span>
+                            <Code2 size={13} />
+                            {
+                              foundationLanguages.find(
+                                (l) => l.id === foundationLanguage,
+                              )?.label
+                            }
+                          </span>
+                        </div>
                       </div>
-                      <h1>{lesson.title}</h1>
-                      <p>{lesson.description}</p>
-                      <div className="lesson-meta">
-                        <span className="difficulty">Foundational</span>
-                        <span>
-                          <BookOpen size={13} />
-                          {lesson.duration}
-                        </span>
-                        <span>
-                          <Code2 size={13} />
-                          {
-                            foundationLanguages.find(
-                              (l) => l.id === foundationLanguage,
-                            )?.label
-                          }
-                        </span>
+                      <div className="heading-actions">
+                        <LibraryHelp language={foundationLanguage} />
+                        <LearningBadge
+                          id={`foundation:${lesson.id}`}
+                          onClick={() => {
+                            setTab("learn");
+                            setFoundationJourney("Review");
+                            requestAnimationFrame(() =>
+                              requestAnimationFrame(() =>
+                                document
+                                  .getElementById(
+                                    `review-foundation:${lesson.id}`,
+                                  )
+                                  ?.scrollIntoView({
+                                    block: "start",
+                                    behavior: "instant",
+                                  }),
+                              ),
+                            );
+                          }}
+                        />
                       </div>
                     </div>
-                    <div className="heading-actions">
-                      <LearningBadge
-                        id={`foundation:${lesson.id}`}
-                        onClick={() => {
-                          setTab("learn");
-                          setFoundationJourney("Review");
-                          requestAnimationFrame(() =>
-                            requestAnimationFrame(() =>
+                    <LessonJourney
+                      active={tab === "practice" ? "Solve" : foundationJourney}
+                      disabled={running}
+                      onStep={(stage) => {
+                        setFoundationJourney(stage);
+                        setPlaying(false);
+                        if (stage === "Solve") {
+                          setTab("practice");
+                          return;
+                        }
+                        setTab("learn");
+                        requestAnimationFrame(() =>
+                          requestAnimationFrame(() => {
+                            if (stage === "Watch") {
+                              foundationFocus.focus();
+                              recordLearning(
+                                `foundation:${lesson.id}`,
+                                "watched",
+                                "Opened foundation visualization",
+                              );
+                            } else {
+                              if (stage === "Understand") {
+                                const details = document.getElementById(
+                                  "foundation-study",
+                                ) as HTMLDetailsElement | null;
+                                if (details) details.open = true;
+                              }
                               document
                                 .getElementById(
-                                  `review-foundation:${lesson.id}`,
+                                  stage === "Understand"
+                                    ? "foundation-study"
+                                    : stage === "Try"
+                                      ? "foundation-try"
+                                      : `review-foundation:${lesson.id}`,
                                 )
                                 ?.scrollIntoView({
                                   block: "start",
                                   behavior: "instant",
-                                }),
-                            ),
-                          );
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <LessonJourney
-                    active={tab === "practice" ? "Solve" : foundationJourney}
-                    disabled={running}
-                    onStep={(stage) => {
-                      setFoundationJourney(stage);
-                      setPlaying(false);
-                      if (stage === "Solve") {
-                        setTab("practice");
-                        return;
-                      }
-                      setTab("learn");
-                      requestAnimationFrame(() =>
-                        requestAnimationFrame(() => {
-                          if (stage === "Watch") {
-                            foundationFocus.focus();
-                            recordLearning(
-                              `foundation:${lesson.id}`,
-                              "watched",
-                              "Opened foundation visualization",
-                            );
-                          } else {
-                            if (stage === "Understand") {
-                              const details = document.getElementById(
-                                "foundation-study",
-                              ) as HTMLDetailsElement | null;
-                              if (details) details.open = true;
+                                });
                             }
-                            document
-                              .getElementById(
-                                stage === "Understand"
-                                  ? "foundation-study"
-                                  : stage === "Try"
-                                    ? "foundation-try"
-                                    : `review-foundation:${lesson.id}`,
-                              )
-                              ?.scrollIntoView({
-                                block: "start",
-                                behavior: "instant",
-                              });
-                          }
-                        }),
-                      );
-                    }}
-                  />
-                  <Tabs
-                    value={tab}
-                    onValueChange={(v) => {
-                      setTab(v);
-                      setPlaying(false);
-                    }}
-                    className="lesson-tabs streamlined-foundation"
-                  >
-                    <div className="tabs-row foundation-extra-controls">
-                      <TabsList className="tab-list" variant="line">
-                        <TabsTrigger
-                          className="journey-duplicate"
-                          value="learn"
-                        >
-                          <FlaskConical size={16} />
-                          Explore
-                        </TabsTrigger>
-                        <TabsTrigger value="compare">
-                          <GitCompareArrows size={16} />
-                          Compare approaches
-                        </TabsTrigger>
-                        <TabsTrigger
-                          className="journey-duplicate"
-                          value="practice"
-                        >
-                          <Target size={16} />
-                          Test your understanding
-                          <span className="tab-count">
-                            {(saved.answered[lesson.id] || []).length}/3
-                          </span>
-                        </TabsTrigger>
-                      </TabsList>
-                      <a
-                        className="foundation-input-link"
-                        href="#foundation-options"
-                        onClick={() => {
-                          const d = document.getElementById(
-                            "foundation-options",
-                          ) as HTMLDetailsElement | null;
-                          if (d) d.open = true;
-                        }}
-                      >
-                        Edit input & options ↓
-                      </a>
-                      <label className="prediction-toggle">
-                        <Switch
-                          checked={predicting}
-                          disabled={custom}
-                          onCheckedChange={(v) => {
-                            setPredicting(v);
-                            setCheckpoint(null);
+                          }),
+                        );
+                      }}
+                    />
+                    <Tabs
+                      value={tab}
+                      onValueChange={(v) => {
+                        setTab(v);
+                        setPlaying(false);
+                      }}
+                      className="lesson-tabs streamlined-foundation"
+                    >
+                      <div className="tabs-row foundation-extra-controls">
+                        <TabsList className="tab-list" variant="line">
+                          <TabsTrigger
+                            className="journey-duplicate"
+                            value="learn"
+                          >
+                            <FlaskConical size={16} />
+                            Explore
+                          </TabsTrigger>
+                          <TabsTrigger value="compare">
+                            <GitCompareArrows size={16} />
+                            Compare approaches
+                          </TabsTrigger>
+                          <TabsTrigger
+                            className="journey-duplicate"
+                            value="practice"
+                          >
+                            <Target size={16} />
+                            Test your understanding
+                            <span className="tab-count">
+                              {(saved.answered[lesson.id] || []).length}/3
+                            </span>
+                          </TabsTrigger>
+                        </TabsList>
+                        <a
+                          className="foundation-input-link"
+                          href="#foundation-options"
+                          onClick={() => {
+                            const d = document.getElementById(
+                              "foundation-options",
+                            ) as HTMLDetailsElement | null;
+                            if (d) d.open = true;
                           }}
-                          aria-label="Predict the next move"
-                        />{" "}
-                        Predict the next move
-                      </label>
-                    </div>
-                    <TabsContent value="learn">
-                      <div
-                        ref={foundationFocus.ref}
-                        className={`playback-surface foundation-playback-surface ${foundationFocus.focused ? "is-playback-focused" : ""}`}
-                      >
-                        {foundationFocus.focused && (
-                          <div className="playback-focus-toolbar">
-                            <span>Playback view · visualization and code</span>
-                            <button
-                              onClick={() => {
-                                setPlaying(false);
-                                foundationFocus.setFocused(false);
-                              }}
-                            >
-                              Full layout
-                            </button>
-                          </div>
-                        )}
-                        <Workbench
-                          focusRequest={foundationFocus.focusRequest}
-                          onSwitch={() => setPlaying(false)}
-                          visual={
-                            <section className="visual-panel panel">
-                              <div className="panel-title">
-                                <span>
-                                  <span className="panel-icon">
-                                    <Layers3 size={16} />
-                                  </span>
-                                  Visualization
-                                </span>
-                                <span className="live-badge">
-                                  {running
-                                    ? "RUNNING"
-                                    : completed
-                                      ? "COMPLETE"
-                                      : "INTERACTIVE"}
-                                </span>
-                              </div>
-                              <RuntimeStatus
-                                busy={running}
-                                stage={foundationRuntimeStage}
-                                error={run.error || undefined}
-                                onRetry={runEdits}
-                                onCancel={() => {
-                                  foundationAbort.current?.abort();
-                                  requestId.current++;
-                                  worker.current?.terminate();
-                                  worker.current = null;
-                                  if (timeout.current)
-                                    clearTimeout(timeout.current);
-                                  setRunning(false);
-                                  setPlaying(false);
-                                }}
-                                onHelp={() => setGuide(true)}
-                              />
-                              {inputError && (
-                                <div className="inline-error" role="alert">
-                                  {inputError}
-                                </div>
-                              )}
-                              {checkpoint && (
-                                <PredictionCard
-                                  key={checkpoint.step}
-                                  question={checkpoint}
-                                  onContinue={() => {
-                                    answeredSteps.current.add(checkpoint.step);
-                                    setCheckpoint(null);
-                                    setPlaying(true);
-                                  }}
-                                />
-                              )}
-                              <MotionStage
-                                key={lesson.id}
-                                frame={frame}
-                                nextFrame={run.frames[playback.target] ?? frame}
-                                phase={playback.phase}
-                                lesson={lesson}
-                                custom={custom}
-                              />
-                              <div
-                                className="step-narrative"
-                                aria-live={playing ? "off" : "polite"}
-                              >
-                                <span className="step-symbol">
-                                  <ChevronRight size={16} />
-                                </span>
-                                <div
-                                  className="step-transition"
-                                  key={`${step}:${frame.message}`}
-                                >
-                                  <strong>
-                                    {step === 0
-                                      ? "Ready when you are"
-                                      : completed
-                                        ? "You reached the result"
-                                        : `Line ${frame.line}`}
-                                  </strong>
-                                  <p>
-                                    {step === 0
-                                      ? "Press play, or move one step at a time. Watch the code and state change together."
-                                      : describeFrame(frame, lesson, custom)}
-                                  </p>
-                                </div>
-                              </div>
-                            </section>
-                          }
-                          code={
-                            <CodePanel
-                              language={foundationLanguage}
-                              onLanguageChange={changeFoundationLanguage}
-                              frame={frame}
-                              nextLine={
-                                playback.target !== step
-                                  ? run.frames[playback.target]?.line
-                                  : undefined
-                              }
-                              lesson={lesson}
-                              editing={editing}
-                              setEditing={setEditing}
-                              setPlaying={setPlaying}
-                              code={code}
-                              setCode={setCode}
-                              executedCode={executedCode}
-                              dirty={dirty}
-                              custom={custom}
-                              running={running}
-                              error={run.error}
-                              resetCode={resetCode}
-                              runEdits={runEdits}
-                            />
-                          }
-                          explanation={
-                            <div className="mobile-explanation panel">
-                              <span className="eyebrow mint">THE IDEA</span>
-                              <h2>Every move has a reason.</h2>
-                              <p>{lesson.intuition}</p>
-                              <h3>What stays true</h3>
-                              <p>{lesson.invariant}</p>
-                              <div className="explanation-complexity">
-                                <span>
-                                  Time <b>{lesson.complexity}</b>
-                                </span>
-                                <span>
-                                  Extra space <b>{lesson.space}</b>
-                                </span>
-                              </div>
-                            </div>
-                          }
-                        />
-                      </div>
-                      <PlaybackDock
-                        playback={playback}
-                        count={run.frames.length}
-                        speed={speed}
-                        setSpeed={setSpeed}
-                        running={running}
-                        onSeek={seek}
-                      />
-                      <details id="foundation-options" className="lesson-tools">
-                        <summary>
-                          Edit input, share replay & open the lesson guide
-                        </summary>
-                        <div className="launch-actions">
-                          <button className="button secondary" onClick={share}>
-                            <Share2 size={15} />
-                            Share replay
-                          </button>
-                          <button
-                            className="button guide-button"
-                            onClick={() => {
-                              setPlaying(false);
-                              setGuide(true);
+                        >
+                          Edit input & options ↓
+                        </a>
+                        <label className="prediction-toggle">
+                          <Switch
+                            checked={predicting}
+                            disabled={custom}
+                            onCheckedChange={(v) => {
+                              setPredicting(v);
+                              setCheckpoint(null);
                             }}
-                          >
-                            <Sparkles size={15} />
-                            Lesson guide
-                          </button>
-                        </div>
-                        <form
-                          className="input-toolbar"
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            applyInputs();
-                          }}
-                        >
-                          <label className="array-input">
-                            Input array
-                            <input
-                              value={raw}
-                              onChange={(e) => {
-                                setPlaying(false);
-                                setRaw(e.target.value);
-                              }}
-                              aria-label="Input array"
-                              spellCheck={false}
-                            />
-                          </label>
-                          {lesson.parameter !== "none" && (
-                            <label className="target-input">
-                              {lesson.parameter === "k"
-                                ? "Window size"
-                                : "Target"}
-                              <input
-                                type="number"
-                                value={paramRaw}
-                                onChange={(e) => {
-                                  setPlaying(false);
-                                  setParamRaw(e.target.value);
-                                }}
-                                aria-label={
-                                  lesson.parameter === "k"
-                                    ? "Window size"
-                                    : "Target"
-                                }
-                              />
-                            </label>
-                          )}
-                          <button
-                            type="submit"
-                            className="button small-button"
-                            disabled={running}
-                          >
-                            Apply
-                          </button>
-                          <button
-                            type="button"
-                            className="icon-button shuffle"
-                            title="Try a random input"
-                            aria-label="Try a random input"
-                            onClick={randomize}
-                            disabled={running}
-                          >
-                            <RotateCcw size={16} />
-                          </button>
-                        </form>
-                      </details>
-                      <div className="insight-grid">
-                        <section className="insight-card">
-                          <div className="eyebrow">
-                            <Lightbulb size={15} />
-                            THE IDEA
-                          </div>
-                          <h2>Every move has a reason.</h2>
-                          <p>{lesson.intuition}</p>
-                        </section>
-                        <section className="insight-card invariant">
-                          <div className="eyebrow mint">
-                            <CheckCircle2 size={15} />
-                            WHAT STAYS TRUE
-                          </div>
-                          <h2>The invariant</h2>
-                          <p>{lesson.invariant}</p>
-                        </section>
-                        <section className="complexity-card">
-                          <div className="complexity-row">
-                            <span>Time complexity</span>
-                            <strong>{lesson.complexity}</strong>
-                          </div>
-                          <div className="complexity-row">
-                            <span>Extra space</span>
-                            <strong>{lesson.space}</strong>
-                          </div>
-                          <p>Reference algorithm · excluding trace storage</p>
-                          <button
-                            className="text-button mint"
-                            onClick={() => setTab("compare")}
-                          >
-                            See the work saved
-                            <ArrowRight size={14} />
-                          </button>
-                        </section>
+                            aria-label="Predict the next move"
+                          />{" "}
+                          Predict the next move
+                        </label>
                       </div>
-                      <div className="bottom-strip">
-                        <span>
-                          <span className="keycap">←</span>
-                          <span className="keycap">→</span>to step{" "}
-                          <span className="keycap">space</span>to play or pause
-                        </span>
-                        <button
-                          className="text-button"
-                          onClick={() => setTab("practice")}
-                        >
-                          Ready to try it yourself?
-                          <ArrowRight size={15} />
-                        </button>
-                      </div>
-                      <details className="lesson-tools" id="foundation-study">
-                        <summary>
-                          Understand the idea · worked lesson & reasoning
-                        </summary>
-                        <CourseGuide
-                          track="dsa"
-                          goal={lesson.intuition}
-                          challenge={lesson.invariant}
-                        />
+                      <TabsContent value="learn">
                         <div
-                          id="foundation-understand"
-                          className="journey-anchor"
-                        />
-                        <CourseStudy
-                          key={lesson.id}
-                          id={`foundation:${lesson.id}`}
-                          unit={foundationCourseContent[lesson.id]}
-                          track="dsa"
-                          onExplore={() =>
-                            foundationFocus.ref.current?.scrollIntoView({
-                              block: "start",
-                              behavior: "smooth",
-                            })
-                          }
-                        />
-                      </details>
-                      <div id="foundation-try" className="journey-anchor">
-                        {lesson.id === "sliding-window" ? (
-                          <WindowExercise
-                            key={`${nums}:${parameter}`}
-                            nums={nums}
-                            k={parameter}
-                            average={false}
-                            learningId={`foundation:${lesson.id}`}
-                          />
-                        ) : (
-                          <HandsOn
-                            scoped
-                            key={lesson.id}
-                            initial={
-                              lesson.id === "bubble-sort" ||
-                              lesson.id === "insertion-sort"
-                                ? "bubble"
-                                : lesson.id === "prefix-sum"
-                                  ? "prefix"
-                                  : lesson.id === "two-sum"
-                                    ? "pointers"
-                                    : lesson.id === "sliding-window"
-                                      ? "window"
-                                      : "binary"
-                            }
-                          />
-                        )}
-                      </div>
-                      <MasteryPanel
-                        id={`foundation:${lesson.id}`}
-                        onPractice={() => setTab("practice")}
-                      />
-                    </TabsContent>
-                    <TabsContent value="compare">
-                      <ComparisonLab
-                        key={`${lesson.id}:${nums.join(",")}:${parameter}`}
-                        lesson={lesson}
-                        nums={nums}
-                        parameter={parameter}
-                      />
-                    </TabsContent>
-                    <TabsContent value="practice">
-                      <div className="practice-layout">
-                        <section className="question-card">
-                          <div className="question-top">
-                            <span className="eyebrow mint">
-                              {question === 0
-                                ? "PREDICT"
-                                : question === 1
-                                  ? "EXPLAIN"
-                                  : "TRANSFER"}
-                            </span>
-                            <span>
-                              Question {question + 1} of{" "}
-                              {lesson.questions.length}
-                            </span>
-                          </div>
-                          <Progress
-                            value={
-                              ((question + 1) / lesson.questions.length) * 100
-                            }
-                          />
-                          <h2>{activeQuestion.prompt}</h2>
-                          <div
-                            className="answer-options"
-                            role="group"
-                            aria-label="Answer choices"
-                          >
-                            {activeQuestion.options.map((option, i) => (
+                          ref={foundationFocus.ref}
+                          className={`playback-surface foundation-playback-surface ${foundationFocus.focused ? "is-playback-focused" : ""}`}
+                        >
+                          {foundationFocus.focused && (
+                            <div className="playback-focus-toolbar">
+                              <span>
+                                Playback view · visualization and code
+                              </span>
                               <button
-                                key={i}
-                                aria-pressed={choice === i}
-                                className={
-                                  "answer-option " +
-                                  (choice === i ? "selected " : "") +
-                                  (checked && i === activeQuestion.answer
-                                    ? "correct "
-                                    : checked && i === choice
-                                      ? "incorrect"
-                                      : "")
-                                }
                                 onClick={() => {
-                                  if (!checked) setChoice(i);
-                                }}
-                                disabled={checked}
-                              >
-                                <span className="answer-letter">
-                                  {String.fromCharCode(65 + i)}
-                                </span>
-                                <span>{option}</span>
-                                {checked && i === activeQuestion.answer && (
-                                  <CheckCircle2 size={18} />
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                          {checked && (
-                            <div
-                              className={
-                                "answer-feedback " +
-                                (choice === activeQuestion.answer
-                                  ? "success"
-                                  : "")
-                              }
-                              role="status"
-                            >
-                              <strong>
-                                {choice === activeQuestion.answer
-                                  ? "That’s right."
-                                  : "Let’s look at the reasoning."}
-                              </strong>
-                              <p>{activeQuestion.explanation}</p>
-                            </div>
-                          )}
-                          <div className="question-actions">
-                            <button
-                              className="text-button muted"
-                              onClick={() => {
-                                setTab("learn");
-                              }}
-                            >
-                              Back to the visualization
-                            </button>
-                            {!checked ? (
-                              <button
-                                className="button"
-                                disabled={choice === null}
-                                onClick={checkAnswer}
-                              >
-                                Check answer
-                                <ArrowRight size={15} />
-                              </button>
-                            ) : question < lesson.questions.length - 1 ? (
-                              <button
-                                className="button"
-                                onClick={() => {
-                                  setQuestion((q) => q + 1);
-                                  setChoice(null);
-                                  setChecked(false);
-                                }}
-                              >
-                                Next question
-                                <ArrowRight size={15} />
-                              </button>
-                            ) : (
-                              <button
-                                className="button"
-                                onClick={() => {
-                                  setQuestion(0);
-                                  setChoice(null);
-                                  setChecked(false);
-                                  setNotice(
-                                    "Practice restarted. Your correct answers remain saved.",
+                                  setPlaying(false);
+                                  foundationFocus.setFocused(false);
+                                  window.dispatchEvent(
+                                    new Event("trace:exit-focus"),
                                   );
                                 }}
                               >
-                                Practice again
-                                <RotateCcw size={15} />
+                                Full layout
                               </button>
-                            )}
-                          </div>
-                        </section>
-                        <aside className="practice-aside">
-                          <div className="practice-icon">
-                            <Target size={28} />
-                          </div>
-                          <h2>Make the idea yours.</h2>
-                          <p>
-                            Understanding means being able to predict, explain,
-                            and apply. Take your time.
-                          </p>
-                          <div className="practice-progress">
-                            <CheckCircle2 size={18} />
-                            <span>
-                              {(saved.answered[lesson.id] || []).length} of 3
-                              concepts checked
-                            </span>
-                          </div>
-                          {saved.mastered.includes(lesson.id) && (
-                            <div className="mastered-note">
-                              <Trophy size={20} />
-                              <strong>Foundation quiz completed</strong>
-                              <p>
-                                Try a new input, then come back tomorrow to see
-                                what you remember.
-                              </p>
                             </div>
                           )}
-                          <button
-                            className="text-button mint"
-                            onClick={() => setGuide(true)}
+                          <Workbench
+                            focusRequest={foundationFocus.focusRequest}
+                            onSwitch={() => setPlaying(false)}
+                            visual={
+                              <section className="visual-panel panel">
+                                <div className="panel-title">
+                                  <span>
+                                    <span className="panel-icon">
+                                      <Layers3 size={16} />
+                                    </span>
+                                    Algorithm in motion
+                                  </span>
+                                  <button
+                                    className="stage-start-button"
+                                    aria-label={
+                                      playing ? "Pause lesson" : "Play lesson"
+                                    }
+                                    disabled={running || run.frames.length < 2}
+                                    onClick={() => setPlaying((v) => !v)}
+                                  >
+                                    {playing ? (
+                                      <Pause size={13} />
+                                    ) : (
+                                      <Play size={13} />
+                                    )}
+                                    {playing
+                                      ? "Pause"
+                                      : completed
+                                        ? "Replay"
+                                        : "Play"}
+                                  </button>
+                                  <span className="live-badge">
+                                    {running
+                                      ? "RUNNING"
+                                      : completed
+                                        ? "COMPLETE"
+                                        : "INTERACTIVE"}
+                                  </span>
+                                </div>
+                                <RuntimeStatus
+                                  busy={running}
+                                  stage={foundationRuntimeStage}
+                                  error={run.error || undefined}
+                                  onRetry={runEdits}
+                                  onCancel={() => {
+                                    foundationAbort.current?.abort();
+                                    requestId.current++;
+                                    worker.current?.terminate();
+                                    worker.current = null;
+                                    if (timeout.current)
+                                      clearTimeout(timeout.current);
+                                    setRunning(false);
+                                    setPlaying(false);
+                                  }}
+                                  onHelp={() => setGuide(true)}
+                                />
+                                {inputError && (
+                                  <div className="inline-error" role="alert">
+                                    {inputError}
+                                  </div>
+                                )}
+                                {checkpoint && (
+                                  <PredictionCard
+                                    key={checkpoint.step}
+                                    question={checkpoint}
+                                    onContinue={() => {
+                                      answeredSteps.current.add(
+                                        checkpoint.step,
+                                      );
+                                      setCheckpoint(null);
+                                      setPlaying(true);
+                                    }}
+                                  />
+                                )}
+                                <MotionStage
+                                  key={lesson.id}
+                                  frame={frame}
+                                  nextFrame={
+                                    run.frames[playback.target] ?? frame
+                                  }
+                                  phase={playback.phase}
+                                  lesson={lesson}
+                                  custom={custom}
+                                  onEditValue={
+                                    running
+                                      ? undefined
+                                      : (index, value) => {
+                                          try {
+                                            const values = Array.isArray(
+                                              frame.vars.nums,
+                                            )
+                                              ? [...frame.vars.nums]
+                                              : [...nums];
+                                            values[index] = value;
+                                            if (
+                                              !Number.isFinite(value) ||
+                                              !Number.isInteger(value)
+                                            )
+                                              throw new Error(
+                                                "Use a whole number.",
+                                              );
+                                            const valid = validateInput(
+                                              lesson,
+                                              values.join(","),
+                                              String(parameter),
+                                            );
+                                            setNums(valid.nums);
+                                            setRaw(valid.nums.join(", "));
+                                            const source = custom
+                                              ? executedCode
+                                              : foundationSource(
+                                                  lesson,
+                                                  valid.nums.length,
+                                                  foundationLanguage,
+                                                );
+                                            if (!dirty) setCode(source);
+                                            runTrace(
+                                              lesson,
+                                              valid.nums,
+                                              parameter,
+                                              source,
+                                            );
+                                            return null;
+                                          } catch (e) {
+                                            return (e as Error).message;
+                                          }
+                                        }
+                                  }
+                                />
+                                <div
+                                  className="step-narrative"
+                                  aria-live={playing ? "off" : "polite"}
+                                >
+                                  <span className="step-symbol">
+                                    <ChevronRight size={16} />
+                                  </span>
+                                  <div
+                                    className="step-transition"
+                                    key={`${step}:${frame.message}`}
+                                  >
+                                    <strong>
+                                      {step === 0
+                                        ? "Ready when you are"
+                                        : completed
+                                          ? "You reached the result"
+                                          : `Line ${frame.line}`}
+                                    </strong>
+                                    <p>
+                                      {step === 0
+                                        ? "Press play, or move one step at a time. Watch the code and state change together."
+                                        : describeFrame(frame, lesson, custom)}
+                                    </p>
+                                  </div>
+                                </div>
+                              </section>
+                            }
+                            code={
+                              <CodePanel
+                                language={foundationLanguage}
+                                onLanguageChange={changeFoundationLanguage}
+                                frame={frame}
+                                nextLine={
+                                  playback.target !== step
+                                    ? run.frames[playback.target]?.line
+                                    : undefined
+                                }
+                                lesson={lesson}
+                                editing={editing}
+                                setEditing={setEditing}
+                                setPlaying={setPlaying}
+                                code={code}
+                                setCode={setCode}
+                                executedCode={executedCode}
+                                dirty={dirty}
+                                custom={custom}
+                                running={running}
+                                error={run.error}
+                                resetCode={resetCode}
+                                runEdits={runEdits}
+                              />
+                            }
+                            explanation={
+                              <div className="mobile-explanation panel">
+                                <span className="eyebrow mint">THE IDEA</span>
+                                <h2>Every move has a reason.</h2>
+                                <p>{lesson.intuition}</p>
+                                <h3>What stays true</h3>
+                                <p>{lesson.invariant}</p>
+                                <div className="explanation-complexity">
+                                  <span>
+                                    Time <b>{lesson.complexity}</b>
+                                  </span>
+                                  <span>
+                                    Extra space <b>{lesson.space}</b>
+                                  </span>
+                                </div>
+                              </div>
+                            }
+                          />
+                        </div>
+                        <PlaybackDock
+                          playback={playback}
+                          count={run.frames.length}
+                          speed={speed}
+                          setSpeed={setSpeed}
+                          running={running}
+                          onSeek={seek}
+                        />
+                        <details
+                          id="foundation-options"
+                          className="lesson-tools"
+                        >
+                          <summary>
+                            Edit input, share replay & open the lesson guide
+                          </summary>
+                          <div className="launch-actions">
+                            <button
+                              className="button secondary"
+                              onClick={share}
+                            >
+                              <Share2 size={15} />
+                              Share replay
+                            </button>
+                            <button
+                              className="button guide-button"
+                              onClick={() => {
+                                setPlaying(false);
+                                setGuide(true);
+                              }}
+                            >
+                              <Sparkles size={15} />
+                              Lesson guide
+                            </button>
+                          </div>
+                          <form
+                            className="input-toolbar"
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              applyInputs();
+                            }}
                           >
-                            Need a nudge?
-                            <Lightbulb size={15} />
+                            <label className="array-input">
+                              Input array
+                              <input
+                                value={raw}
+                                onChange={(e) => {
+                                  setPlaying(false);
+                                  setRaw(e.target.value);
+                                }}
+                                aria-label="Input array"
+                                spellCheck={false}
+                              />
+                            </label>
+                            {lesson.parameter !== "none" && (
+                              <label className="target-input">
+                                {lesson.parameter === "k"
+                                  ? "Window size"
+                                  : "Target"}
+                                <input
+                                  type="number"
+                                  value={paramRaw}
+                                  onChange={(e) => {
+                                    setPlaying(false);
+                                    setParamRaw(e.target.value);
+                                  }}
+                                  aria-label={
+                                    lesson.parameter === "k"
+                                      ? "Window size"
+                                      : "Target"
+                                  }
+                                />
+                              </label>
+                            )}
+                            <button
+                              type="submit"
+                              className="button small-button"
+                              disabled={running}
+                            >
+                              Apply
+                            </button>
+                            <button
+                              type="button"
+                              className="icon-button shuffle"
+                              title="Try a random input"
+                              aria-label="Try a random input"
+                              onClick={randomize}
+                              disabled={running}
+                            >
+                              <RotateCcw size={16} />
+                            </button>
+                          </form>
+                        </details>
+                        <div className="insight-grid">
+                          <section className="insight-card">
+                            <div className="eyebrow">
+                              <Lightbulb size={15} />
+                              THE IDEA
+                            </div>
+                            <h2>Every move has a reason.</h2>
+                            <p>{lesson.intuition}</p>
+                          </section>
+                          <section className="insight-card invariant">
+                            <div className="eyebrow mint">
+                              <CheckCircle2 size={15} />
+                              WHAT STAYS TRUE
+                            </div>
+                            <h2>The invariant</h2>
+                            <p>{lesson.invariant}</p>
+                          </section>
+                          <section className="complexity-card">
+                            <div className="complexity-row">
+                              <span>Time complexity</span>
+                              <strong>{lesson.complexity}</strong>
+                            </div>
+                            <div className="complexity-row">
+                              <span>Extra space</span>
+                              <strong>{lesson.space}</strong>
+                            </div>
+                            <p>Reference algorithm · excluding trace storage</p>
+                            <button
+                              className="text-button mint"
+                              onClick={() => setTab("compare")}
+                            >
+                              See the work saved
+                              <ArrowRight size={14} />
+                            </button>
+                          </section>
+                        </div>
+                        <div className="bottom-strip">
+                          <span>
+                            <span className="keycap">←</span>
+                            <span className="keycap">→</span>to step{" "}
+                            <span className="keycap">space</span>to play or
+                            pause
+                          </span>
+                          <button
+                            className="text-button"
+                            onClick={() => setTab("practice")}
+                          >
+                            Ready to try it yourself?
+                            <ArrowRight size={15} />
                           </button>
-                          <p className="practice-note">
-                            Completion reflects these knowledge checks, not a
-                            guarantee of independent mastery.
-                          </p>
-                        </aside>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </>
-              ) : view === "library" ? (
-                <>
-                  <div className="page-heading">
-                    <div className="eyebrow mint">YOUR NEXT AHA MOMENT</div>
-                    <h1>Small lessons. Lasting understanding.</h1>
-                    <p>
-                      Six guided introductions with visual explanations and
-                      checkpoints. Then use the 100-problem roadmap to practice
-                      these ideas across more problems.
-                    </p>
-                  </div>
-                  <div className="library-filter">
-                    <ListFilter size={16} />
-                    {[
-                      "All",
-                      "Arrays",
-                      "Search",
-                      "Two pointers",
-                      "Sliding window",
-                      "Sorting",
-                    ].map((f) => (
-                      <button
-                        className={filter === f ? "selected" : ""}
-                        key={f}
-                        onClick={() => setFilter(f)}
+                        </div>
+                        <details className="lesson-tools" id="foundation-study">
+                          <summary>
+                            Understand the idea · worked lesson & reasoning
+                          </summary>
+                          <CourseGuide
+                            track="dsa"
+                            goal={lesson.intuition}
+                            challenge={lesson.invariant}
+                          />
+                          <div
+                            id="foundation-understand"
+                            className="journey-anchor"
+                          />
+                          <CourseStudy
+                            key={lesson.id}
+                            id={`foundation:${lesson.id}`}
+                            unit={foundationCourseContent[lesson.id]}
+                            track="dsa"
+                            onExplore={() =>
+                              foundationFocus.ref.current?.scrollIntoView({
+                                block: "start",
+                                behavior: "smooth",
+                              })
+                            }
+                          />
+                        </details>
+                        <div id="foundation-try" className="journey-anchor">
+                          {lesson.id === "binary-search" ? (
+                            <SearchExplorer
+                              key={`binary-experiment:${nums.join(",")}:${parameter}`}
+                              initialInput={
+                                nums.length <= 12 && Math.abs(parameter) <= 999
+                                  ? { nums, target: parameter }
+                                  : undefined
+                              }
+                              onApply={(values, nextTarget) => {
+                                setNums(values);
+                                setParameter(nextTarget);
+                                setRaw(values.join(", "));
+                                setParamRaw(String(nextTarget));
+                                const source = custom
+                                  ? executedCode
+                                  : foundationSource(
+                                      lesson,
+                                      values.length,
+                                      foundationLanguage,
+                                    );
+                                if (!dirty) setCode(source);
+                                runTrace(lesson, values, nextTarget, source);
+                                setFoundationJourney("Watch");
+                                foundationFocus.focus();
+                              }}
+                            />
+                          ) : lesson.id === "sliding-window" ? (
+                            <WindowExercise
+                              key={`${nums}:${parameter}`}
+                              nums={nums}
+                              k={parameter}
+                              average={false}
+                              learningId={`foundation:${lesson.id}`}
+                            />
+                          ) : (
+                            <HandsOn
+                              scoped
+                              key={lesson.id}
+                              initial={
+                                lesson.id === "bubble-sort" ||
+                                lesson.id === "insertion-sort"
+                                  ? "bubble"
+                                  : lesson.id === "prefix-sum"
+                                    ? "prefix"
+                                    : lesson.id === "two-sum"
+                                      ? "pointers"
+                                      : lesson.id === "sliding-window"
+                                        ? "window"
+                                        : "binary"
+                              }
+                            />
+                          )}
+                        </div>
+                        <MasteryPanel
+                          id={`foundation:${lesson.id}`}
+                          onPractice={() => setTab("practice")}
+                        />
+                      </TabsContent>
+                      <TabsContent value="compare">
+                        <ComparisonLab
+                          key={`${lesson.id}:${nums.join(",")}:${parameter}`}
+                          lesson={lesson}
+                          nums={nums}
+                          parameter={parameter}
+                        />
+                      </TabsContent>
+                      <TabsContent value="practice">
+                        <div className="practice-layout">
+                          <section className="question-card">
+                            <div className="question-top">
+                              <span className="eyebrow mint">
+                                {question === 0
+                                  ? "PREDICT"
+                                  : question === 1
+                                    ? "EXPLAIN"
+                                    : "TRANSFER"}
+                              </span>
+                              <span>
+                                Question {question + 1} of{" "}
+                                {lesson.questions.length}
+                              </span>
+                            </div>
+                            <Progress
+                              value={
+                                ((question + 1) / lesson.questions.length) * 100
+                              }
+                            />
+                            <h2>{activeQuestion.prompt}</h2>
+                            <div
+                              className="answer-options"
+                              role="group"
+                              aria-label="Answer choices"
+                            >
+                              {activeQuestion.options.map((option, i) => (
+                                <button
+                                  key={i}
+                                  aria-pressed={choice === i}
+                                  className={
+                                    "answer-option " +
+                                    (choice === i ? "selected " : "") +
+                                    (checked && i === activeQuestion.answer
+                                      ? "correct "
+                                      : checked && i === choice
+                                        ? "incorrect"
+                                        : "")
+                                  }
+                                  onClick={() => {
+                                    if (!checked) setChoice(i);
+                                  }}
+                                  disabled={checked}
+                                >
+                                  <span className="answer-letter">
+                                    {String.fromCharCode(65 + i)}
+                                  </span>
+                                  <span>{option}</span>
+                                  {checked && i === activeQuestion.answer && (
+                                    <CheckCircle2 size={18} />
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                            {checked && (
+                              <div
+                                className={
+                                  "answer-feedback " +
+                                  (choice === activeQuestion.answer
+                                    ? "success"
+                                    : "")
+                                }
+                                role="status"
+                              >
+                                <strong>
+                                  {choice === activeQuestion.answer
+                                    ? "That’s right."
+                                    : "Let’s look at the reasoning."}
+                                </strong>
+                                <p>{activeQuestion.explanation}</p>
+                              </div>
+                            )}
+                            <div className="question-actions">
+                              <button
+                                className="text-button muted"
+                                onClick={() => {
+                                  setTab("learn");
+                                }}
+                              >
+                                Back to the visualization
+                              </button>
+                              {!checked ? (
+                                <button
+                                  className="button"
+                                  disabled={choice === null}
+                                  onClick={checkAnswer}
+                                >
+                                  Check answer
+                                  <ArrowRight size={15} />
+                                </button>
+                              ) : question < lesson.questions.length - 1 ? (
+                                <button
+                                  className="button"
+                                  onClick={() => {
+                                    setQuestion((q) => q + 1);
+                                    setChoice(null);
+                                    setChecked(false);
+                                  }}
+                                >
+                                  Next question
+                                  <ArrowRight size={15} />
+                                </button>
+                              ) : (
+                                <button
+                                  className="button"
+                                  onClick={() => {
+                                    setQuestion(0);
+                                    setChoice(null);
+                                    setChecked(false);
+                                    setNotice(
+                                      "Practice restarted. Your correct answers remain saved.",
+                                    );
+                                  }}
+                                >
+                                  Practice again
+                                  <RotateCcw size={15} />
+                                </button>
+                              )}
+                            </div>
+                          </section>
+                          <aside className="practice-aside">
+                            <div className="practice-icon">
+                              <Target size={28} />
+                            </div>
+                            <h2>Make the idea yours.</h2>
+                            <p>
+                              Understanding means being able to predict,
+                              explain, and apply. Take your time.
+                            </p>
+                            <div className="practice-progress">
+                              <CheckCircle2 size={18} />
+                              <span>
+                                {(saved.answered[lesson.id] || []).length} of 3
+                                concepts checked
+                              </span>
+                            </div>
+                            {saved.mastered.includes(lesson.id) && (
+                              <div className="mastered-note">
+                                <Trophy size={20} />
+                                <strong>Foundation quiz completed</strong>
+                                <p>
+                                  Try a new input, then come back tomorrow to
+                                  see what you remember.
+                                </p>
+                              </div>
+                            )}
+                            <button
+                              className="text-button mint"
+                              onClick={() => setGuide(true)}
+                            >
+                              Need a nudge?
+                              <Lightbulb size={15} />
+                            </button>
+                            <p className="practice-note">
+                              Completion reflects these knowledge checks, not a
+                              guarantee of independent mastery.
+                            </p>
+                          </aside>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </>
+                ) : view === "library" ? (
+                  <>
+                    <div className="page-heading">
+                      <div className="eyebrow mint">YOUR NEXT AHA MOMENT</div>
+                      <h1>Small lessons. Lasting understanding.</h1>
+                      <p>
+                        Choose language tools, algorithm foundations, or
+                        computer-science labs. Run examples and apply what you
+                        learn to real problems.
+                      </p>
+                    </div>
+                    <div className="language-learning-entry">
+                      <a
+                        href="/?view=languages"
+                        onClick={(e) => {
+                          if (e.metaKey || e.ctrlKey) return;
+                          e.preventDefault();
+                          navigateURL(
+                            `/?view=languages&language=${readPreferences().language}`,
+                          );
+                        }}
                       >
-                        {f}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="library-grid">
-                    {lessons
-                      .filter((l) => filter === "All" || l.category === filter)
-                      .map((l, i) => (
+                        <Code2 size={20} />
+                        <h2>Languages & libraries</h2>
+                        <p>
+                          C++ STL, Python built-ins, Java collections, and
+                          JavaScript utilities. Guided lessons and searchable
+                          references.
+                        </p>
+                      </a>
+                      <a href="#algorithm-foundations">
+                        <BookOpen size={20} />
+                        <h2>Algorithm foundations</h2>
+                        <p>
+                          Six visual introductions to the decisions behind the
+                          code.
+                        </p>
+                      </a>
+                      <a
+                        href="/?view=cs"
+                        onClick={(e) => {
+                          if (e.metaKey || e.ctrlKey) return;
+                          e.preventDefault();
+                          navigateURL("/?view=cs");
+                        }}
+                      >
+                        <Cpu size={20} />
+                        <h2>Computer science</h2>
+                        <p>
+                          Systems, databases, operating systems, networking, and
+                          design patterns.
+                        </p>
+                      </a>
+                    </div>
+                    <h2 id="algorithm-foundations" className="journey-anchor">
+                      Algorithm foundations
+                    </h2>
+                    <div className="library-filter">
+                      <ListFilter size={16} />
+                      {[
+                        "All",
+                        "Arrays",
+                        "Search",
+                        "Two pointers",
+                        "Sliding window",
+                        "Sorting",
+                      ].map((f) => (
                         <button
-                          className="library-card"
+                          className={filter === f ? "selected" : ""}
+                          key={f}
+                          onClick={() => setFilter(f)}
+                        >
+                          {f}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="library-grid">
+                      {lessons
+                        .filter(
+                          (l) => filter === "All" || l.category === filter,
+                        )
+                        .map((l, i) => (
+                          <button
+                            className="library-card"
+                            key={l.id}
+                            onClick={() => changeLesson(l)}
+                          >
+                            <LessonPreview lesson={l} />
+                            <div className="library-card-content">
+                              <div className="eyebrow">
+                                {l.category}
+                                {saved.mastered.includes(l.id) && (
+                                  <CheckCircle2 size={16} />
+                                )}
+                              </div>
+                              <h2>{l.title}</h2>
+                              <p>{l.description}</p>
+                              <div className="library-bottom">
+                                <span>
+                                  {l.duration} · {l.complexity}
+                                </span>
+                                <ArrowUpRight size={18} />
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="page-heading">
+                      <div className="eyebrow mint">ONE IDEA AT A TIME</div>
+                      <h1>Your understanding is taking shape.</h1>
+                      <p>
+                        Progress stays on this browser. Revisit a lesson
+                        whenever you need a refresher.
+                      </p>
+                    </div>
+                    <LearningDashboard />
+                    <div className="progress-stats">
+                      <div>
+                        <span>Foundation quizzes completed</span>
+                        <strong>
+                          {saved.mastered.length}
+                          <small> / 6</small>
+                        </strong>
+                      </div>
+                      <div>
+                        <span>Concepts checked</span>
+                        <strong>
+                          {Object.values(saved.answered).reduce(
+                            (s, a) => s + a.length,
+                            0,
+                          )}
+                          <small> / 18</small>
+                        </strong>
+                      </div>
+                      <div>
+                        <span>Practice attempts</span>
+                        <strong>{saved.attempts}</strong>
+                      </div>
+                    </div>
+                    <section className="progress-list panel">
+                      <div className="panel-title">
+                        <span>
+                          <BookOpen size={17} />
+                          Your foundations
+                        </span>
+                        <span>
+                          {Math.round((saved.mastered.length / 6) * 100)}%
+                          complete
+                        </span>
+                      </div>
+                      {lessons.map((l, i) => (
+                        <button
+                          className="progress-lesson"
                           key={l.id}
                           onClick={() => changeLesson(l)}
                         >
-                          <LessonPreview lesson={l} />
-                          <div className="library-card-content">
-                            <div className="eyebrow">
-                              {l.category}
-                              {saved.mastered.includes(l.id) && (
-                                <CheckCircle2 size={16} />
-                              )}
-                            </div>
-                            <h2>{l.title}</h2>
-                            <p>{l.description}</p>
-                            <div className="library-bottom">
-                              <span>
-                                {l.duration} · {l.complexity}
-                              </span>
-                              <ArrowUpRight size={18} />
-                            </div>
+                          <span className="progress-number">
+                            {saved.mastered.includes(l.id) ? (
+                              <CheckCircle2 size={20} />
+                            ) : (
+                              String(i + 1).padStart(2, "0")
+                            )}
+                          </span>
+                          <div>
+                            <h3>{l.title}</h3>
+                            <p>
+                              {l.category} · {l.duration}
+                            </p>
                           </div>
+                          <Progress
+                            value={
+                              ((saved.answered[l.id] || []).length / 3) * 100
+                            }
+                          />
+                          <span>{(saved.answered[l.id] || []).length}/3</span>
+                          <ArrowRight size={17} />
                         </button>
                       ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="page-heading">
-                    <div className="eyebrow mint">ONE IDEA AT A TIME</div>
-                    <h1>Your understanding is taking shape.</h1>
-                    <p>
-                      Progress stays on this browser. Revisit a lesson whenever
-                      you need a refresher.
-                    </p>
-                  </div>
-                  <LearningDashboard />
-                  <div className="progress-stats">
-                    <div>
-                      <span>Foundation quizzes completed</span>
-                      <strong>
-                        {saved.mastered.length}
-                        <small> / 6</small>
-                      </strong>
-                    </div>
-                    <div>
-                      <span>Concepts checked</span>
-                      <strong>
-                        {Object.values(saved.answered).reduce(
-                          (s, a) => s + a.length,
-                          0,
-                        )}
-                        <small> / 18</small>
-                      </strong>
-                    </div>
-                    <div>
-                      <span>Practice attempts</span>
-                      <strong>{saved.attempts}</strong>
-                    </div>
-                  </div>
-                  <section className="progress-list panel">
-                    <div className="panel-title">
-                      <span>
-                        <BookOpen size={17} />
-                        Your foundations
-                      </span>
-                      <span>
-                        {Math.round((saved.mastered.length / 6) * 100)}%
-                        complete
-                      </span>
-                    </div>
-                    {lessons.map((l, i) => (
-                      <button
-                        className="progress-lesson"
-                        key={l.id}
-                        onClick={() => changeLesson(l)}
-                      >
-                        <span className="progress-number">
-                          {saved.mastered.includes(l.id) ? (
-                            <CheckCircle2 size={20} />
-                          ) : (
-                            String(i + 1).padStart(2, "0")
-                          )}
-                        </span>
-                        <div>
-                          <h3>{l.title}</h3>
-                          <p>
-                            {l.category} · {l.duration}
-                          </p>
-                        </div>
-                        <Progress
-                          value={
-                            ((saved.answered[l.id] || []).length / 3) * 100
-                          }
-                        />
-                        <span>{(saved.answered[l.id] || []).length}/3</span>
-                        <ArrowRight size={17} />
-                      </button>
-                    ))}
-                  </section>
-                </>
-              )}
-            </Suspense>
-          </main>
-          <footer className="app-footer">
-            <span>
-              trace. <span>Understand the why.</span>
-            </span>
-            <button
-              className="text-button muted"
-              onClick={() => setAbout(true)}
-            >
-              About this workspace
-              <ArrowUpRight size={13} />
-            </button>
-          </footer>
-        </div>
-        <Dialog open={guide} onOpenChange={setGuide}>
-          <DialogContent className="guide-dialog">
-            <DialogHeader>
-              <div className="dialog-icon">
-                <Lightbulb size={24} />
-              </div>
-              <DialogTitle>One nudge at a time.</DialogTitle>
-              <DialogDescription>
-                Authored guidance for {lesson.title.toLowerCase()}. These hints
-                explain the reference algorithm.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="guide-state">
-              <span className="eyebrow">YOUR CURRENT STEP</span>
-              <p>{frame.message}</p>
-            </div>
-            {lesson.hints.slice(0, hint + 1).map((h, i) => (
-              <div className="hint" key={i}>
-                <span>0{i + 1}</span>
-                <p>{h}</p>
-              </div>
-            ))}
-            <button
-              className="button"
-              disabled={hint >= lesson.hints.length - 1}
-              onClick={() => setHint((h) => h + 1)}
-            >
-              {hint >= lesson.hints.length - 1
-                ? "All hints revealed"
-                : "Give me another nudge"}
-              <ArrowRight size={15} />
-            </button>
-            <p className="dialog-footnote">
-              A lesson guide, with no AI service connected.
-            </p>
-          </DialogContent>
-        </Dialog>
-        <Dialog open={about} onOpenChange={setAbout}>
-          <DialogContent className="about-dialog">
-            <DialogHeader>
-              <DialogTitle>Built for understanding.</DialogTitle>
-              <DialogDescription>
-                Trace combines six guided foundations with a 100-problem
-                practice roadmap.
-              </DialogDescription>
-            </DialogHeader>
-            <p>
-              The six guided foundations run in your browser using a bounded
-              Python subset for its Python examples and browser runtimes for
-              C++, Java and JavaScript. Python supports numeric lists,
-              variables, indexing, arithmetic, comparisons, if/else, for/range,
-              while, break, len, min, max, and abs. Use spaces for indentation.
-            </p>
-            <p>
-              Imports, strings, functions, recursion, classes, and external
-              access are not supported. Runs stop after 2,400 steps. No code is
-              sent to an execution server from these guided lessons. The
-              100-problem roadmap uses a separate full-language execution
-              service.
-            </p>
-            <p>
-              Lesson completion and practice answers are saved on this browser.
-              Accounts, cloud sync, AI tutoring, and multiplayer are not
-              connected in this version.
-            </p>
-            <button className="button secondary" onClick={exportReplay}>
-              <Copy size={15} />
-              Export current replay
-            </button>
-          </DialogContent>
-        </Dialog>
-        {notice && (
-          <div className="toast" role="status">
-            <CheckCircle2 size={18} />
-            <span>{notice}</span>
-            <button
-              onClick={() => setNotice("")}
-              aria-label="Dismiss notification"
-            >
-              <X size={15} />
-            </button>
+                    </section>
+                  </>
+                )}
+              </Suspense>
+            </main>
+            <footer className="app-footer">
+              <span>
+                trace. <span>Understand the why.</span>
+              </span>
+              <button
+                className="text-button muted"
+                onClick={() => setAbout(true)}
+              >
+                About this workspace
+                <ArrowUpRight size={13} />
+              </button>
+            </footer>
           </div>
-        )}
-      </SidebarProvider>
-    </AccountProvider>
+          {searchOpen && (
+            <Suspense
+              fallback={
+                <Dialog open onOpenChange={setSearchOpen}>
+                  <DialogContent>
+                    <DialogTitle>Find a lesson or workspace</DialogTitle>
+                    <DialogDescription>
+                      Opening lesson search…
+                    </DialogDescription>
+                  </DialogContent>
+                </Dialog>
+              }
+            >
+              <QuickSearch
+                open={searchOpen}
+                onOpenChange={(open) => {
+                  setSearchOpen(open);
+                  if (open) setPlaying(false);
+                }}
+                onNavigate={navigateURL}
+              />
+            </Suspense>
+          )}
+          <Dialog open={guide} onOpenChange={setGuide}>
+            <DialogContent className="guide-dialog">
+              <DialogHeader>
+                <div className="dialog-icon">
+                  <Lightbulb size={24} />
+                </div>
+                <DialogTitle>One nudge at a time.</DialogTitle>
+                <DialogDescription>
+                  Authored guidance for {lesson.title.toLowerCase()}. These
+                  hints explain the reference algorithm.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="guide-state">
+                <span className="eyebrow">YOUR CURRENT STEP</span>
+                <p>{frame.message}</p>
+              </div>
+              {lesson.hints.slice(0, hint + 1).map((h, i) => (
+                <div className="hint" key={i}>
+                  <span>0{i + 1}</span>
+                  <p>{h}</p>
+                </div>
+              ))}
+              <button
+                className="button"
+                disabled={hint >= lesson.hints.length - 1}
+                onClick={() => setHint((h) => h + 1)}
+              >
+                {hint >= lesson.hints.length - 1
+                  ? "All hints revealed"
+                  : "Give me another nudge"}
+                <ArrowRight size={15} />
+              </button>
+              <p className="dialog-footnote">
+                A lesson guide, with no AI service connected.
+              </p>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={about} onOpenChange={setAbout}>
+            <DialogContent className="about-dialog">
+              <DialogHeader>
+                <DialogTitle>Built for understanding.</DialogTitle>
+                <DialogDescription>
+                  Trace combines six guided foundations with a 100-problem
+                  practice roadmap.
+                </DialogDescription>
+              </DialogHeader>
+              <p>
+                The six guided foundations run in your browser using a bounded
+                Python subset for its Python examples and browser runtimes for
+                C++, Java and JavaScript. Python supports numeric lists,
+                variables, indexing, arithmetic, comparisons, if/else,
+                for/range, while, break, len, min, max, and abs. Use spaces for
+                indentation.
+              </p>
+              <p>
+                Imports, strings, functions, recursion, classes, and external
+                access are not supported. Runs stop after 2,400 steps. No code
+                is sent to an execution server from these guided lessons. The
+                100-problem roadmap uses a separate full-language execution
+                service.
+              </p>
+              <p>
+                Lesson completion and practice answers are saved on this
+                browser. Accounts, cloud sync, AI tutoring, and multiplayer are
+                not connected in this version.
+              </p>
+              <button className="button secondary" onClick={exportReplay}>
+                <Copy size={15} />
+                Export current replay
+              </button>
+            </DialogContent>
+          </Dialog>
+          {notice && (
+            <div className="toast" role="status">
+              <CheckCircle2 size={18} />
+              <span>{notice}</span>
+              <button
+                onClick={() => setNotice("")}
+                aria-label="Dismiss notification"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          )}
+        </SidebarProvider>
+      </AccountProvider>
+    </MotionConfig>
   );
 }

@@ -1,14 +1,14 @@
 /* Visual language follows the six guided foundations: calm canvas, labelled
    pointers, mint focus, amber frontier, blue dependencies, and one stable dock. */
 .concept-stage {
-  --viz-mint: #c6f39d;
-  --viz-amber: #efbe78;
-  --viz-blue: #91baff;
-  --viz-text: #d8e4e7;
-  --viz-dim: #94a8af;
+  --viz-mint: var(--trace-color-c6f39d, #c6f39d);
+  --viz-amber: var(--trace-color-efbe78, #efbe78);
+  --viz-blue: var(--trace-color-91baff, #91baff);
+  --viz-text: var(--trace-color-d8e4e7, #d8e4e7);
+  --viz-dim: var(--trace-color-94a8af, #94a8af);
   color: var(--viz-text);
-  background-color: #10191e;
-  background-image: radial-gradient(#819da912 0.7px, transparent 0.7px);
+  background-color: var(--trace-color-10191e, #10191e);
+  background-image: radial-gradient(var(--trace-color-819da912, #819da912) 0.7px, transparent 0.7px);
   background-size: 18px 18px;
   min-width: 0;
 }
@@ -24,7 +24,7 @@
   margin: 0 0 14px;
   font-size: 13px;
   line-height: 1.5;
-  color: #c4d3d8;
+  color: var(--trace-color-c4d3d8, #c4d3d8);
 }
 .concept-stage .viz-label small {
   font-size: 11px;
@@ -42,7 +42,7 @@
   text-align: center;
   font-size: 13px;
   color: var(--viz-dim);
-  border: 1px dashed #40535e;
+  border: 1px dashed var(--trace-color-40535e, #40535e);
   border-radius: 10px;
 }
 .concept-stage .viz-readout {
@@ -53,7 +53,7 @@
   gap: 12px;
   margin: 12px 0;
   padding: 12px 16px;
-  border-top: 1px solid #ffffff0e;
+  border-top: 1px solid var(--trace-color-ffffff0e, #ffffff0e);
   font-size: 12px;
   color: var(--viz-dim);
   overflow-wrap: anywhere;
@@ -66,12 +66,12 @@
 }
 .concept-stage .viz-readout button {
   margin-left: auto;
-  border: 1px solid #ffffff17;
+  border: 1px solid var(--trace-color-ffffff17, #ffffff17);
   width: 28px;
   height: 28px;
   border-radius: 5px;
   background: none;
-  color: #c4d3d8;
+  color: var(--trace-color-c4d3d8, #c4d3d8);
 }
 .concept-stage .viz-legend {
   display: flex;
@@ -91,7 +91,7 @@
   width: 7px;
   height: 7px;
   border-radius: 2px;
-  background: #40505a;
+  background: var(--trace-color-40505a, #40505a);
   display: inline-block;
 }
 .concept-stage .viz-legend .active,
@@ -111,14 +111,14 @@
 }
 .concept-stage .viz-legend .rotten,
 .concept-stage .viz-legend .attacked {
-  background: #dc927c;
+  background: var(--trace-color-dc927c, #dc927c);
 }
 .concept-stage .viz-legend .visited,
 .concept-stage .viz-legend .both-oceans {
-  background: #85c9ba;
+  background: var(--trace-color-85c9ba, #85c9ba);
 }
 .concept-stage .viz-legend .atlantic {
-  background: #d8a1d6;
+  background: var(--trace-color-d8a1d6, #d8a1d6);
 }
 .concept-stage .viz-stats {
   display: flex;
@@ -133,7 +133,7 @@
   display: flex;
   gap: 10px;
   align-items: center;
-  border-right: 1px solid #ffffff13;
+  border-right: 1px solid var(--trace-color-ffffff13, #ffffff13);
   padding-right: 12px;
 }
 .concept-stage .viz-stats > span:last-child {
@@ -144,7 +144,7 @@
   color: var(--viz-mint);
 }
 .concept-stage .viz-track {
-  border-top: 1px solid #ffffff10;
+  border-top: 1px solid var(--trace-color-ffffff10, #ffffff10);
   padding-top: 12px;
   margin-top: 16px;
 }
@@ -159,8 +159,8 @@
   align-items: center;
 }
 .concept-stage .viz-track-items > span {
-  border: 1px solid #3a4b52;
-  background: #1c292f;
+  border: 1px solid var(--trace-color-3a4b52, #3a4b52);
+  background: var(--trace-color-1c292f, #1c292f);
   padding: 7px 11px;
   border-radius: 6px;
   font: 12px var(--font-mono);
@@ -168,15 +168,15 @@
   overflow-wrap: anywhere;
 }
 .concept-stage .viz-track-items > .frontier {
-  border-color: #aa865756;
-  color: #efbe78;
+  border-color: var(--trace-color-aa865756, #aa865756);
+  color: var(--trace-color-efbe78, #efbe78);
 }
 .concept-stage .viz-track-items > small {
   color: var(--viz-dim);
   font-size: 11px;
 }
 .concept-stage .viz-recorded {
-  border-top: 1px solid #ffffff10;
+  border-top: 1px solid var(--trace-color-ffffff10, #ffffff10);
   font-size: 11px;
   margin-top: 18px;
   padding-top: 10px;
@@ -194,16 +194,16 @@
   grid-template-columns: 110px minmax(0, 1fr);
   gap: 12px;
   padding: 6px 0;
-  border-bottom: 1px solid #ffffff09;
+  border-bottom: 1px solid var(--trace-color-ffffff09, #ffffff09);
 }
 .concept-stage .viz-recorded dd {
   margin: 0;
   overflow-wrap: anywhere;
   font-family: var(--font-mono);
-  color: #bbccd3;
+  color: var(--trace-color-bbccd3, #bbccd3);
 }
 .concept-stage .viz-recorded dt {
-  color: #8da3ab;
+  color: var(--trace-color-8da3ab, #8da3ab);
 }
 .concept-stage .viz-matrix-scroll {
   overflow-x: auto;
@@ -226,13 +226,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #889ea9;
+  color: var(--trace-color-889ea9, #889ea9);
   font: 11px/1.25 var(--font-mono);
   min-height: 33px;
 }
 .concept-stage .viz-axis b {
   font-weight: 400;
-  color: #bacbd3;
+  color: var(--trace-color-bacbd3, #bacbd3);
 }
 .concept-stage .viz-axis small {
   font-size: 9px;
@@ -240,7 +240,7 @@
 }
 .concept-stage .viz-axis-corner {
   font: 9px var(--font-mono);
-  color: #69818d;
+  color: var(--trace-color-69818d, #69818d);
   align-self: center;
   text-align: center;
 }
@@ -252,81 +252,81 @@
   min-width: 0;
   min-height: 0;
   padding: 0;
-  border: 1px solid #40515b;
+  border: 1px solid var(--trace-color-40515b, #40515b);
   border-radius: 8px;
-  background: linear-gradient(145deg, #26353e, #18252c);
+  background: linear-gradient(145deg, var(--trace-color-26353e, #26353e), var(--trace-color-18252c, #18252c));
   font: 16px var(--font-mono);
-  color: #d7e5e9;
+  color: var(--trace-color-d7e5e9, #d7e5e9);
   cursor: pointer;
   transition:
     border-color 0.2s,
     background 0.2s;
 }
 .concept-stage .viz-cell.water {
-  background: #142535;
-  color: #698b9f;
-  border-color: #263e4c;
+  background: var(--trace-color-142535, #142535);
+  color: var(--trace-color-698b9f, #698b9f);
+  border-color: var(--trace-color-263e4c, #263e4c);
 }
 .concept-stage .viz-cell.land,
 .concept-stage .viz-cell.queen {
-  background: #2c402e;
-  border-color: #597c4f;
-  color: #d7efc3;
+  background: var(--trace-color-2c402e, #2c402e);
+  border-color: var(--trace-color-597c4f, #597c4f);
+  color: var(--trace-color-d7efc3, #d7efc3);
 }
 .concept-stage .viz-cell.visited {
-  background: #21423c;
-  border-color: #6a9e8f;
-  color: #b5e3d6;
+  background: var(--trace-color-21423c, #21423c);
+  border-color: var(--trace-color-6a9e8f, #6a9e8f);
+  color: var(--trace-color-b5e3d6, #b5e3d6);
 }
 .concept-stage .viz-cell.frontier,
 .concept-stage .viz-cell.fresh {
-  background: #413727;
-  border-color: #a48856;
-  color: #f3ce95;
+  background: var(--trace-color-413727, #413727);
+  border-color: var(--trace-color-a48856, #a48856);
+  color: var(--trace-color-f3ce95, #f3ce95);
 }
 .concept-stage .viz-cell.rotten {
-  background: #3b2924;
-  border-color: #ad7862;
-  color: #e2ab93;
+  background: var(--trace-color-3b2924, #3b2924);
+  border-color: var(--trace-color-ad7862, #ad7862);
+  color: var(--trace-color-e2ab93, #e2ab93);
 }
 .concept-stage .viz-cell.empty {
-  background: #162027;
-  border-color: #2b3b45;
-  color: #5f7480;
+  background: var(--trace-color-162027, #162027);
+  border-color: var(--trace-color-2b3b45, #2b3b45);
+  color: var(--trace-color-5f7480, #5f7480);
 }
 .concept-stage .viz-cell.pacific,
 .concept-stage .viz-cell.dependency {
-  background: #243b55;
-  border-color: #6896c9;
-  color: #c2dbff;
+  background: var(--trace-color-243b55, #243b55);
+  border-color: var(--trace-color-6896c9, #6896c9);
+  color: var(--trace-color-c2dbff, #c2dbff);
 }
 .concept-stage .viz-cell.atlantic {
-  background: #3b2c48;
-  border-color: #ab79b0;
-  color: #e9b9e2;
+  background: var(--trace-color-3b2c48, #3b2c48);
+  border-color: var(--trace-color-ab79b0, #ab79b0);
+  color: var(--trace-color-e9b9e2, #e9b9e2);
 }
 .concept-stage .viz-cell.both-oceans {
-  background: #285143;
-  border-color: #a0d9b6;
-  color: #d0f2db;
+  background: var(--trace-color-285143, #285143);
+  border-color: var(--trace-color-a0d9b6, #a0d9b6);
+  color: var(--trace-color-d0f2db, #d0f2db);
 }
 .concept-stage .viz-cell.attacked {
-  background: #412928;
-  border-color: #825654;
-  color: #cfa09a;
+  background: var(--trace-color-412928, #412928);
+  border-color: var(--trace-color-825654, #825654);
+  color: var(--trace-color-cfa09a, #cfa09a);
 }
 .concept-stage .viz-cell.eliminated {
   opacity: 0.3;
 }
 .concept-stage .viz-cell.updated {
-  box-shadow: inset 0 0 0 1px #91baff;
+  box-shadow: inset 0 0 0 1px var(--trace-color-91baff, #91baff);
 }
 .concept-stage .viz-cell.selected {
-  outline: 2px solid #91baff;
+  outline: 2px solid var(--trace-color-91baff, #91baff);
   outline-offset: 2px;
 }
 .concept-stage .viz-cell.active {
-  color: #e5f7d7;
+  color: var(--trace-color-e5f7d7, #e5f7d7);
 }
 .concept-stage .viz-grid-cursor {
   position: absolute;
@@ -335,7 +335,7 @@
   border: 2px solid var(--viz-mint);
   border-radius: 8px;
   pointer-events: none;
-  box-shadow: 0 0 15px #c6f39d15;
+  box-shadow: 0 0 15px var(--trace-color-c6f39d15, #c6f39d15);
 }
 .concept-stage .viz-visit-dot {
   position: absolute;
@@ -344,22 +344,22 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #b4e2cf;
+  background: var(--trace-color-b4e2cf, #b4e2cf);
 }
 .concept-stage .viz-chess .viz-cell {
   border-radius: 3px;
-  background: #24343c;
+  background: var(--trace-color-24343c, #24343c);
 }
 .concept-stage .viz-chess .dark-square {
-  background: #17252c;
+  background: var(--trace-color-17252c, #17252c);
 }
 .concept-stage .viz-chess .attacked {
-  background: #492d2c;
+  background: var(--trace-color-492d2c, #492d2c);
 }
 .concept-stage .viz-chess .queen {
-  color: #d6f5b6;
-  background: #324830;
-  border-color: #a2ce84;
+  color: var(--trace-color-d6f5b6, #d6f5b6);
+  background: var(--trace-color-324830, #324830);
+  border-color: var(--trace-color-a2ce84, #a2ce84);
 }
 .concept-stage .viz-window-controls {
   display: flex;
@@ -371,15 +371,15 @@
   margin-bottom: 8px;
 }
 .concept-stage .viz-window-controls button {
-  border: 1px solid #40515b;
+  border: 1px solid var(--trace-color-40515b, #40515b);
   border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 5px;
-  background: #1c292f;
+  background: var(--trace-color-1c292f, #1c292f);
   min-height: 28px;
-  color: #c4d3d8;
+  color: var(--trace-color-c4d3d8, #c4d3d8);
 }
 .concept-stage .viz-window-controls button:disabled {
   opacity: 0.3;
@@ -389,10 +389,10 @@
   justify-content: space-between;
   font-size: 10px;
   margin-bottom: 8px;
-  color: #91baff;
+  color: var(--trace-color-91baff, #91baff);
 }
 .concept-stage .viz-ocean-borders > span:last-child {
-  color: #d8a1d6;
+  color: var(--trace-color-d8a1d6, #d8a1d6);
 }
 .concept-stage .viz-dependencies {
   display: flex;
@@ -401,27 +401,27 @@
   gap: 12px;
   flex-wrap: wrap;
   font: 11px var(--font-mono);
-  color: #91baff;
+  color: var(--trace-color-91baff, #91baff);
   margin: 12px 0;
 }
 .concept-stage .viz-dependencies b {
   font-size: 14px;
 }
 .concept-stage .viz-formula {
-  border: 1px solid #a7caf121;
+  border: 1px solid var(--trace-color-a7caf121, #a7caf121);
   border-radius: 8px;
-  background: #1c2d3a;
+  background: var(--trace-color-1c2d3a, #1c2d3a);
   padding: 12px 14px;
   margin-top: 12px;
 }
 .concept-stage .viz-formula small {
   font-size: 10px;
-  color: #93aac1;
+  color: var(--trace-color-93aac1, #93aac1);
 }
 .concept-stage .viz-formula p {
   font: 12px/1.7 var(--font-mono);
   margin: 6px 0 0;
-  color: #c4defa;
+  color: var(--trace-color-c4defa, #c4defa);
   overflow-wrap: anywhere;
 }
 .concept-stage .viz-dp-strip {
@@ -439,20 +439,20 @@
   gap: 8px;
   min-width: 82px;
   min-height: 105px;
-  border: 1px solid #42545e;
+  border: 1px solid var(--trace-color-42545e, #42545e);
   border-radius: 9px;
-  background: linear-gradient(145deg, #24343d, #17252c);
+  background: linear-gradient(145deg, var(--trace-color-24343d, #24343d), var(--trace-color-17252c, #17252c));
   padding: 10px;
   font: 12px var(--font-mono);
-  color: #bbcdd5;
+  color: var(--trace-color-bbcdd5, #bbcdd5);
 }
 .concept-stage .viz-dp-card small {
   font-size: 10px;
-  color: #8ea5af;
+  color: var(--trace-color-8ea5af, #8ea5af);
 }
 .concept-stage .viz-dp-card b {
   font-size: 24px;
-  color: #d9e8ed;
+  color: var(--trace-color-d9e8ed, #d9e8ed);
 }
 .concept-stage .viz-dp-card span {
   font-size: 9px;
@@ -460,15 +460,15 @@
   overflow-wrap: anywhere;
 }
 .concept-stage .viz-dp-card.active {
-  border-color: #c6f39d;
-  background: #2d432f;
+  border-color: var(--trace-color-c6f39d, #c6f39d);
+  background: var(--trace-color-2d432f, #2d432f);
 }
 .concept-stage .viz-dp-card.dependency {
-  border-color: #78a2d5;
-  background: #263c54;
+  border-color: var(--trace-color-78a2d5, #78a2d5);
+  background: var(--trace-color-263c54, #263c54);
 }
 .concept-stage .viz-dp-card.updated {
-  box-shadow: inset 0 0 0 1px #91baff;
+  box-shadow: inset 0 0 0 1px var(--trace-color-91baff, #91baff);
 }
 .concept-stage .viz-total-cards {
   display: flex;
@@ -482,8 +482,8 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  background: #1f303b;
-  border: 1px solid #4a6271;
+  background: var(--trace-color-1f303b, #1f303b);
+  border: 1px solid var(--trace-color-4a6271, #4a6271);
   border-radius: 8px;
   padding: 12px;
   min-width: 75px;
@@ -493,8 +493,8 @@
   font-size: 24px;
 }
 .concept-stage .viz-total-cards .active {
-  border-color: #c6f39d;
-  background: #2d432f;
+  border-color: var(--trace-color-c6f39d, #c6f39d);
+  background: var(--trace-color-2d432f, #2d432f);
 }
 .concept-stage .viz-sign-branches {
   display: flex;
@@ -503,7 +503,7 @@
   gap: 14px;
   flex-wrap: wrap;
   font-size: 11px;
-  color: #91baff;
+  color: var(--trace-color-91baff, #91baff);
 }
 .concept-stage .viz-stock-states {
   display: grid;
@@ -514,8 +514,8 @@
 .concept-stage .viz-stock-states > div {
   padding: 16px 8px;
   text-align: center;
-  background: #1f303b;
-  border: 1px solid #465e6d;
+  background: var(--trace-color-1f303b, #1f303b);
+  border: 1px solid var(--trace-color-465e6d, #465e6d);
   border-radius: 9px;
 }
 .concept-stage .viz-stock-states h3 {
@@ -524,12 +524,12 @@
 }
 .concept-stage .viz-stock-states b {
   font: 20px var(--font-mono);
-  color: #c6f39d;
+  color: var(--trace-color-c6f39d, #c6f39d);
   overflow-wrap: anywhere;
 }
 .concept-stage .viz-stock-states small {
   font-size: 10px;
-  color: #8ea5af;
+  color: var(--trace-color-8ea5af, #8ea5af);
 }
 .concept-stage .viz-network-scroll {
   overflow: auto;
@@ -545,62 +545,62 @@
 }
 .concept-stage .viz-network .viz-edge {
   fill: none;
-  stroke: #526b78;
+  stroke: var(--trace-color-526b78, #526b78);
   stroke-width: 1.8;
 }
 .concept-stage .viz-network .viz-edge.active {
-  stroke: #c6f39d;
+  stroke: var(--trace-color-c6f39d, #c6f39d);
   stroke-width: 2.5;
 }
 .concept-stage .viz-network .viz-edge.random,
 .concept-stage .viz-network .viz-edge.next {
-  stroke: #91baff;
+  stroke: var(--trace-color-91baff, #91baff);
   stroke-dasharray: 5 4;
 }
 .concept-stage .viz-network g > rect {
-  fill: #172a34;
+  fill: var(--trace-color-172a34, #172a34);
 }
 .concept-stage .viz-network g > text {
   font: 12px var(--font-mono);
-  fill: #cadbe4;
+  fill: var(--trace-color-cadbe4, #cadbe4);
 }
 .concept-stage .viz-node {
   cursor: pointer;
   outline: none;
 }
 .concept-stage .viz-node > circle {
-  fill: #23343e;
-  stroke: #617b8b;
+  fill: var(--trace-color-23343e, #23343e);
+  stroke: var(--trace-color-617b8b, #617b8b);
   stroke-width: 1.6;
   transition:
     fill 0.25s,
     stroke 0.25s;
 }
 .concept-stage .viz-node.updated > circle {
-  fill: #293e59;
-  stroke: #91baff;
+  fill: var(--trace-color-293e59, #293e59);
+  stroke: var(--trace-color-91baff, #91baff);
 }
 .concept-stage .viz-node.active > circle {
-  fill: #3b5533;
-  stroke: #c6f39d;
+  fill: var(--trace-color-3b5533, #3b5533);
+  stroke: var(--trace-color-c6f39d, #c6f39d);
   stroke-width: 2.5;
 }
 .concept-stage .viz-node.frontier > circle {
-  stroke: #efbe78;
-  fill: #413726;
+  stroke: var(--trace-color-efbe78, #efbe78);
+  fill: var(--trace-color-413726, #413726);
 }
 .concept-stage .viz-node.visited > circle {
-  fill: #224139;
-  stroke: #77ba9e;
+  fill: var(--trace-color-224139, #224139);
+  stroke: var(--trace-color-77ba9e, #77ba9e);
 }
 .concept-stage .viz-node.selected > circle,
 .concept-stage .viz-node:focus-visible > circle {
-  stroke: #91baff;
+  stroke: var(--trace-color-91baff, #91baff);
   stroke-width: 3;
 }
 .concept-stage .viz-network .viz-node-note {
   font-size: 10px;
-  fill: #94a8b1;
+  fill: var(--trace-color-94a8b1, #94a8b1);
 }
 .concept-stage .viz-graph-stage .viz-node > text {
   font-size: 20px;
@@ -612,64 +612,64 @@
   font-size: 17px;
 }
 .concept-stage .viz-node .viz-terminal {
-  fill: #c6f39d;
-  stroke: #14211a;
+  fill: var(--trace-color-c6f39d, #c6f39d);
+  stroke: var(--trace-color-14211a, #14211a);
 }
 .concept-stage .viz-node-pointer > rect {
-  stroke: #72995d;
-  fill: #14231b;
+  stroke: var(--trace-color-72995d, #72995d);
+  fill: var(--trace-color-14231b, #14231b);
 }
 .concept-stage .viz-node-pointer > text {
   font: 10px var(--font-mono);
-  fill: #c6f39d;
+  fill: var(--trace-color-c6f39d, #c6f39d);
 }
 .concept-stage .viz-node-pointer.amber > rect {
-  stroke: #af8854;
+  stroke: var(--trace-color-af8854, #af8854);
 }
 .concept-stage .viz-node-pointer.amber > text {
-  fill: #efbe78;
+  fill: var(--trace-color-efbe78, #efbe78);
 }
 .concept-stage .component-0 > circle,
 .concept-stage .viz-cell.component-0 {
-  fill: #314936;
-  background: #314936;
-  stroke: #8abb87;
-  border-color: #8abb87;
+  fill: var(--trace-color-314936, #314936);
+  background: var(--trace-color-314936, #314936);
+  stroke: var(--trace-color-8abb87, #8abb87);
+  border-color: var(--trace-color-8abb87, #8abb87);
 }
 .concept-stage .component-1 > circle,
 .concept-stage .viz-cell.component-1 {
-  fill: #2e3f59;
-  background: #2e3f59;
-  stroke: #91baff;
-  border-color: #91baff;
+  fill: var(--trace-color-2e3f59, #2e3f59);
+  background: var(--trace-color-2e3f59, #2e3f59);
+  stroke: var(--trace-color-91baff, #91baff);
+  border-color: var(--trace-color-91baff, #91baff);
 }
 .concept-stage .component-2 > circle,
 .concept-stage .viz-cell.component-2 {
-  fill: #4a3851;
-  background: #4a3851;
-  stroke: #c79ac8;
-  border-color: #c79ac8;
+  fill: var(--trace-color-4a3851, #4a3851);
+  background: var(--trace-color-4a3851, #4a3851);
+  stroke: var(--trace-color-c79ac8, #c79ac8);
+  border-color: var(--trace-color-c79ac8, #c79ac8);
 }
 .concept-stage .component-3 > circle,
 .concept-stage .viz-cell.component-3 {
-  fill: #50412c;
-  background: #50412c;
-  stroke: #efbe78;
-  border-color: #efbe78;
+  fill: var(--trace-color-50412c, #50412c);
+  background: var(--trace-color-50412c, #50412c);
+  stroke: var(--trace-color-efbe78, #efbe78);
+  border-color: var(--trace-color-efbe78, #efbe78);
 }
 .concept-stage .component-4 > circle,
 .concept-stage .viz-cell.component-4 {
-  fill: #284d48;
-  background: #284d48;
-  stroke: #7cc8bc;
-  border-color: #7cc8bc;
+  fill: var(--trace-color-284d48, #284d48);
+  background: var(--trace-color-284d48, #284d48);
+  stroke: var(--trace-color-7cc8bc, #7cc8bc);
+  border-color: var(--trace-color-7cc8bc, #7cc8bc);
 }
 .concept-stage .component-5 > circle,
 .concept-stage .viz-cell.component-5 {
-  fill: #4c332b;
-  background: #4c332b;
-  stroke: #d9a082;
-  border-color: #d9a082;
+  fill: var(--trace-color-4c332b, #4c332b);
+  background: var(--trace-color-4c332b, #4c332b);
+  stroke: var(--trace-color-d9a082, #d9a082);
+  border-color: var(--trace-color-d9a082, #d9a082);
 }
 .concept-stage .viz-choice-path {
   display: flex;
@@ -681,15 +681,15 @@
   min-height: 140px;
 }
 .concept-stage .viz-choice-root {
-  border: 1px dashed #627985;
+  border: 1px dashed var(--trace-color-627985, #627985);
   border-radius: 50%;
   padding: 12px;
-  color: #91a5b0;
+  color: var(--trace-color-91a5b0, #91a5b0);
 }
 .concept-stage .viz-choice {
   position: relative;
-  border: 1px solid #97bf75;
-  background: #2d432f;
+  border: 1px solid var(--trace-color-97bf75, #97bf75);
+  background: var(--trace-color-2d432f, #2d432f);
   border-radius: 9px;
   min-width: 68px;
   display: flex;
@@ -703,19 +703,19 @@
   position: absolute;
   left: -17px;
   top: 26px;
-  color: #7c9aab;
+  color: var(--trace-color-7c9aab, #7c9aab);
 }
 .concept-stage .viz-choice small {
   font-size: 10px;
-  color: #a7bf9c;
+  color: var(--trace-color-a7bf9c, #a7bf9c);
 }
 .concept-stage .viz-choice b {
   font: 23px var(--font-mono);
-  color: #d0efb4;
+  color: var(--trace-color-d0efb4, #d0efb4);
 }
 .concept-stage .viz-solutions {
   margin-top: 18px;
-  border-top: 1px solid #ffffff12;
+  border-top: 1px solid var(--trace-color-ffffff12, #ffffff12);
   padding-top: 15px;
 }
 .concept-stage .viz-solutions > div {
@@ -726,9 +726,9 @@
 }
 .concept-stage .viz-solutions span {
   padding: 7px 10px;
-  border: 1px solid #4c6554;
+  border: 1px solid var(--trace-color-4c6554, #4c6554);
   border-radius: 5px;
-  background: #203329;
+  background: var(--trace-color-203329, #203329);
   overflow-wrap: anywhere;
   max-width: 100%;
 }
@@ -743,19 +743,19 @@
   flex-direction: column;
   gap: 8px;
   text-align: center;
-  border: 1px solid #42545e;
+  border: 1px solid var(--trace-color-42545e, #42545e);
   border-radius: 8px;
   padding: 12px;
 }
 .concept-stage .viz-keypad .active {
-  border-color: #c6f39d;
+  border-color: var(--trace-color-c6f39d, #c6f39d);
 }
 .concept-stage .viz-keypad b {
   font-size: 22px;
 }
 .concept-stage .viz-keypad span {
   font: 13px var(--font-mono);
-  color: #91baff;
+  color: var(--trace-color-91baff, #91baff);
   letter-spacing: 0.15em;
 }
 .concept-stage .viz-stack {
@@ -764,15 +764,15 @@
   gap: 5px;
   margin: auto;
   max-width: 280px;
-  border: 1px solid #42545e;
+  border: 1px solid var(--trace-color-42545e, #42545e);
   border-top: 0;
   border-radius: 0 0 10px 10px;
   padding: 8px 12px;
 }
 .concept-stage .viz-stack > div {
   padding: 10px 12px;
-  background: #23343d;
-  border: 1px solid #4a616d;
+  background: var(--trace-color-23343d, #23343d);
+  border: 1px solid var(--trace-color-4a616d, #4a616d);
   border-radius: 6px;
   font: 14px var(--font-mono);
   display: flex;
@@ -780,11 +780,11 @@
   gap: 12px;
 }
 .concept-stage .viz-stack .active {
-  background: #324a30;
-  border-color: #9abc79;
+  background: var(--trace-color-324a30, #324a30);
+  border-color: var(--trace-color-9abc79, #9abc79);
 }
 .concept-stage .viz-stack small {
-  color: #9eba8c;
+  color: var(--trace-color-9eba8c, #9eba8c);
   font-size: 10px;
 }
 .concept-stage .viz-stack-section {
@@ -797,7 +797,7 @@
   overflow-x: auto;
   min-height: 170px;
   padding: 18px 5px 10px;
-  border-bottom: 1px solid #42545e;
+  border-bottom: 1px solid var(--trace-color-42545e, #42545e);
 }
 .concept-stage .viz-bars > button {
   flex: 1;
@@ -810,7 +810,7 @@
   background: none;
   border: 0;
   padding: 0;
-  color: #93a6b0;
+  color: var(--trace-color-93a6b0, #93a6b0);
   font: 10px var(--font-mono);
 }
 .concept-stage .viz-bars > button > span {
@@ -818,26 +818,26 @@
   align-items: start;
   justify-content: center;
   min-width: 100%;
-  border: 1px solid #526e7d;
+  border: 1px solid var(--trace-color-526e7d, #526e7d);
   border-radius: 5px 5px 0 0;
-  background: linear-gradient(#2f4756, #1e303b);
+  background: linear-gradient(var(--trace-color-2f4756, #2f4756), var(--trace-color-1e303b, #1e303b));
   padding-top: 8px;
 }
 .concept-stage .viz-bars b {
   font-size: 13px;
   font-weight: 400;
-  color: #c5d6df;
+  color: var(--trace-color-c5d6df, #c5d6df);
 }
 .concept-stage .viz-bars .active > span {
-  border-color: #c6f39d;
-  background: #3b5533;
+  border-color: var(--trace-color-c6f39d, #c6f39d);
+  background: var(--trace-color-3b5533, #3b5533);
 }
 .concept-stage .viz-bars .amber > span {
-  border-color: #efbe78;
-  background: #4a3b26;
+  border-color: var(--trace-color-efbe78, #efbe78);
+  background: var(--trace-color-4a3b26, #4a3b26);
 }
 .concept-stage .viz-bars .updated > span {
-  border-color: #91baff;
+  border-color: var(--trace-color-91baff, #91baff);
 }
 .concept-stage .viz-counts {
   display: flex;
@@ -852,7 +852,7 @@
 }
 .concept-stage .viz-counts > span {
   padding: 8px 12px;
-  border: 1px solid #405763;
+  border: 1px solid var(--trace-color-405763, #405763);
   border-radius: 5px;
   font: 12px var(--font-mono);
   display: flex;
@@ -867,7 +867,7 @@
   font: 10px var(--font-mono);
   margin-left: 24px;
   padding-bottom: 10px;
-  color: #829ba8;
+  color: var(--trace-color-829ba8, #829ba8);
 }
 .concept-stage .viz-interval-row {
   display: flex;
@@ -878,13 +878,13 @@
 .concept-stage .viz-interval-row > small {
   width: 14px;
   font: 10px var(--font-mono);
-  color: #829ba8;
+  color: var(--trace-color-829ba8, #829ba8);
 }
 .concept-stage .viz-interval-row > div {
   flex: 1;
   position: relative;
   height: 30px;
-  border-left: 1px solid #49606d;
+  border-left: 1px solid var(--trace-color-49606d, #49606d);
 }
 .concept-stage .viz-interval-row span {
   position: absolute;
@@ -895,8 +895,8 @@
   white-space: nowrap;
   min-width: 32px;
   height: 30px;
-  background: #2d432f;
-  border: 1px solid #83a868;
+  background: var(--trace-color-2d432f, #2d432f);
+  border: 1px solid var(--trace-color-83a868, #83a868);
   border-radius: 5px;
   font: 11px var(--font-mono);
 }
@@ -909,19 +909,19 @@
   gap: 3px;
 }
 .concept-stage .viz-bit-rows section > div > span {
-  border: 1px solid #3c5361;
+  border: 1px solid var(--trace-color-3c5361, #3c5361);
   border-radius: 3px;
   padding: 7px 0;
   text-align: center;
   font: 10px var(--font-mono);
 }
 .concept-stage .viz-bit-rows .updated {
-  border-color: #91baff;
-  box-shadow: 0 0 0 1px #91baff;
+  border-color: var(--trace-color-91baff, #91baff);
+  box-shadow: 0 0 0 1px var(--trace-color-91baff, #91baff);
 }
 .concept-stage button:focus-visible,
 .concept-stage [tabindex]:focus-visible {
-  outline: 2px solid #c6f39d;
+  outline: 2px solid var(--trace-color-c6f39d, #c6f39d);
   outline-offset: 3px;
 }
 .roadmap-foundation .trace-visual-body > .concept-stage {

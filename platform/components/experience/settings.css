@@ -1,0 +1,279 @@
+.trace-settings-dialog {
+  width: min(880px, calc(100% - 32px));
+  max-width: 880px !important;
+  padding: 26px !important;
+  max-height: 88dvh;
+  overflow: auto;
+  gap: 24px !important;
+}
+.settings-layout {
+  display: grid;
+  grid-template-columns: 155px minmax(0, 1fr);
+  gap: 25px;
+}
+.settings-layout nav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: stretch;
+}
+.settings-layout nav button {
+  text-align: left;
+  padding: 11px 12px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 7px;
+  color: var(--muted-foreground);
+}
+.settings-layout nav button[aria-current="page"] {
+  color: var(--foreground);
+  background: var(--accent);
+  border-color: var(--border);
+}
+.settings-content {
+  min-width: 0;
+}
+.settings-content h3 {
+  font-size: 16px;
+  margin-bottom: 17px;
+}
+.settings-content .theme-options {
+  gap: 7px;
+  margin-bottom: 15px;
+}
+.settings-content .theme-option {
+  padding: 12px;
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border);
+}
+.setting-row > span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.setting-row strong {
+  font-size: 12px;
+  font-weight: 550;
+}
+.setting-row small {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  line-height: 1.6;
+  max-width: 38ch;
+}
+.setting-row select {
+  max-width: 190px;
+  min-width: 115px;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  background: var(--card);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 11px;
+}
+.setting-row input[type="checkbox"] {
+  accent-color: var(--mint);
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+.settings-description {
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 12px 0;
+}
+.settings-save-note {
+  margin-top: 22px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  line-height: 1.7;
+}
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0;
+}
+.settings-actions button,
+.settings-actions a,
+.settings-import,
+.settings-confirm button {
+  border: 1px solid var(--border);
+  padding: 9px 12px;
+  background: var(--card);
+  color: var(--foreground);
+  border-radius: 7px;
+  font-size: 11px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.settings-import {
+  display: inline-flex;
+  align-items: center;
+}
+.settings-import input {
+  max-width: 150px;
+  margin-left: 10px;
+  font-size: 10px;
+}
+.settings-danger {
+  color: var(--destructive) !important;
+}
+.settings-confirm {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--accent);
+}
+.settings-confirm p {
+  font-size: 12px;
+  line-height: 1.8;
+  margin-bottom: 12px;
+}
+.settings-confirm button {
+  margin: 0 7px 5px 0;
+}
+.settings-shortcuts {
+  margin: 0;
+}
+.settings-shortcuts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.settings-shortcuts dd {
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  margin: 0;
+}
+html[data-text-size="large"]
+  .main-shell
+  :is(
+    p,
+    .setting-row strong,
+    .lesson-nav,
+    .premium-text-button,
+    .public-topbar nav button,
+    .text-button
+  ) {
+  font-size: 15px;
+}
+html[data-text-size="large"]
+  .main-shell
+  :is(small, .muted, .premium-eyebrow, .eyebrow) {
+  font-size: 12px;
+}
+html[data-motion="reduce"] {
+  scroll-behavior: auto;
+}
+html[data-motion="reduce"] *,
+html[data-motion="reduce"] *::before,
+html[data-motion="reduce"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+html[data-pointer-labels="false"] .moving-pointer > span {
+  visibility: hidden;
+}
+html[data-explanations="false"] :is(.step-narrative, .cs-explanation) {
+  display: none;
+}
+:is(.code-editor, .source-code, .readable-code, .curriculum-editor) {
+  font-size: var(--trace-editor-size, 13px) !important;
+  tab-size: var(--trace-tab-size, 4);
+}
+html[data-line-numbers="false"]
+  :is(.line-number, .readable-code-line > span:first-child) {
+  display: none;
+}
+html[data-highlight-line="false"] :is(.current-line, .execution-line) {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+html[data-word-wrap="true"] :is(.source-code code, .readable-code code) {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+html[data-word-wrap="true"] .code-editor {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+html[data-word-wrap="false"] .code-editor {
+  white-space: pre;
+  overflow-wrap: normal;
+}
+.practice-timer {
+  font: 11px var(--font-mono);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+@media (max-width: 650px) {
+  .trace-settings-dialog {
+    padding: 20px !important;
+  }
+  .settings-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .settings-layout nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .settings-layout nav button {
+    white-space: nowrap;
+    flex: none;
+  }
+  .setting-row {
+    gap: 15px;
+  }
+  .setting-row select {
+    max-width: 140px;
+    min-width: 90px;
+  }
+  .settings-shortcuts div {
+    gap: 12px;
+  }
+}
+
+html[data-hints="hidden"] .practice-hints {
+  display: none;
+}
+html[data-line-numbers="false"] .readable-code-line {
+  grid-template-columns: minmax(0, 1fr);
+}
+:is(.readable-code-line code, .source-code code) {
+  font-size: var(--trace-editor-size, 13px) !important;
+}
+html[data-word-wrap="true"] .readable-code-line code {
+  white-space: pre-wrap;
+}
+
+html[data-text-size="large"] .main-shell p {
+  font-size: 17px;
+}
+html[data-text-size="large"] .main-shell .premium-hero-copy > p {
+  font-size: clamp(17px, 1.5vw, 19px);
+}
+html[data-word-wrap="true"] textarea.curriculum-editor {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+html[data-word-wrap="false"] textarea.curriculum-editor {
+  white-space: pre;
+}

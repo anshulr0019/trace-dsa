@@ -1,5 +1,7 @@
 "use client";
-import { useMemo, useState } from "react";
+import { readPreferences } from "@/lib/experience/preferences";
+import { usePreferences } from "@/components/experience/use-preferences";
+import { useEffect, useMemo, useState } from "react";
 import { moduleById } from "@/lib/computer-science/catalog";
 import { deepSpecs } from "@/lib/computer-science/deeper-catalog";
 import type { Settings } from "@/lib/computer-science/models";
@@ -45,7 +47,7 @@ function ModelExperiment({
 }) {
   const [id, setId] = useState(ids[0]),
     [scenario, setScenario] = useState(() => initialScenario(ids[0])),
-    [speed, setSpeed] = useState(1),
+    [speed, setSpeed] = useState(() => readPreferences().speed),
     [captured, setCaptured] = useState("");
   const m = moduleById[id],
     architectural = m.kind === "architecture";
@@ -60,6 +62,8 @@ function ModelExperiment({
         }
       : reference;
   }, [m, scenario, architectural]);
+  const playbackPreferences = usePreferences();
+  useEffect(() => { setSpeed(playbackPreferences.speed); }, [playbackPreferences.speed]);
   const { step, setStep, playing, setPlaying } = useFramePlayback(
       lab.frames.length,
       speed,

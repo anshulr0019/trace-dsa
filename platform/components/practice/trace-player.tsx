@@ -1,7 +1,9 @@
 "use client";
+import { readPreferences } from "@/lib/experience/preferences";
+import { usePreferences } from "@/components/experience/use-preferences";
 import {usePlaybackFocus} from "../experience/use-playback-focus";
 import {PLAYBACK_SPEEDS} from "@/lib/playback-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Play, Pause, ArrowLeft, ArrowRight } from "lucide-react";
 import type { Problem } from "@/lib/curriculum/catalog";
 import type { PracticeRun } from "@/lib/practice/types";
@@ -22,7 +24,9 @@ export function TracePlayer({
   language: string;
   code: string;
 }) {
-  const [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState(() => readPreferences().speed);
+  const playbackPreferences = usePreferences();
+  useEffect(() => { setSpeed(playbackPreferences.speed); }, [playbackPreferences.speed]);
   const { step, setStep, playing, setPlaying } = useFramePlayback(
     run.frames.length,
     speed,
